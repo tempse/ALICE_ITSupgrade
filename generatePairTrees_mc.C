@@ -300,7 +300,7 @@ void generatePairTrees_mc() {
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Int_t singleTree_nEvents = singleTree->GetEntries()/2; //todo: loop over all events
+  Int_t singleTree_nEvents = singleTree->GetEntries()/100; //todo: loop over all events
   std::cout << std::endl;
   for(Int_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
     if((tr1%100)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
@@ -315,6 +315,9 @@ void generatePairTrees_mc() {
 
     // pdg cut:
     if(abs(ST_pdg) != 11) continue; // keep electrons/positrons only
+
+    // cut to ignore unphysical DCAz values (specific to prior analysis):
+    if(ST_dcaZ == 999) continue;
 
     // pt cut:
     //if(pt1<.4 || pt1>5) continue;
@@ -422,10 +425,14 @@ void generatePairTrees_mc() {
 	    << " (100%)...";
   std::cout << " DONE." << std::endl << std::endl;
 
+  infile->Close();
+  
   if(isPairTree_rp) pairTree_rp->Write();
   if(isPairTree_us) pairTree_us->Write();
   if(isPairTree_ls) pairTree_ls->Write();
   if(isPairTree_us_ls) pairTree_us_ls->Write();
+
+  outfile->Close();
 
   // histDiagnosis1->SaveAs("histDiagnosis1.root");
   // histDiagnosis2->SaveAs("histDiagnosis2.root");
