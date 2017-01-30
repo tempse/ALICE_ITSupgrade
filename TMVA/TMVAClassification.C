@@ -164,6 +164,9 @@ int TMVAClassification( TString myMethodList = "" )
 
    // --- Here the preparation phase begins
 
+   TFile *infile = TFile::Open("../pairtrees_328kEv_us-rp.root");
+   TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
+   
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
    TString outfileName( "TMVA.root" );
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
@@ -181,8 +184,9 @@ int TMVAClassification( TString myMethodList = "" )
    TMVA::Factory *factory = new TMVA::Factory( "TMVAClassification", outputFile,
                                                "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
-TFile *infile = TFile::Open("../pairtrees_3.2MEv_us-rp.root");
-TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
+   // original location of input files before moving it up to avoid "memory-resident tree" problem:
+   // TFile *infile = TFile::Open("../pairtrees_328kEv_us-rp.root");
+   // TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
 
    factory->AddVariable( "sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", 'F' );       // Abs(pair_pt))
    factory->AddVariable( "abs(phiv-1.57)", 'F' );
@@ -198,8 +202,8 @@ TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
    factory->AddVariable( "nITS2");
    factory->AddVariable( "log(abs(DCAxy1))");
    factory->AddVariable( "log(abs(DCAxy2))");
-   factory->AddVariable( "chi2g1"); 
-   factory->AddVariable( "chi2g2");
+   // factory->AddVariable( "chi2g1"); 
+   // factory->AddVariable( "chi2g2");
 
    factory->AddSpectator("IsRP");
    factory->AddSpectator("IsConv");
@@ -217,10 +221,10 @@ TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
 //  factory->AddVariable( "phi1"); 
 //  factory->AddVariable( "phi2");
    
-TCut signalCut = "IsRP==1 && IsConv==0"; // how to identify signal events
-TCut backgrCut = "!(IsRP==1 && IsConv==0)"; // how to identify background events    
-// TCut signalCut = "IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22) && mass>0.1"; // how to identify signal events
-// TCut backgrCut = "!(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) && mass>0.1"; // how to identify background events
+// TCut signalCut = "IsRP==1 && IsConv==0"; // how to identify signal events
+// TCut backgrCut = "!(IsRP==1 && IsConv==0)"; // how to identify background events  
+TCut signalCut = "IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22) && mass>0.1"; // how to identify signal events
+TCut backgrCut = "!(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) && mass>0.1"; // how to identify background events
  
 factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
    
@@ -297,7 +301,7 @@ factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
    //    factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
    // To also specify the number of testing events, use:
 //       factory->PrepareTrainingAndTestTree( mycut,       "NTrain_Signal=3751:NTrain_Background=52925:NTest_Signal=0:NTest_Background=0:SplitMode=Random:!V" );
-   factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
+   factory->PrepareTrainingAndTestTree( mycut, "!V:NTrain_Signal=20000:NTrain_Background=20000:NTest_Signal=20000:NTest_Background=20000:SplitMode=random" );
 
    // ---- Book MVA methods
    //
@@ -430,7 +434,7 @@ factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
 
    // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
    if (Use["MLP"])
-      factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N:ConvergenceTests=20:NCycles=800:HiddenLayers=N" );
+      factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N+G:ConvergenceTests=20:NCycles=800:HiddenLayers=N" );
 
    if (Use["MLPBFGS"])
       factory->BookMethod( TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=1000:HiddenLayers=5:ConvergenceTests=20:TrainingMethod=BFGS" );
