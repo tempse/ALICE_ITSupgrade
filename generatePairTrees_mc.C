@@ -5,19 +5,32 @@
 // us <-> unlike sign
 // ls <-> like sign
 
+
+Bool_t isCharm(Int_t );
+Bool_t isBottom(Int_t );
+
+// The following functions use the globally defined output tree variables. Make
+// sure that these variables have the correct values when calling one of them!
 void calculateMomenta();
 void calculatePhiv();
 void calculateOpang();
 void calculateMass();
 void calculateDiffz();
 void calculateSumz();
+void calculateHF();
 
-// variables of output tree (1,2 <-> 1st leg, 2nd leg):
+
+
+// output variables (1,2 <-> 1st leg, 2nd leg):
 Int_t TrackID1, TrackID2;
 Int_t EventID1, EventID2;
 Int_t IsRP;                  // real pairs: 1, combinatorial pairs: 0
 Int_t IsUS;                  // pair with unlike sign (regardless of IsRP)
 Int_t IsConv;                // both mother particles are gammas (can still be comb. pairs)
+Int_t IsHF;                  // HF = "heavy flavor"
+Int_t IsCorrCharm;           // correlated charmed pair: 1, else: 0
+Int_t IsCorrBottom;          // correlated bottom pair: 1, else: 0
+Int_t IsCorrCharmFromBottom; // correlated charmed pair originating from a bottom: 1, else: 0
 Int_t ChargeSign;            // unlike sign: 0, like sign (++): 1, like sign (--): -1
 Double_t opang;
 Double_t diffz;
@@ -30,9 +43,13 @@ Double_t pz1, pz2;
 Double_t MCpx1, MCpx2;       // }
 Double_t MCpy1, MCpy2;       // } momenta calculated from MC data
 Double_t MCpz1, MCpz2;       // }
-Int_t mpdg_leg1, mpdg_leg2;
-Int_t pdg_leg1, pdg_leg2;
-Int_t mlabel1, mlabel2;
+Int_t pdg_leg1, pdg_leg2;    // pdg of particle
+Int_t mpdg_leg1, mpdg_leg2;  // pdg of mother
+Int_t fmpdg_leg1, fmpdg_leg2;// pdg of first mother
+Int_t mlabel1, mlabel2;      // label of mother particle
+Int_t fmlabel1, fmlabel2;    // label of first mother
+Int_t fmlabel1_min, fmlabel2_min;
+Int_t fmlabel1_max, fmlabel2_max;
 Double_t DCAxy1, DCAxy2;
 Double_t DCAz1, DCAz2;
 Int_t nITS1, nITS2;
@@ -47,7 +64,7 @@ TVector3 u,v,w,ua;          // for phiv calculation
 TVector3 temp;
 
 // program control parameters:
-bool isPairTree_rp = true;       // }
+bool isPairTree_rp = false;      // }
 bool isPairTree_us = true;       // } set/unset the
 bool isPairTree_ls = false;      // } output trees here
 bool isPairTree_us_ls = false;   // }
@@ -125,6 +142,10 @@ void generatePairTrees_mc() {
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
+    pairTree_rp->Branch("IsHF",&IsHF);
+    pairTree_rp->Branch("IsCorrCharm",&IsCorrCharm);
+    pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
+    pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_rp->Branch("ChargeSign",&ChargeSign);
     pairTree_rp->Branch("opang",&opang);
     pairTree_rp->Branch("diffz",&diffz);
@@ -169,6 +190,10 @@ void generatePairTrees_mc() {
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
+    pairTree_us->Branch("IsHF",&IsHF);
+    pairTree_us->Branch("IsCorrCharm",&IsCorrCharm);
+    pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
+    pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us->Branch("ChargeSign",&ChargeSign);
     pairTree_us->Branch("opang",&opang);
     pairTree_us->Branch("diffz",&diffz);
@@ -213,6 +238,10 @@ void generatePairTrees_mc() {
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
+    pairTree_ls->Branch("IsHF",&IsHF);
+    pairTree_ls->Branch("IsCorrCharm",&IsCorrCharm);
+    pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
+    pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_ls->Branch("opang",&opang);
     pairTree_ls->Branch("diffz",&diffz);
@@ -257,6 +286,10 @@ void generatePairTrees_mc() {
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
+    pairTree_us_ls->Branch("IsHF",&IsHF);
+    pairTree_us_ls->Branch("IsCorrCharm",&IsCorrCharm);
+    pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
+    pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_us_ls->Branch("opang",&opang);
     pairTree_us_ls->Branch("diffz",&diffz);
@@ -329,9 +362,13 @@ void generatePairTrees_mc() {
     MCpx1 = ST_particle->Px();
     MCpy1 = ST_particle->Py();
     MCpz1 = ST_particle->Pz();
-    mpdg_leg1 = ST_pdgMother;
     pdg_leg1 = ST_pdg;
-    mlabel1 = ST_particle->GetFirstMother(); // equiv. to ->GetMother(0); not the first mother of the track though!
+    mpdg_leg1 = ST_pdgMother;
+    fmpdg_leg1 = ST_pdgFirstMother;
+    mlabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+    fmlabel1 = ST_labelFirstMother;
+    fmlabel1_min = ST_labelMinFirstMother;
+    fmlabel1_max = ST_labelMaxFirstMother;
     DCAxy1 = ST_dcaR;
     DCAz1 = ST_dcaZ;
     nITS1 = ST_nITS;
@@ -359,9 +396,13 @@ void generatePairTrees_mc() {
       MCpx2= ST_particle->Px();
       MCpy2 = ST_particle->Py();
       MCpz2 = ST_particle->Pz();
-      mpdg_leg2 = ST_pdgMother;
       pdg_leg2 = ST_pdg;
-      mlabel2 = ST_particle->GetFirstMother(); // equiv. to ->GetMother(0); not the first mother of the track though!
+      mpdg_leg2 = ST_pdgMother;
+      fmpdg_leg2 = ST_pdgFirstMother;
+      mlabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+      fmlabel2 = ST_labelFirstMother;
+      fmlabel2_min = ST_labelMinFirstMother;
+      fmlabel2_max = ST_labelMaxFirstMother;
       DCAxy2 = ST_dcaR;
       DCAz2 = ST_dcaZ;
       nITS2 = ST_nITS;
@@ -382,6 +423,7 @@ void generatePairTrees_mc() {
 	calculateOpang();
         calculateDiffz();
 	calculateSumz();
+	calculateHF();
 
 	if(mpdg_leg1==22 || mpdg_leg2==22) { // IsConv==1 for every pair that contains a conversion leg
 	  IsConv = 1;
@@ -407,6 +449,7 @@ void generatePairTrees_mc() {
 	calculateOpang();
         calculateDiffz();
 	calculateSumz();
+	calculateHF();
 	
 	if(mpdg_leg1==22 || mpdg_leg2==22) {
 	  IsConv = 1;
@@ -445,12 +488,24 @@ void generatePairTrees_mc() {
 
 
 
+Bool_t isCharm(Int_t pdg) {
+  if(TMath::Abs(pdg) == 4) return kTRUE;           // charmed quark
+  if(TMath::Abs(pdg)/1000 == 4) return kTRUE;      // charmed baryon
+  if((TMath::Abs(pdg)/100)%100 == 4) return kTRUE; // charmed meson
+  return kFALSE;
+}
+
+Bool_t isBottom(Int_t pdg) {
+  if(TMath::Abs(pdg) == 5) return kTRUE;           // charmed quark
+  if(TMath::Abs(pdg)/1000 == 5) return kTRUE;      // charmed baryon
+  if((TMath::Abs(pdg)/100)%100 == 5) return kTRUE; // charmed meson
+  return kFALSE;
+}
 
 void calculateMomenta() { // has to be called before other methods that need momentum variables!
   px1 = pt1*TMath::Cos(phi1);
   py1 = pt1*TMath::Sin(phi1);
   pz1 = pt1*TMath::SinH(eta1);
-
 
   px2 = pt2*TMath::Cos(phi2);
   py2 = pt2*TMath::Sin(phi2);
@@ -515,4 +570,34 @@ void calculateSumz() {
   }
   temp = pv1 + pv2;
   sumz = temp.Angle(z);
+}
+
+void calculateHF() {
+  IsHF = 0;                  // }
+  IsCorrCharm = 0;           // } default
+  IsCorrBottom = 0;          // } values
+  IsCorrCharmFromBottom = 0; // }
+  // check heavy flavor of first mothers:
+  if((isCharm(fmpdg_leg1)||isBottom(fmpdg_leg1)) && (isCharm(fmpdg_leg2)||isBottom(fmpdg_leg2))) {
+    // check whether they are in the same first mother range (i.e., have the same origin):
+    if(fmlabel1>=fmlabel2_min && fmlabel1<=fmlabel2_max) {
+      if(!(fmlabel2>=fmlabel1_min && fmlabel2<=fmlabel1_max)) {
+	std::cout << "Warning: fmlabel1 is in fmlabel2 range, but not vice versa." << std::endl;
+      }
+      // check heavy flavor of mothers:
+      if((isCharm(mpdg_leg1)||isBottom(mpdg_leg1)) && (isCharm(mpdg_leg2)||isBottom(mpdg_leg2))) {
+	if(isCharm(fmpdg_leg1) && isCharm(fmpdg_leg2)) {
+	  IsCorrCharm = 1;
+	}else if(isBottom(fmpdg_leg1) && isBottom(fmpdg_leg2)) {
+	  IsCorrBottom = 1;
+	  if(isCharm(mpdg_leg1)||isCharm(mpdg_leg2)) {
+	    IsCorrCharmFromBottom = 1;
+	  }
+	}
+      }
+    }
+  }
+  if(IsCorrCharm==1 || IsCorrBottom==1) {
+    IsHF = 1;
+  }
 }
