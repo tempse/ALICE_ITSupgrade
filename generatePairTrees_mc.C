@@ -302,6 +302,7 @@ void generatePairTrees_mc() {
   
   Int_t singleTree_nEvents = singleTree->GetEntries()/100; //todo: loop over all events
   std::cout << std::endl;
+  std::cout << "Start event processing...";
   for(Int_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
     if((tr1%100)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
 			       << " (" << tr1*100/singleTree_nEvents << "%)...";
@@ -345,7 +346,10 @@ void generatePairTrees_mc() {
 
       // pdg cut:
       if(abs(ST_pdg) != 11) continue;
-
+      
+      // cut to ignore unphysical DCAz values (specific to prior analysis):
+      if(ST_dcaZ == 999) {tr2++; continue;}
+      
       // pt cut:
       //if(pt1<.4 || pt1>5) continue;
 
