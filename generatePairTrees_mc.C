@@ -40,16 +40,16 @@ Double_t phiv;
 Double_t px1, px2;
 Double_t py1, py2;
 Double_t pz1, pz2;
-Double_t MCpx1, MCpx2;       // }
-Double_t MCpy1, MCpy2;       // } momenta calculated from MC data
-Double_t MCpz1, MCpz2;       // }
-Int_t pdg_leg1, pdg_leg2;    // pdg of particle
-Int_t mpdg_leg1, mpdg_leg2;  // pdg of mother
-Int_t fmpdg_leg1, fmpdg_leg2;// pdg of first mother
-Int_t mlabel1, mlabel2;      // label of mother particle
-Int_t fmlabel1, fmlabel2;    // label of first mother
-Int_t fmlabel1_min, fmlabel2_min;
-Int_t fmlabel1_max, fmlabel2_max;
+Double_t mcPx1, mcPx2;       // }
+Double_t mcPy1, mcPy2;       // } momenta calculated from MC data
+Double_t mcPz1, mcPz2;       // }
+Int_t pdg1, pdg2;
+Int_t motherPdg1, motherPdg2;
+Int_t firstMotherPdg1, firstMotherPdg2;
+Int_t motherLabel1, motherLabel2;
+Int_t firstMotherLabel1, firstMotherLabel2;
+Int_t firstMotherLabel1_min, firstMotherLabel2_min;
+Int_t firstMotherLabel1_max, firstMotherLabel2_max;
 Double_t DCAxy1, DCAxy2;
 Double_t DCAz1, DCAz2;
 Int_t nITS1, nITS2;
@@ -158,16 +158,16 @@ void generatePairTrees_mc() {
     pairTree_rp->Branch("py2",&py2);
     pairTree_rp->Branch("pz1",&pz1);
     pairTree_rp->Branch("pz2",&pz2);
-    pairTree_rp->Branch("MCpx1",&MCpx1);
-    pairTree_rp->Branch("MCpx2",&MCpx2);
-    pairTree_rp->Branch("MCpy1",&MCpy1);
-    pairTree_rp->Branch("MCpy2",&MCpy2);
-    pairTree_rp->Branch("MCpz1",&MCpz1);
-    pairTree_rp->Branch("MCpz2",&MCpz2);
-    pairTree_rp->Branch("mpdg_leg1",&mpdg_leg1);
-    pairTree_rp->Branch("mpdg_leg2",&mpdg_leg2);
-    pairTree_rp->Branch("pdg_leg1",&pdg_leg1);
-    pairTree_rp->Branch("pdg_leg2",&pdg_leg2);
+    pairTree_rp->Branch("mcPx1",&mcPx1);
+    pairTree_rp->Branch("mcPx2",&mcPx2);
+    pairTree_rp->Branch("mcPy1",&mcPy1);
+    pairTree_rp->Branch("mcPy2",&mcPy2);
+    pairTree_rp->Branch("mcPz1",&mcPz1);
+    pairTree_rp->Branch("mcPz2",&mcPz2);
+    pairTree_rp->Branch("motherPdg1",&motherPdg1);
+    pairTree_rp->Branch("motherPdg2",&motherPdg2);
+    pairTree_rp->Branch("pdg1",&pdg1);
+    pairTree_rp->Branch("pdg2",&pdg2);
     pairTree_rp->Branch("DCAxy1",&DCAxy1);
     pairTree_rp->Branch("DCAxy2",&DCAxy2);
     pairTree_rp->Branch("DCAz1",&DCAz1);
@@ -206,16 +206,16 @@ void generatePairTrees_mc() {
     pairTree_us->Branch("py2",&py2);
     pairTree_us->Branch("pz1",&pz1);
     pairTree_us->Branch("pz2",&pz2);
-    pairTree_us->Branch("MCpx1",&MCpx1);
-    pairTree_us->Branch("MCpx2",&MCpx2);
-    pairTree_us->Branch("MCpy1",&MCpy1);
-    pairTree_us->Branch("MCpy2",&MCpy2);
-    pairTree_us->Branch("MCpz1",&MCpz1);
-    pairTree_us->Branch("MCpz2",&MCpz2);
-    pairTree_us->Branch("mpdg_leg1",&mpdg_leg1);
-    pairTree_us->Branch("mpdg_leg2",&mpdg_leg2);
-    pairTree_us->Branch("pdg_leg1",&pdg_leg1);
-    pairTree_us->Branch("pdg_leg2",&pdg_leg2);
+    pairTree_us->Branch("mcPx1",&mcPx1);
+    pairTree_us->Branch("mcPx2",&mcPx2);
+    pairTree_us->Branch("mcPy1",&mcPy1);
+    pairTree_us->Branch("mcPy2",&mcPy2);
+    pairTree_us->Branch("mcPz1",&mcPz1);
+    pairTree_us->Branch("mcPz2",&mcPz2);
+    pairTree_us->Branch("motherPdg1",&motherPdg1);
+    pairTree_us->Branch("motherPdg2",&motherPdg2);
+    pairTree_us->Branch("pdg1",&pdg1);
+    pairTree_us->Branch("pdg2",&pdg2);
     pairTree_us->Branch("DCAxy1",&DCAxy1);
     pairTree_us->Branch("DCAxy2",&DCAxy2);
     pairTree_us->Branch("DCAz1",&DCAz1);
@@ -254,16 +254,16 @@ void generatePairTrees_mc() {
     pairTree_ls->Branch("py2",&py2);
     pairTree_ls->Branch("pz1",&pz1);
     pairTree_ls->Branch("pz2",&pz2);
-    pairTree_ls->Branch("MCpx1",&MCpx1);
-    pairTree_ls->Branch("MCpx2",&MCpx2);
-    pairTree_ls->Branch("MCpy1",&MCpy1);
-    pairTree_ls->Branch("MCpy2",&MCpy2);
-    pairTree_ls->Branch("MCpz1",&MCpz1);
-    pairTree_ls->Branch("MCpz2",&MCpz2);
-    pairTree_ls->Branch("mpdg_leg1",&mpdg_leg1);
-    pairTree_ls->Branch("mpdg_leg2",&mpdg_leg2);
-    pairTree_ls->Branch("pdg_leg1",&pdg_leg1);
-    pairTree_ls->Branch("pdg_leg2",&pdg_leg2);
+    pairTree_ls->Branch("mcPx1",&mcPx1);
+    pairTree_ls->Branch("mcPx2",&mcPx2);
+    pairTree_ls->Branch("mcPy1",&mcPy1);
+    pairTree_ls->Branch("mcPy2",&mcPy2);
+    pairTree_ls->Branch("mcPz1",&mcPz1);
+    pairTree_ls->Branch("mcPz2",&mcPz2);
+    pairTree_ls->Branch("motherPdg1",&motherPdg1);
+    pairTree_ls->Branch("motherPdg2",&motherPdg2);
+    pairTree_ls->Branch("pdg1",&pdg1);
+    pairTree_ls->Branch("pdg2",&pdg2);
     pairTree_ls->Branch("DCAxy1",&DCAxy1);
     pairTree_ls->Branch("DCAxy2",&DCAxy2);
     pairTree_ls->Branch("DCAz1",&DCAz1);
@@ -302,16 +302,16 @@ void generatePairTrees_mc() {
     pairTree_us_ls->Branch("py2",&py2);
     pairTree_us_ls->Branch("pz1",&pz1);
     pairTree_us_ls->Branch("pz2",&pz2);
-    pairTree_us_ls->Branch("MCpx1",&MCpx1);
-    pairTree_us_ls->Branch("MCpx2",&MCpx2);
-    pairTree_us_ls->Branch("MCpy1",&MCpy1);
-    pairTree_us_ls->Branch("MCpy2",&MCpy2);
-    pairTree_us_ls->Branch("MCpz1",&MCpz1);
-    pairTree_us_ls->Branch("MCpz2",&MCpz2);
-    pairTree_us_ls->Branch("mpdg_leg1",&mpdg_leg1);
-    pairTree_us_ls->Branch("mpdg_leg2",&mpdg_leg2);
-    pairTree_us_ls->Branch("pdg_leg1",&pdg_leg1);
-    pairTree_us_ls->Branch("pdg_leg2",&pdg_leg2);
+    pairTree_us_ls->Branch("mcPx1",&mcPx1);
+    pairTree_us_ls->Branch("mcPx2",&mcPx2);
+    pairTree_us_ls->Branch("mcPy1",&mcPy1);
+    pairTree_us_ls->Branch("mcPy2",&mcPy2);
+    pairTree_us_ls->Branch("mcPz1",&mcPz1);
+    pairTree_us_ls->Branch("mcPz2",&mcPz2);
+    pairTree_us_ls->Branch("motherPdg1",&motherPdg1);
+    pairTree_us_ls->Branch("motherPdg2",&motherPdg2);
+    pairTree_us_ls->Branch("pdg1",&pdg1);
+    pairTree_us_ls->Branch("pdg2",&pdg2);
     pairTree_us_ls->Branch("DCAxy1",&DCAxy1);
     pairTree_us_ls->Branch("DCAxy2",&DCAxy2);
     pairTree_us_ls->Branch("DCAz1",&DCAz1);
@@ -359,16 +359,16 @@ void generatePairTrees_mc() {
     // already available, pairing-independent variables of 1st leg for output tree:
     EventID1 = ST_event;
     TrackID1 = tr1;
-    MCpx1 = ST_particle->Px();
-    MCpy1 = ST_particle->Py();
-    MCpz1 = ST_particle->Pz();
-    pdg_leg1 = ST_pdg;
-    mpdg_leg1 = ST_pdgMother;
-    fmpdg_leg1 = ST_pdgFirstMother;
-    mlabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
-    fmlabel1 = ST_labelFirstMother;
-    fmlabel1_min = ST_labelMinFirstMother;
-    fmlabel1_max = ST_labelMaxFirstMother;
+    mcPx1 = ST_particle->Px();
+    mcPy1 = ST_particle->Py();
+    mcPz1 = ST_particle->Pz();
+    pdg1 = ST_pdg;
+    motherPdg1 = ST_pdgMother;
+    firstMotherPdg1 = ST_pdgFirstMother;
+    motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+    firstMotherLabel1 = ST_labelFirstMother;
+    firstMotherLabel1_min = ST_labelMinFirstMother;
+    firstMotherLabel1_max = ST_labelMaxFirstMother;
     DCAxy1 = ST_dcaR;
     DCAz1 = ST_dcaZ;
     nITS1 = ST_nITS;
@@ -393,16 +393,16 @@ void generatePairTrees_mc() {
       // already available, pairing-independent variables of 2nd leg for output tree:
       EventID2 = ST_event;
       TrackID2 = tr2;
-      MCpx2= ST_particle->Px();
-      MCpy2 = ST_particle->Py();
-      MCpz2 = ST_particle->Pz();
-      pdg_leg2 = ST_pdg;
-      mpdg_leg2 = ST_pdgMother;
-      fmpdg_leg2 = ST_pdgFirstMother;
-      mlabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
-      fmlabel2 = ST_labelFirstMother;
-      fmlabel2_min = ST_labelMinFirstMother;
-      fmlabel2_max = ST_labelMaxFirstMother;
+      mcPx2= ST_particle->Px();
+      mcPy2 = ST_particle->Py();
+      mcPz2 = ST_particle->Pz();
+      pdg2 = ST_pdg;
+      motherPdg2 = ST_pdgMother;
+      firstMotherPdg2 = ST_pdgFirstMother;
+      motherLabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+      firstMotherLabel2 = ST_labelFirstMother;
+      firstMotherLabel2_min = ST_labelMinFirstMother;
+      firstMotherLabel2_max = ST_labelMaxFirstMother;
       DCAxy2 = ST_dcaR;
       DCAz2 = ST_dcaZ;
       nITS2 = ST_nITS;
@@ -412,7 +412,7 @@ void generatePairTrees_mc() {
 
       IsRP = 0; // default value
       
-      if(pdg_leg1*ST_pdg < 0) { // <-> unlike sign pair (via MC info!)
+      if(pdg1*ST_pdg < 0) { // <-> unlike sign pair (via MC info!)
 	IsUS = 1;
 	
 	ChargeSign = 0;
@@ -425,13 +425,13 @@ void generatePairTrees_mc() {
 	calculateSumz();
 	calculateHF();
 
-	if(mpdg_leg1==22 || mpdg_leg2==22) { // IsConv==1 for every pair that contains a conversion leg
+	if(motherPdg1==22 || motherPdg2==22) { // IsConv==1 for every pair that contains a conversion leg
 	  IsConv = 1;
 	}else {
 	  IsConv = 0;
 	}
 
-	if(mlabel1==mlabel2 && abs(pdg_leg1)==11 && abs(pdg_leg2)==11) {
+	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
 	  if(isPairTree_rp) pairTree_rp->Fill();
 	}
@@ -440,8 +440,8 @@ void generatePairTrees_mc() {
       }else { // <-> like sign pair
 	IsUS = 0;
 	
-	if(pdg_leg1>0) ChargeSign = 1;
-	else if(pdg_leg1<0) ChargeSign = -1;
+	if(pdg1>0) ChargeSign = 1;
+	else if(pdg1<0) ChargeSign = -1;
 
 	calculateMomenta(); // has to be called before other methods that need momentum variables!
 	calculateMass();
@@ -451,13 +451,13 @@ void generatePairTrees_mc() {
 	calculateSumz();
 	calculateHF();
 	
-	if(mpdg_leg1==22 || mpdg_leg2==22) {
+	if(motherPdg1==22 || motherPdg2==22) {
 	  IsConv = 1;
 	}else {
 	  IsConv = 0;
 	}
 
-	if(mlabel1==mlabel2 && abs(pdg_leg1)==11 && abs(pdg_leg2)==11) {
+	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
 	  if(isPairTree_rp) pairTree_rp->Fill();
 	}
@@ -520,7 +520,7 @@ void calculatePhiv() {
     std::cout << "Error in 'calculatePhiv()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
-  if(pdg_leg1 < 0) {
+  if(pdg1 < 0) {
     temp = pv1;
     pv1 = pv2;
     pv2 = temp;
@@ -536,7 +536,7 @@ void calculatePhiv() {
   ua = ua.Unit();
 
   phiv = w.Angle(ua);
-  if(mpdg_leg1==22 && mpdg_leg2==22 && mlabel1==mlabel2 && abs(pdg_leg1)==11 && abs(pdg_leg2)==11 && phiv>TMath::PiOver2()) {
+  if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
     phiv = TMath::Pi() - phiv; // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2 (then the B field was wrong)
   }
 }
@@ -578,19 +578,19 @@ void calculateHF() {
   IsCorrBottom = 0;          // } values
   IsCorrCharmFromBottom = 0; // }
   // check heavy flavor of first mothers:
-  if((isCharm(fmpdg_leg1)||isBottom(fmpdg_leg1)) && (isCharm(fmpdg_leg2)||isBottom(fmpdg_leg2))) {
+  if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1)) && (isCharm(firstMotherPdg2)||isBottom(firstMotherPdg2))) {
     // check whether they are in the same first mother range (i.e., have the same origin):
-    if(fmlabel1>=fmlabel2_min && fmlabel1<=fmlabel2_max) {
-      if(!(fmlabel2>=fmlabel1_min && fmlabel2<=fmlabel1_max)) {
-	std::cout << "Warning: fmlabel1 is in fmlabel2 range, but not vice versa." << std::endl;
+    if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
+      if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
+	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
       }
       // check heavy flavor of mothers:
-      if((isCharm(mpdg_leg1)||isBottom(mpdg_leg1)) && (isCharm(mpdg_leg2)||isBottom(mpdg_leg2))) {
-	if(isCharm(fmpdg_leg1) && isCharm(fmpdg_leg2)) {
+      if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
+	if(isCharm(firstMotherPdg1) && isCharm(firstMotherPdg2)) {
 	  IsCorrCharm = 1;
-	}else if(isBottom(fmpdg_leg1) && isBottom(fmpdg_leg2)) {
+	}else if(isBottom(firstMotherPdg1) && isBottom(firstMotherPdg2)) {
 	  IsCorrBottom = 1;
-	  if(isCharm(mpdg_leg1)||isCharm(mpdg_leg2)) {
+	  if(isCharm(motherPdg1)||isCharm(motherPdg2)) {
 	    IsCorrCharmFromBottom = 1;
 	  }
 	}
