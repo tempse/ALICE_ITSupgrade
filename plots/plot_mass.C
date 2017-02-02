@@ -39,14 +39,16 @@ void plot_mass() {
 
   TH1F *h_S_currentMVAcut = new TH1F("h_S_currentMVAcut","",nBins,min,max);
   TH1F *h_SB_currentMVAcut = new TH1F("h_SB_currentMVAcut","",nBins,min,max);
-  // TH1F *h_CombiWithConvLeg_currentMVAcut = new TH1F("h_CombiWithConvLeg_currentMVAcut","",nBins,min,max);
-  // TH1F *h_CombiWithoutConvLeg_currentMVAcut = new TH1F("h_CombiWithoutConvLeg_currentMVAcut","",nBins,min,max);
-  // TH1F *h_HF_currentMVAcut = new TH1F("h_HF_currentMVAcut","",nBins,min,max);
-  // TH1F *h_RPConv_currentMVAcut = new TH1F("h_RPConv_MVAcut","",nBins,min,max);
+  TH1F *h_CombiWithConvLeg_currentMVAcut = new TH1F("h_CombiWithConvLeg_currentMVAcut","",nBins,min,max);
+  TH1F *h_CombiWithoutConvLeg_currentMVAcut = new TH1F("h_CombiWithoutConvLeg_currentMVAcut","",nBins,min,max);
+  TH1F *h_HF_currentMVAcut = new TH1F("h_HF_currentMVAcut","",nBins,min,max);
+  TH1F *h_RPConv_currentMVAcut = new TH1F("h_RPConv_currentMVAcut","",nBins,min,max);
     
   const float stepSize = .1, nSteps = 10; // Note: 1/(nSteps)==stepSize must apply!
-  TH2F *h_MVAcutScan = new TH2F("h_MVAcutScan","",nBins,min,max,nSteps,0,1);
-  float binContents_MVAcutScan[nBins][nSteps];
+  TH2F *h_significance_MVAcutScan = new TH2F("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
+  TH2F *h_signalOverBackground_MVAcutScan = new TH2F("h_signalOverBackground_MVAcutScan","",nBins,min,max,nSteps,0,1);
+  float binContents_significance_MVAcutScan[nBins][nSteps];
+  float binContents_signalOverBackground_MVAcutScan[nBins][nSteps];
   
 
   unsigned int nEv = TestTree->GetEntries();
@@ -62,18 +64,18 @@ void plot_mass() {
 	if(IsRP==1 && IsConv==0) {
 	  h_S_currentMVAcut->Fill(mass);
 	}
-	// if(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) {
-	//   h_CombiWithConvLeg_currentMVAcut->Fill(mass);
-	// }
-	// if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
-	//   h_CombiWithoutConvLeg_currentMVAcut->Fill(mass);
-	// }
-	// if(IsRP==0 && IsHF==1) {
-	//   h_HF_currentMVAcut->Fill(mass);
-	// }
-	// if(IsRP==1 && IsConv==1) {
-	//   h_RPConv_currentMVAcut->Fill(mass);
-	// }
+	if(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) {
+	  h_CombiWithConvLeg_currentMVAcut->Fill(mass);
+	}
+	if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
+	  h_CombiWithoutConvLeg_currentMVAcut->Fill(mass);
+	}
+	if(IsRP==0 && IsHF==1) {
+	  h_HF_currentMVAcut->Fill(mass);
+	}
+	if(IsRP==1 && IsConv==1) {
+	  h_RPConv_currentMVAcut->Fill(mass);
+	}
       }
       // create plots for a custom MVA cut value (but not for each step in the scan):
       if(stepSize*(i-1)<MVAcut && MVAcut<=stepSize*i) {
@@ -105,7 +107,7 @@ void plot_mass() {
 	  if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
 	    h_CombiWithoutConvLeg_MVAcut->Fill(mass);
 	  }
-	  if(IsHF==1 && IsRP==0) {
+	  if(IsRP==0 && IsHF==1) {
 	    h_HF_MVAcut->Fill(mass);
 	  }
 	  if(IsRP==1 && IsConv==1) {
@@ -114,58 +116,106 @@ void plot_mass() {
 	}
       }
     }
-    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing event " << nEv << " of " << nEv
-    	      << " (100%)...";
-    std::cout << " DONE.";
+    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing event "
+	      << nEv << " of " << nEv << " (100%)... DONE.";
     
     // generating the 2D/3D histograms for the MVA cut scan:
     for(unsigned int j=1; j<=nBins; j++) {
       Int_t bin_S = h_S_currentMVAcut->GetBin(j),
 	bin_SB = h_SB_currentMVAcut->GetBin(j),
-	bin_MVAcutScan = h_MVAcutScan->GetBin(j,i);
-      float binContent = (h_SB_currentMVAcut->GetBinContent(bin_SB) == 0) ? 0 : h_S_currentMVAcut->GetBinContent(bin_S)/TMath::Sqrt(h_SB_currentMVAcut->GetBinContent(bin_SB));
-      h_MVAcutScan->SetBinContent(bin_MVAcutScan,binContent);
-      binContents_MVAcutScan[j-1][i-1] = binContent;
+	bin_CombiWithConvLeg = h_CombiWithConvLeg_currentMVAcut->GetBin(j),
+	bin_CombiWithoutConvLeg = h_CombiWithoutConvLeg_currentMVAcut->GetBin(j),
+	bin_HF = h_HF_currentMVAcut->GetBin(j),
+	bin_RPConv = h_RPConv_currentMVAcut->GetBin(j),
+	bin_MVAcutScan = h_significance_MVAcutScan->GetBin(j,i);
+      // define your "signal"/"background" here:
+      float S = h_S_currentMVAcut->GetBinContent(bin_S) + 
+	h_HF_currentMVAcut->GetBinContent(bin_HF); + 
+        h_RPConv_currentMVAcut->GetBinContent(bin_RPConv);
+      float B = h_CombiWithConvLeg_currentMVAcut->GetBinContent(bin_CombiWithConvLeg) + 
+	h_CombiWithoutConvLeg_currentMVAcut->GetBinContent(bin_CombiWithoutConvLeg);
+      float significance = (B==0) ? 0 : S/TMath::Sqrt(S+B);
+      float signalOverBackground = (B==0) ? 0 : S/B;
+      h_significance_MVAcutScan->SetBinContent(bin_MVAcutScan,
+					       significance);
+      h_signalOverBackground_MVAcutScan->SetBinContent(bin_MVAcutScan,
+						       signalOverBackground);
+      binContents_significance_MVAcutScan[j-1][i-1] = significance;
+      binContents_signalOverBackground_MVAcutScan[j-1][i-1] = signalOverBackground;
     }
     h_S_currentMVAcut->Reset();
     h_SB_currentMVAcut->Reset();
   }
   
-  float AUCs[nSteps];
-  float AUC_max = -1, AUC_max_pos;
+  float AUCs_significance[nSteps], AUCs_signalOverBackground[nSteps];
+  float AUC_significance_max = -1, AUC_significance_max_pos;
+  float AUC_signalOverBackground_max = -1, AUC_signalOverBackground_max_pos;
   for(unsigned int k=0; k<nSteps; k++) {
-    AUCs[k] = 0.;
+    AUCs_significance[k] = 0.;
+    AUCs_signalOverBackground[k] = 0.;
     for(unsigned int m=0; m<nBins; m++) {
-      AUCs[k] += binContents_MVAcutScan[m][k];
+      AUCs_significance[k] += binContents_significance_MVAcutScan[m][k];
+      AUCs_signalOverBackground[k] += binContents_signalOverBackground_MVAcutScan[m][k];
     }
-    if(AUCs[k] > AUC_max) {
-      AUC_max = AUCs[k];
-      AUC_max_pos = k;
+    if(AUCs_significance[k] > AUC_significance_max) {
+      AUC_significance_max = AUCs_significance[k];
+      AUC_significance_max_pos = k;
+    }
+    if(AUCs_signalOverBackground[k] > AUC_signalOverBackground_max) {
+      AUC_signalOverBackground_max = AUCs_signalOverBackground[k];
+      AUC_signalOverBackground_max_pos = k;
     }
   }
   std::cout << std::endl;
-  std::cout << "Maximum AUC = " << AUC_max << " for an MVA cut value of " << stepSize*(AUC_max_pos+1) << std::endl;
+  std::cout << "Maximum significance AUC = " << AUC_significance_max
+	    << " for an MVA cut value of "
+	    << stepSize*(AUC_significance_max_pos+1) << std::endl;
+  std::cout << "Maximum signal over background AUC = "
+	    << AUC_signalOverBackground_max << " for an MVA cut value of "
+	    << stepSize*(AUC_signalOverBackground_max_pos+1) << std::endl;
   
   
-  TCanvas *c_scan = new TCanvas("c_scan","",800,600);
-  c_scan->SetGridy();
-  c_scan->SetLogz();
-  h_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
-  h_MVAcutScan->SetYTitle("MVA cut");
-  h_MVAcutScan->SetZTitle("S/#sqrt{S+B}");
+  gStyle->SetOptStat(0);
+  
+  TCanvas *c_significance_scan = new TCanvas("c_significance_scan","",800,600);
+  c_significance_scan->SetGridy();
+  c_significance_scan->SetLogz();
+  h_significance_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_significance_MVAcutScan->SetYTitle("MVA cut");
+  h_significance_MVAcutScan->SetZTitle("S/#sqrt{S+B}");
   gStyle->SetPalette(54);
   // gStyle->SetPaintTextFormat("A %.2f");
-  h_MVAcutScan->Draw("colz");
-  TLatex l_AUC_max;
-  l_AUC_max.SetTextSize(.025);
-  TString text_AUC_max = "max(S/#sqrt{S+B}) for MVA cut at ";
-  text_AUC_max += stepSize*(AUC_max_pos+1);
-  l_AUC_max.DrawLatex(.05,.95,text_AUC_max);
-  c_scan->SaveAs("temp_output/mass_signScan.pdf");
-  c_scan->SaveAs("temp_output/mass_signScan.root");
-  TCanvas *c_scan_3D = new TCanvas("c_scan_3D","",800,600);
-  c_scan_3D->SetLogz();
-  h_MVAcutScan->Draw("lego2");
+  h_significance_MVAcutScan->Draw("colz");
+  TLatex l_AUC_significance_max;
+  l_AUC_significance_max.SetTextSize(.025);
+  TString text_AUC_significance_max = "max(S/#sqrt{S+B}) for MVA cut at ";
+  text_AUC_significance_max += stepSize*(AUC_significance_max_pos+1);
+  l_AUC_significance_max.DrawLatex(.05,.95,text_AUC_significance_max);
+  c_significance_scan->SaveAs("temp_output/mass_signScan.pdf");
+  c_significance_scan->SaveAs("temp_output/mass_signScan.root");
+  TCanvas *c_significance_scan_3D = new TCanvas("c_significance_scan_3D","",800,600);
+  c_significance_scan_3D->SetLogz();
+  h_significance_MVAcutScan->Draw("lego2");
+
+  TCanvas *c_signalOverBackground_scan = new TCanvas("c_signalOverBackground_scan","",800,600);
+  c_signalOverBackground_scan->SetGridy();
+  c_signalOverBackground_scan->SetLogz();
+  h_signalOverBackground_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_signalOverBackground_MVAcutScan->SetYTitle("MVA cut");
+  h_signalOverBackground_MVAcutScan->SetZTitle("S/B");
+  gStyle->SetPalette(54);
+  // gStyle->SetPaintTextFormat("A %.2f");
+  h_signalOverBackground_MVAcutScan->Draw("colz");
+  TLatex l_AUC_signalOverBackground_max;
+  l_AUC_signalOverBackground_max.SetTextSize(.025);
+  TString text_AUC_signalOverBackground_max = "max(S/B) for MVA cut at ";
+  text_AUC_signalOverBackground_max += stepSize*(AUC_signalOverBackground_max_pos+1);
+  l_AUC_signalOverBackground_max.DrawLatex(.05,.95,text_AUC_signalOverBackground_max);
+  c_signalOverBackground_scan->SaveAs("temp_output/mass_signScan.pdf");
+  c_signalOverBackground_scan->SaveAs("temp_output/mass_signScan.root");
+  TCanvas *c_signalOverBackground_scan_3D = new TCanvas("c_signalOverBackground_scan_3D","",800,600);
+  c_signalOverBackground_scan_3D->SetLogz();
+  h_signalOverBackground_MVAcutScan->Draw("lego2");
 
   
   TH1F *h_SB_eff = (TH1F*)h_SB_MVAcut->Clone();
@@ -268,8 +318,6 @@ void plot_mass() {
   h_HF_MVAcut->Draw("e1 x0 same");
   h_RPConv_MVAcut->Draw("e1 x0 same");
 
-
-  gStyle->SetOptStat(0);
   
   TLegend *leg = new TLegend(.6,.8,.95,.95);
   leg->AddEntry(h_SB,"S+B","l");
