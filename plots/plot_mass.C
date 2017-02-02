@@ -191,8 +191,8 @@ void plot_mass() {
   TString text_AUC_significance_max = "max(S/#sqrt{S+B}) for MVA cut at ";
   text_AUC_significance_max += stepSize*(AUC_significance_max_pos+1);
   l_AUC_significance_max.DrawLatex(.05,.95,text_AUC_significance_max);
-  c_significance_scan->SaveAs("temp_output/mass_signScan.pdf");
-  c_significance_scan->SaveAs("temp_output/mass_signScan.root");
+  c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.pdf");
+  c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.root");
   TCanvas *c_significance_scan_3D = new TCanvas("c_significance_scan_3D","",800,600);
   c_significance_scan_3D->SetLogz();
   h_significance_MVAcutScan->Draw("lego2");
@@ -211,8 +211,8 @@ void plot_mass() {
   TString text_AUC_signalOverBackground_max = "max(S/B) for MVA cut at ";
   text_AUC_signalOverBackground_max += stepSize*(AUC_signalOverBackground_max_pos+1);
   l_AUC_signalOverBackground_max.DrawLatex(.05,.95,text_AUC_signalOverBackground_max);
-  c_signalOverBackground_scan->SaveAs("temp_output/mass_signScan.pdf");
-  c_signalOverBackground_scan->SaveAs("temp_output/mass_signScan.root");
+  c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.pdf");
+  c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.root");
   TCanvas *c_signalOverBackground_scan_3D = new TCanvas("c_signalOverBackground_scan_3D","",800,600);
   c_signalOverBackground_scan_3D->SetLogz();
   h_signalOverBackground_MVAcutScan->Draw("lego2");
