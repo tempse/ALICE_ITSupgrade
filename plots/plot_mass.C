@@ -54,6 +54,7 @@ void plot_mass() {
   unsigned int nEv = TestTree->GetEntries();
   for(unsigned int i=1; i<=nSteps; i++) {
     std::cout << std::endl;
+    TStopwatch *watch = new TStopwatch();
     for(unsigned int ev=0; ev<nEv; ev++) {
       if((ev%10000)==0) std::cout << "\rRun " << i << " of " << nSteps << ":  Processing event " << ev << " of " << nEv
 				  << " (" << ev*100/nEv << "%)...";
@@ -146,6 +147,9 @@ void plot_mass() {
     h_S_currentMVAcut->Reset();
     h_SB_currentMVAcut->Reset();
   }
+  std::cout << std::endl << "Time elapsed since begin of event processing: "
+	    << watch->Print() << std::endl;
+  watch->Stop();
   
   float AUCs_significance[nSteps], AUCs_signalOverBackground[nSteps];
   float AUC_significance_max = -1, AUC_significance_max_pos;
