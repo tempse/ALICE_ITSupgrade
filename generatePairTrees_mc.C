@@ -382,10 +382,10 @@ void generatePairTrees_mc() {
       if(ev_temp != ST_event) break; // exit loop over remaining tracks if event number changes
 
       // pdg cut:
-      if(abs(ST_pdg) != 11) continue;
+      if(abs(ST_pdg) != 11) { tr2++; continue; }
       
       // cut to ignore unphysical DCAz values (specific to prior analysis):
-      if(ST_dcaZ == 999) {tr2++; continue;}
+      if(ST_dcaZ == 999) { tr2++; continue; }
       
       // pt cut:
       //if(pt1<.4 || pt1>5) continue;
