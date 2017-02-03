@@ -194,8 +194,6 @@ int TMVAClassification( TString myMethodList = "" )
    factory->AddVariable( "abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", 'F' );
    factory->AddVariable( "abs(diffz-1.57)", 'F' );
    factory->AddVariable( "abs(opang)", 'F' );
-   
-   
    factory->AddVariable( "log(abs(DCAz1))");
    factory->AddVariable( "log(abs(DCAz2))");
    factory->AddVariable( "nITS1");
@@ -203,28 +201,26 @@ int TMVAClassification( TString myMethodList = "" )
    factory->AddVariable( "log(abs(DCAxy1))");
    factory->AddVariable( "log(abs(DCAxy2))");
    // factory->AddVariable( "chi2g1"); 
-   // factory->AddVariable( "chi2g2");
+   // factory->AddVariable( "chi2g2");   
+   // factory->AddVariable( "pt1");
+   // factory->AddVariable( "pt2");
+   // factory->AddVariable( "eta1");
+   // factory->AddVariable( "eta2");
+   // factory->AddVariable( "phi1"); 
+   // factory->AddVariable( "phi2");
 
-   factory->AddSpectator("IsRP");
-   factory->AddSpectator("IsConv");
-   factory->AddSpectator("pdg_leg1");
-   factory->AddSpectator("pdg_leg2");
-   factory->AddSpectator("mpdg_leg1");
-   factory->AddSpectator("mpdg_leg2");
-
-
-   
-//  factory->AddVariable( "pt1");
-//  factory->AddVariable( "pt2");
-//  factory->AddVariable( "eta1");
-//  factory->AddVariable( "eta2");
-//  factory->AddVariable( "phi1"); 
-//  factory->AddVariable( "phi2");
+   factory->AddSpectator( "IsRP" );
+   factory->AddSpectator( "IsHF" );
+   factory->AddSpectator( "IsConv" );
+   factory->AddSpectator( "pdg1" );
+   factory->AddSpectator( "pdg2" );
+   factory->AddSpectator( "motherPdg1" );
+   factory->AddSpectator( "motherPdg2" );
    
 // TCut signalCut = "IsRP==1 && IsConv==0"; // how to identify signal events
 // TCut backgrCut = "!(IsRP==1 && IsConv==0)"; // how to identify background events  
-TCut signalCut = "IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22) && mass>0.1"; // how to identify signal events
-TCut backgrCut = "!(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) && mass>0.1"; // how to identify background events
+TCut signalCut = "IsRP==0 && (motherPdg1==22 || motherPdg2==22)"; // how to identify signal events
+TCut backgrCut = "!(IsRP==0 && (motherPdg1==22 || motherPdg2==22))"; // how to identify background events
  
 factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
    
