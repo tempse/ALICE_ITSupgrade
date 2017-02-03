@@ -14,13 +14,13 @@ void plot_mass() {
   TFile *f = new TFile(fileName,"READ");
   TTree *TestTree = (TTree*)f->Get("TestTree");
   float MLP;
-  float IsRP, IsConv, IsHF, mpdg_leg1, mpdg_leg2, mass;
+  float IsRP, IsConv, IsHF, motherPdg1, motherPdg2, mass;
   TestTree->SetBranchAddress("MLP",&MLP);
   TestTree->SetBranchAddress("IsRP",&IsRP);
   TestTree->SetBranchAddress("IsConv",&IsConv);
   TestTree->SetBranchAddress("IsHF",&IsHF);
-  TestTree->SetBranchAddress("mpdg_leg1",&mpdg_leg1);
-  TestTree->SetBranchAddress("mpdg_leg2",&mpdg_leg2);
+  TestTree->SetBranchAddress("motherPdg1",&motherPdg1);
+  TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("mass",&mass);
 
   const unsigned int min=0, max=2, nBins=20;
@@ -65,10 +65,10 @@ void plot_mass() {
 	if(IsRP==1 && IsConv==0) {
 	  h_S_currentMVAcut->Fill(mass);
 	}
-	if(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) {
+	if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithConvLeg_currentMVAcut->Fill(mass);
 	}
-	if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
+	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithoutConvLeg_currentMVAcut->Fill(mass);
 	}
 	if(IsRP==0 && IsHF==1) {
@@ -84,10 +84,10 @@ void plot_mass() {
 	if(IsRP==1 && IsConv==0) {
 	  h_S->Fill(mass);
 	}
-	if(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) {
+	if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithConvLeg->Fill(mass);
 	}
-	if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
+	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithoutConvLeg->Fill(mass);
 	}
 	if(IsRP==0 && IsHF==1) {
@@ -102,10 +102,10 @@ void plot_mass() {
 	  if(IsRP==1 && IsConv==0) {
 	    h_S_MVAcut->Fill(mass);
 	  }
-	  if(IsRP==0 && (mpdg_leg1==22 || mpdg_leg2==22)) {
+	  if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
 	    h_CombiWithConvLeg_MVAcut->Fill(mass);
 	  }
-	  if(IsRP==0 && !(mpdg_leg1==22 || mpdg_leg2==22)) {
+	  if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	    h_CombiWithoutConvLeg_MVAcut->Fill(mass);
 	  }
 	  if(IsRP==0 && IsHF==1) {
