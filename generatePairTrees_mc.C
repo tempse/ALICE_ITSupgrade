@@ -138,7 +138,7 @@ void generatePairTrees_mc() {
     pairTree_rp->Branch("TrackID1",&TrackID1);
     pairTree_rp->Branch("TrackID2",&TrackID2);
     pairTree_rp->Branch("EventID1",&EventID1);
-    pairTree_rp->Branch("EventIS2",&EventID2);
+    pairTree_rp->Branch("EventID2",&EventID2);
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
@@ -186,7 +186,7 @@ void generatePairTrees_mc() {
     pairTree_us->Branch("TrackID1",&TrackID1);
     pairTree_us->Branch("TrackID2",&TrackID2);
     pairTree_us->Branch("EventID1",&EventID1);
-    pairTree_us->Branch("EventIS2",&EventID2);
+    pairTree_us->Branch("EventID2",&EventID2);
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
@@ -234,7 +234,7 @@ void generatePairTrees_mc() {
     pairTree_ls->Branch("TrackID1",&TrackID1);
     pairTree_ls->Branch("TrackID2",&TrackID2);
     pairTree_ls->Branch("EventID1",&EventID1);
-    pairTree_ls->Branch("EventIS2",&EventID2);
+    pairTree_ls->Branch("EventID2",&EventID2);
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
@@ -282,7 +282,7 @@ void generatePairTrees_mc() {
     pairTree_us_ls->Branch("TrackID1",&TrackID1);
     pairTree_us_ls->Branch("TrackID2",&TrackID2);
     pairTree_us_ls->Branch("EventID1",&EventID1);
-    pairTree_us_ls->Branch("EventIS2",&EventID2);
+    pairTree_us_ls->Branch("EventID2",&EventID2);
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
