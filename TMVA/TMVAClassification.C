@@ -164,7 +164,7 @@ int TMVAClassification( TString myMethodList = "" )
 
    // --- Here the preparation phase begins
 
-   TFile *infile = TFile::Open("../pairtrees_328kEv_us-rp.root");
+   TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split.root");
    TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
    
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
@@ -182,32 +182,32 @@ int TMVAClassification( TString myMethodList = "" )
    // All TMVA output can be suppressed by removing the "!" (not) in
    // front of the "Silent" argument in the option string
    TMVA::Factory *factory = new TMVA::Factory( "TMVAClassification", outputFile,
-                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
+                                               "!V:!Silent:Color:DrawProgressBar:Transformations=I:AnalysisType=Classification" ); // Transformations=I;D;P;G,D
 
    // original location of input files before moving it up to avoid "memory-resident tree" problem:
    // TFile *infile = TFile::Open("../pairtrees_328kEv_us-rp.root");
    // TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
 
-   factory->AddVariable( "sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", 'F' );       // Abs(pair_pt))
-   factory->AddVariable( "abs(phiv-1.57)", 'F' );
-   factory->AddVariable( "mass", 'F' );
-   factory->AddVariable( "abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", 'F' );
-   factory->AddVariable( "abs(diffz-1.57)", 'F' );
-   factory->AddVariable( "abs(opang)", 'F' );
-   factory->AddVariable( "log(abs(DCAz1))");
-   factory->AddVariable( "log(abs(DCAz2))");
-   factory->AddVariable( "nITS1");
-   factory->AddVariable( "nITS2");
-   factory->AddVariable( "log(abs(DCAxy1))");
-   factory->AddVariable( "log(abs(DCAxy2))");
-   // factory->AddVariable( "chi2g1"); 
-   // factory->AddVariable( "chi2g2");   
-   // factory->AddVariable( "pt1");
-   // factory->AddVariable( "pt2");
-   // factory->AddVariable( "eta1");
-   // factory->AddVariable( "eta2");
-   // factory->AddVariable( "phi1"); 
-   // factory->AddVariable( "phi2");
+   factory->AddVariable( "var_p := sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", 'F' );       // Abs(pair_pt))
+   factory->AddVariable( "var_phiv := abs(phiv-1.57)", 'F' );
+   factory->AddVariable( "var_mass := mass", 'F' );
+   factory->AddVariable( "var_pz_diff := abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", 'F' );
+   factory->AddVariable( "var_diffz := abs(diffz-1.57)", 'F' );
+   factory->AddVariable( "var_opang := abs(opang)", 'F' );
+   // factory->AddVariable( "var_DCAz1 := log(abs(DCAz1))");
+   // factory->AddVariable( "var_DCAz2 := log(abs(DCAz2))");
+   factory->AddVariable( "var_nITS1 := nITS1");
+   factory->AddVariable( "var_nITS2 := nITS2");
+   factory->AddVariable( "var_DCAxy1 := log(abs(DCAxy1))");
+   factory->AddVariable( "var_DCAxy2 := log(abs(DCAxy2))");
+   // factory->AddVariable( "var_chi2g1 := chi2g1"); 
+   // factory->AddVariable( "var_chi2g2 := chi2g2");   
+   // factory->AddVariable( "var_pt1 := pt1");
+   // factory->AddVariable( "var_pt2 := pt2");
+   // factory->AddVariable( "var_eta1 := eta1");
+   // factory->AddVariable( "var_eta2 := eta2");
+   // factory->AddVariable( "var_phi1 := phi1"); 
+   // factory->AddVariable( "var_pho2 := phi2");
 
    factory->AddSpectator( "IsRP" );
    factory->AddSpectator( "IsHF" );
@@ -297,7 +297,7 @@ factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
    //    factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
    // To also specify the number of testing events, use:
 //       factory->PrepareTrainingAndTestTree( mycut,       "NTrain_Signal=3751:NTrain_Background=52925:NTest_Signal=0:NTest_Background=0:SplitMode=Random:!V" );
-   factory->PrepareTrainingAndTestTree( mycut, "!V:NTrain_Signal=20000:NTrain_Background=20000:NTest_Signal=20000:NTest_Background=20000:SplitMode=random" );
+   factory->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTest_Signal=5000:NTest_Background=5000" );
 
    // ---- Book MVA methods
    //
@@ -430,7 +430,7 @@ factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
 
    // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
    if (Use["MLP"])
-      factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N+G:ConvergenceTests=20:NCycles=800:HiddenLayers=N" );
+      factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N+P:ConvergenceTests=20:NCycles=500:HiddenLayers=N:UseRegulator" );
 
    if (Use["MLPBFGS"])
       factory->BookMethod( TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=1000:HiddenLayers=5:ConvergenceTests=20:TrainingMethod=BFGS" );
@@ -457,7 +457,7 @@ factory->SetInputTrees( Track_Tree, signalCut, backgrCut );
 
     if (Use["BDT"])  // Adaptive Boost
       factory->BookMethod( TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=600:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.005:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" );
+                           "!H:!V:NTrees=1000:MinNodeSize=.1%:MaxDepth=10:BoostType=AdaBoost:AdaBoostBeta=0.005:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20:VarTransform=N+P" );
 
   
    

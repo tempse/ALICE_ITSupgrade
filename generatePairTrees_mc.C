@@ -32,17 +32,17 @@ Int_t IsCorrCharm;           // correlated charmed pair: 1, else: 0
 Int_t IsCorrBottom;          // correlated bottom pair: 1, else: 0
 Int_t IsCorrCharmFromBottom; // correlated charmed pair originating from a bottom: 1, else: 0
 Int_t ChargeSign;            // unlike sign: 0, like sign (++): 1, like sign (--): -1
-Double_t opang;
-Double_t diffz;
-Double_t mass;
-Double_t sumz;
-Double_t phiv;
-Double_t px1, px2;
-Double_t py1, py2;
-Double_t pz1, pz2;
-Double_t mcPx1, mcPx2;       // }
-Double_t mcPy1, mcPy2;       // } momenta calculated from MC data
-Double_t mcPz1, mcPz2;       // }
+Float_t opang;
+Float_t diffz;
+Float_t mass;
+Float_t sumz;
+Float_t phiv;
+Float_t px1, px2;
+Float_t py1, py2;
+Float_t pz1, pz2;
+Float_t mcPx1, mcPx2;       // }
+Float_t mcPy1, mcPy2;       // } momenta calculated from MC data
+Float_t mcPz1, mcPz2;       // }
 Int_t pdg1, pdg2;
 Int_t motherPdg1, motherPdg2;
 Int_t firstMotherPdg1, firstMotherPdg2;
