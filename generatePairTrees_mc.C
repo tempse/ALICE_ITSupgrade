@@ -50,13 +50,13 @@ Int_t motherLabel1, motherLabel2;
 Int_t firstMotherLabel1, firstMotherLabel2;
 Int_t firstMotherLabel1_min, firstMotherLabel2_min;
 Int_t firstMotherLabel1_max, firstMotherLabel2_max;
-Double_t DCAxy1, DCAxy2;
-Double_t DCAz1, DCAz2;
+Float_t DCAxy1, DCAxy2;
+Float_t DCAz1, DCAz2;
 Int_t nITS1, nITS2;
-Double_t chi2g1, chi2g2;
-Double_t phi1, phi2;
-Double_t eta1, eta2;
-Double_t pt1, pt2;
+Float_t chi2g1, chi2g2;
+Float_t phi1, phi2;
+Float_t eta1, eta2;
+Float_t pt1, pt2;
 
 TVector3 pv1, pv2;
 TVector3 z(0,0,1);
@@ -72,7 +72,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void generatePairTrees_mc() {
-  TFile *infile = TFile::Open("FT2_AnalysisResults_Upgrade.root","READ");
+  TFile *infile = TFile::Open("inputData/FT2_AnalysisResults_Upgrade.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
   TFile *outfile = TFile::Open("pairtrees.root","RECREATE");
@@ -80,7 +80,7 @@ void generatePairTrees_mc() {
   TTree *pairTree_us = new TTree("pairTree_us","pairTree_us");
   TTree *pairTree_ls = new TTree("pairTree_ls","pairTree_ls");
   TTree *pairTree_us_ls = new TTree("pairTree_us_ls","pairTree_us_ls");
-
+  
   // TH1F *histDiagnosis1 = new TH1F("histDiagnosis1","",1000,-500,500);
   // TH1F *histDiagnosis2 = new TH1F("histDiagnosis2","",1000,-500,500);
 
@@ -333,11 +333,13 @@ void generatePairTrees_mc() {
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Int_t singleTree_nEvents = singleTree->GetEntries()/100; //todo: loop over all events
+  Int_t singleTree_nEvents = singleTree->GetEntries()/100; // todo: extend to full size
   std::cout << std::endl;
   std::cout << "Start event processing...";
+  TStopwatch *watch = new TStopwatch();
+  
   for(Int_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
-    if((tr1%100)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
+    if((tr1%1000)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
 			       << " (" << tr1*100/singleTree_nEvents << "%)...";
     singleTree->GetEntry(tr1);
 
@@ -469,8 +471,10 @@ void generatePairTrees_mc() {
     }
   }
   std::cout << "\rProcessing event " << singleTree_nEvents << " of " << singleTree_nEvents
-	    << " (100%)...";
-  std::cout << " DONE." << std::endl << std::endl;
+	    << " (100%)... DONE." << std::endl;
+  std::cout << "Time elapsed since begin of event processing: " << std::endl;
+  std::cout << "\t" << watch->Print() << std::endl;
+  watch->Stop();
 
   infile->Close();
   
@@ -488,6 +492,7 @@ void generatePairTrees_mc() {
 
 
 
+
 Bool_t isCharm(Int_t pdg) {
   if(TMath::Abs(pdg) == 4) return kTRUE;           // charmed quark
   if(TMath::Abs(pdg)/1000 == 4) return kTRUE;      // charmed baryon
@@ -495,12 +500,14 @@ Bool_t isCharm(Int_t pdg) {
   return kFALSE;
 }
 
+
 Bool_t isBottom(Int_t pdg) {
   if(TMath::Abs(pdg) == 5) return kTRUE;           // charmed quark
   if(TMath::Abs(pdg)/1000 == 5) return kTRUE;      // charmed baryon
   if((TMath::Abs(pdg)/100)%100 == 5) return kTRUE; // charmed meson
   return kFALSE;
 }
+
 
 void calculateMomenta() { // has to be called before other methods that need momentum variables!
   px1 = pt1*TMath::Cos(phi1);
@@ -515,16 +522,19 @@ void calculateMomenta() { // has to be called before other methods that need mom
   pv2.SetXYZ(px2, py2, pz2);
 }
 
+
 void calculatePhiv() {
   if(pv1.Mag()==0 || pv2.Mag()==0) {
     std::cout << "Error in 'calculatePhiv()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
+  
   if(pdg1 < 0) {
     temp = pv1;
     pv1 = pv2;
     pv2 = temp;
   }
+  
   u = pv1 + pv2;
   u = u.Unit();
 
@@ -536,68 +546,92 @@ void calculatePhiv() {
   ua = ua.Unit();
 
   phiv = w.Angle(ua);
-  if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
-    phiv = TMath::Pi() - phiv; // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2 (then the B field was wrong)
+  if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2
+     && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
+    // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2
+    // (then the B field was wrong):
+    phiv = TMath::Pi() - phiv;
   }
 }
+
 
 void calculateOpang() {
   opang = pv1.Angle(pv2);
 }
+
 
 void calculateMass() {
   if(pv1.Mag()==0 || pv2.Mag()==0) {
     std::cout << "Error in 'calculateMass()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
+  
   mass = 2*pv1.Mag()*pv2.Mag()*(1-TMath::Cos(pv1.Angle(pv2)));
   mass = TMath::Sqrt(TMath::Abs(mass));
 }
+
 
 void calculateDiffz() {
   if(pv1.Mag()==0 || pv2.Mag()==0) {
     std::cout << "Error in 'calculateDiffz()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
+  
   temp = pv1.Unit() - pv2.Unit();
   diffz = temp.Angle(z);
 }
+
 
 void calculateSumz() {
   if(pv1.Mag()==0 || pv2.Mag()==0) {
     std::cout << "Error in 'calculateSumz()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
+  
   temp = pv1 + pv2;
   sumz = temp.Angle(z);
 }
+
 
 void calculateHF() {
   IsHF = 0;                  // }
   IsCorrCharm = 0;           // } default
   IsCorrBottom = 0;          // } values
   IsCorrCharmFromBottom = 0; // }
+  
   // check heavy flavor of first mothers:
-  if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1)) && (isCharm(firstMotherPdg2)||isBottom(firstMotherPdg2))) {
+  if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1))
+     && (isCharm(firstMotherPdg2)||isBottom(firstMotherPdg2))) {
+    
     // check whether they are in the same first mother range (i.e., have the same origin):
     if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
+      
       if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
 	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
       }
+      
       // check heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
+	
 	if(isCharm(firstMotherPdg1) && isCharm(firstMotherPdg2)) {
 	  IsCorrCharm = 1;
 	}else if(isBottom(firstMotherPdg1) && isBottom(firstMotherPdg2)) {
 	  IsCorrBottom = 1;
+	  
 	  if(isCharm(motherPdg1)||isCharm(motherPdg2)) {
 	    IsCorrCharmFromBottom = 1;
 	  }
+	  
 	}
+	
       }
+      
     }
+    
   }
+  
   if(IsCorrCharm==1 || IsCorrBottom==1) {
     IsHF = 1;
   }
+  
 }
