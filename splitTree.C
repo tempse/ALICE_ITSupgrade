@@ -1,6 +1,6 @@
 void splitTree(TString f, TString method) {
 
-  TString infileName = "pairtrees_32.8M-Ev_us.root";
+  TString infileName = "pairTrees/pairtrees_328k-Ev_us.root";
 
   TString splitFraction = "1:1";
   if(f.IsNull() || !f.Contains(":")) {
@@ -46,6 +46,8 @@ void splitTree(TString f, TString method) {
   Int_t splitTree_test_nEvents = infileTree_nEvents - splitTree_train_nEvents;
 
 
+  std::cout << "Input file: " << infileName << std::endl << std::endl;
+  
   // create tree with training data:
   if(method.Contains("train")) {
     std::cout << std::endl << "Create tree with training data..." << std::endl;

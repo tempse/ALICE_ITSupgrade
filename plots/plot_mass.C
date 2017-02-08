@@ -1,5 +1,5 @@
 void plot_mass() {
-  TString fileName = "../TMVA/TMVA.root";
+  TString fileName = "../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split_wMLPoutput.root";
   TString h_text = "Combinatorial MLP";
 
   //// optimal MVA cuts for "signal = CombWithConvLegs":
@@ -26,9 +26,10 @@ void plot_mass() {
   //const float MVAcut = .28;
   
   TFile *f = new TFile(fileName,"READ");
-  TTree *TestTree = (TTree*)f->Get("TestTree");
-  float MLP;
-  float IsRP, IsConv, IsHF, motherPdg1, motherPdg2, mass;
+  TTree *TestTree = (TTree*)f->Get("pairTree_us");
+  Float_t mass;
+  Float_t MLP;
+  Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
   TestTree->SetBranchAddress("MLP",&MLP);
   TestTree->SetBranchAddress("IsRP",&IsRP);
   TestTree->SetBranchAddress("IsConv",&IsConv);
@@ -89,7 +90,8 @@ void plot_mass() {
 
 
   
-  const float stepSize = .1, nSteps = 10; // NB: 1/(nSteps)==stepSize must apply
+  const float stepSize = .1;
+  const int nSteps = 10; // NB: 1/(nSteps)==stepSize must apply
   
   TH2F *h_significance_MVAcutScan =
     new TH2F("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
@@ -105,13 +107,14 @@ void plot_mass() {
 
   unsigned int nEv = TestTree->GetEntries();
   
+  TStopwatch *watch = new TStopwatch();
+    
   for(unsigned int i=1; i<=nSteps; i++) {
     std::cout << std::endl;
-    TStopwatch *watch = new TStopwatch();
     
     for(unsigned int ev=0; ev<nEv; ev++) {
       if((ev%10000)==0) std::cout << "\rRun " << i << " of " << nSteps
-				  << ":  Processing event " << ev << " of "
+				  << ":  Processing entry " << ev << " of "
 				  << nEv << " (" << ev*100/nEv << "%)...";
       TestTree->GetEvent(ev);
       
@@ -181,12 +184,12 @@ void plot_mass() {
       
     }
     
-    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing event "
+    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing entry "
 	      << nEv << " of " << nEv << " (100%)... DONE.";
 
     
     // generating the 2D/3D histograms for the MVA cut scan:
-    for(unsigned int j=1; j<=nBins; j++) {
+    for(unsigned int j=2; j<=nBins; j++) { //j>=2 cuts on the first bin (mass<=.1)
       
       Int_t bin_S = h_S_currentMVAcut->GetBin(j),
 	bin_SB = h_SB_currentMVAcut->GetBin(j),
@@ -198,7 +201,7 @@ void plot_mass() {
       
       // define your "signal"/"background" here:
       float S = h_S_currentMVAcut->GetBinContent(bin_S) + 
-	h_HF_currentMVAcut->GetBinContent(bin_HF); + 
+	h_HF_currentMVAcut->GetBinContent(bin_HF) + 
         h_RPConv_currentMVAcut->GetBinContent(bin_RPConv);
       
       float B =
@@ -224,8 +227,9 @@ void plot_mass() {
     h_SB_currentMVAcut->Reset();
   }
   
-  std::cout << std::endl << "Time elapsed since begin of event processing: "
-	    << watch->Print() << std::endl;
+  std::cout << std::endl;
+  std::cout << "Time elapsed since begin of processing: " << std::endl;
+  std::cout << "\t" << watch->Print() << std::endl;
   watch->Stop();
 
 
@@ -267,7 +271,8 @@ void plot_mass() {
 	    << stepSize*(AUC_significance_max_pos+1) << std::endl;
   std::cout << "Maximum signal over background AUC = "
 	    << AUC_signalOverBackground_max << " for an MVA cut value of "
-	    << stepSize*(AUC_signalOverBackground_max_pos+1) << std::endl;
+	    << stepSize*(AUC_signalOverBackground_max_pos+1)
+	    << std::endl << std::endl;
   
 
   
