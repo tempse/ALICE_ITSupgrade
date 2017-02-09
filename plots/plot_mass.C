@@ -1,3 +1,21 @@
+#include <iostream>
+#include <cstdlib>
+
+#include <TROOT.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TStopwatch.h>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TLatex.h>
+
+
+
 void plot_mass() {
   TString fileName = "../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split_wMLPoutput.root";
   TString h_text = "Combinatorial MLP";
@@ -104,18 +122,19 @@ void plot_mass() {
   float binContents_signalOverBackground_MVAcutScan[nBins][nSteps];
 
   
-
-  unsigned int nEv = TestTree->GetEntries();
+  
+  Int_t nEv = TestTree->GetEntries();
   
   TStopwatch *watch = new TStopwatch();
     
-  for(unsigned int i=1; i<=nSteps; i++) {
+  for(Int_t i=1; i<=nSteps; i++) {
     std::cout << std::endl;
     
-    for(unsigned int ev=0; ev<nEv; ev++) {
+    for(Int_t ev=0; ev<nEv; ev++) {
       if((ev%10000)==0) std::cout << "\rRun " << i << " of " << nSteps
 				  << ":  Processing entry " << ev << " of "
 				  << nEv << " (" << ev*100/nEv << "%)...";
+      
       TestTree->GetEvent(ev);
       
       // "<=" instead of ">=" in case the network
@@ -188,6 +207,7 @@ void plot_mass() {
 	      << nEv << " of " << nEv << " (100%)... DONE.";
 
     
+    
     // generating the 2D/3D histograms for the MVA cut scan:
     for(unsigned int j=2; j<=nBins; j++) { //j>=2 cuts on the first bin (mass<=.1)
       
@@ -226,10 +246,18 @@ void plot_mass() {
     h_S_currentMVAcut->Reset();
     h_SB_currentMVAcut->Reset();
   }
+
+  
+  // f->Close();
+  // f_MVAoutput->Close();
+
+
   
   std::cout << std::endl;
   std::cout << "Time elapsed since begin of processing: " << std::endl;
-  std::cout << "\t" << watch->Print() << std::endl;
+  std::cout << "\t";
+  watch->Print();
+  std::cout << std::endl;
   watch->Stop();
 
 
