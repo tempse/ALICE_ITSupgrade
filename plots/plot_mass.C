@@ -17,7 +17,9 @@
 
 
 void plot_mass() {
-  TString fileName = "../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split_wMLPoutput.root";
+  TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
+  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp.root";
+  
   TString h_text = "Combinatorial MLP";
 
   //// optimal MVA cuts for "signal = CombWithConvLegs":
@@ -43,18 +45,23 @@ void plot_mass() {
   // pairtree_us_MLP_classifier-S-0.1mass
   //const float MVAcut = .28;
   
-  TFile *f = new TFile(fileName,"READ");
+  TFile *f = new TFile(fileName_testData,"READ");
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
   Float_t mass;
-  Float_t MLP;
   Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
-  TestTree->SetBranchAddress("MLP",&MLP);
   TestTree->SetBranchAddress("IsRP",&IsRP);
   TestTree->SetBranchAddress("IsConv",&IsConv);
   TestTree->SetBranchAddress("IsHF",&IsHF);
   TestTree->SetBranchAddress("motherPdg1",&motherPdg1);
   TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("mass",&mass);
+
+  
+  // input MVA output information from file:
+  TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
+  TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
+  Float_t MLP;
+  MVAoutputTree->SetBranchAddress("MLP", &MLP);
   
   
   const unsigned int min=0, max=2, nBins=20;
@@ -122,6 +129,16 @@ void plot_mass() {
   float binContents_signalOverBackground_MVAcutScan[nBins][nSteps];
 
   
+  if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
+    std::cout << "   ERROR: The trees of the input files have different sizes."
+	      << std::endl;
+    std::cout << "   Size of tree in file " << fileName_testData << ": "
+	      << TestTree->GetEntries() << std::endl;
+    std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
+	      << MVAoutputTree->GetEntries() << std::endl;
+    return;
+  }
+  
   
   Int_t nEv = TestTree->GetEntries();
   
@@ -136,6 +153,11 @@ void plot_mass() {
 				  << nEv << " (" << ev*100/nEv << "%)...";
       
       TestTree->GetEvent(ev);
+      MVAoutputTree->GetEvent(ev);
+
+      // The TMVA reader tags defective events with MLP = -999. Skip those:
+      if(MLP==-999) continue;
+
       
       // "<=" instead of ">=" in case the network
       // is trained on the (physical) background:

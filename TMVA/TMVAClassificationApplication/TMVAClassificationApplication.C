@@ -29,6 +29,13 @@ using namespace TMVA;
 void TMVAClassificationApplication( TString myMethodList = "" ) 
 {   
 
+  TString problematicRootVersion = "6.06/04";
+  if(gROOT->GetVersion() == problematicRootVersion) {
+    std::cout << std::endl << "!!!!!  WARNING: You are using ROOT "
+	      << gROOT->GetVersion() << " - errors might be encountered with this version!"
+	      << std::endl << std::endl;
+  }
+  
    //---------------------------------------------------------------
 
    // This loads the library
@@ -168,7 +175,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // --- Book the MVA methods
 
-   TString dir    = "../weights/";
+   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split/weights/";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
@@ -238,9 +245,9 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    // we'll later on use only the "signal" events for the test in this example.
    //   
    TFile *input(0);
-   TString fname = "../../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split_wMLPoutput.root";  
-   // if (!gSystem->AccessPathName( fname )) 
-     input = TFile::Open( fname, "UPDATE" ); // check if file in local directory exists
+   TString fname = "../../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";  
+   if (!gSystem->AccessPathName( fname )) 
+     input = TFile::Open( fname, "READ" ); // check if file in local directory exists
    
    if (!input) {
       std::cout << "ERROR: could not open data file" << std::endl;
@@ -257,10 +264,6 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    //
    std::cout << "--- Select signal sample" << std::endl;
    TTree* theTree = (TTree*)input->Get("pairTree_us");
-
-   // create new branch with MVA output variable(s):
-   Float_t MLP;
-   TBranch *bMLP = theTree->Branch("MLP", &MLP, "MLP/F");
 
    
    Int_t app_TrackID1, app_TrackID2;
@@ -325,6 +328,12 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    theTree->SetBranchAddress( "pt1", &app_pt1 );
    theTree->SetBranchAddress( "pt2", &app_pt2 );
 
+   // output tree:
+   TFile *target  = new TFile( "TMVApp.root","RECREATE" );
+   TTree *targetTree = new TTree("pairTree_MVAoutput","MVA output");
+   Float_t MLP;
+   targetTree->Branch("MLP", &MLP, "MLP/F");
+   
    
    // Efficiency calculator for cut method
    Int_t    nSelCutsGA = 0;
@@ -356,7 +365,8 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
       
       MLP = reader->EvaluateMVA( "MLP method" );
-      bMLP->Fill();
+      // bMLP->Fill();
+      targetTree->Fill();
       
       // --- Return the MVA outputs and fill into histograms
 
@@ -484,15 +494,23 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // Write also probability hists
    if (Use["Fisher"]) { if (probHistFi != 0) probHistFi->Write(); if (rarityHistFi != 0) rarityHistFi->Write(); }
+   // --- Write tree
+   targetTree->Write();
+   
    target->Close();
 
    std::cout << "--- Created root file: \"TMVApp.root\" containing the MVA output histograms" << std::endl;
-
-   input->Write();
   
    delete reader;
     
    std::cout << "==> TMVAClassificationApplication is done!" << std::endl << std::endl;
+
+  
+  if(gROOT->GetVersion() == problematicRootVersion) {
+    std::cout << std::endl << "!!!!!  WARNING: You are using ROOT "
+	      << gROOT->GetVersion() << " - errors might be encountered with this version!"
+	      << std::endl << std::endl;
+  }
 } 
 
 int main( int argc, char** argv )
