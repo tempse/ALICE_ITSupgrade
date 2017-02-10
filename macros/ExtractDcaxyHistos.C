@@ -1,4 +1,4 @@
-void plot_DCA_histos() {
+void ExtractDcaxyHistos() {
   
   TFile *infile = new TFile("../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root", "READ");
   TTree *tree = (TTree*)infile->Get("pairTree_us");
