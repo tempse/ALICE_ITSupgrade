@@ -164,7 +164,7 @@ int TMVAClassification( TString myMethodList = "" )
 
    // --- Here the preparation phase begins
 
-   TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_328k-Ev_pairtree_us_test_1-100-split.root");
+   TFile *infile = TFile::Open("../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split.root");
    TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
    
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.

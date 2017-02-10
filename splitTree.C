@@ -1,6 +1,6 @@
 void splitTree(TString f, TString method) {
 
-  TString infileName = "pairTrees/pairtrees_328k-Ev_us.root";
+  TString infileName = "pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root";
 
   TString splitFraction = "1:1";
   if(f.IsNull() || !f.Contains(":")) {

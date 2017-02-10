@@ -18,7 +18,7 @@
 
 void plot_mass() {
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
-  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp.root";
+  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_noDCAxy.root";
   
   TString h_text = "Combinatorial MLP";
 
@@ -35,7 +35,7 @@ void plot_mass() {
   //// optimal MVA cuts for "signal = physical signal":
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  const float MVAcut = .4;
+  const float MVAcut = .5;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S
@@ -64,7 +64,7 @@ void plot_mass() {
   MVAoutputTree->SetBranchAddress("MLP", &MLP);
   
   
-  const unsigned int min=0, max=2, nBins=20;
+  const unsigned int min=0, max=5, nBins=50;
   
   
   TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
@@ -115,8 +115,8 @@ void plot_mass() {
 
 
   
-  const float stepSize = .1;
-  const int nSteps = 10; // NB: 1/(nSteps)==stepSize must apply
+  const float stepSize = 1;
+  const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
   
   TH2F *h_significance_MVAcutScan =
     new TH2F("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
@@ -156,7 +156,7 @@ void plot_mass() {
       MVAoutputTree->GetEvent(ev);
 
       // The TMVA reader tags defective events with MLP = -999. Skip those:
-      if(MLP==-999) continue;
+      if(MLP == -999) continue;
 
       
       // "<=" instead of ">=" in case the network
@@ -430,7 +430,7 @@ void plot_mass() {
   h_HF_MVAcut->SetMarkerStyle(7);
   h_RPConv_MVAcut->SetMarkerStyle(7);
 
-  h_SB->GetYaxis()->SetRangeUser(1e-1,1e6);
+  h_SB->GetYaxis()->SetRangeUser(1e-1,1e8);
   h_SB->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SB->SetYTitle("Entries");
   h_SB->GetXaxis()->SetTitleOffset(1.2);
@@ -486,7 +486,7 @@ void plot_mass() {
 
   TLatex l;
   l.SetTextSize(.025);
-  l.DrawLatex(.1,1e6+1e4,h_text);
+  l.DrawLatex(.1,1e7+5e6,h_text);
 
   c->SaveAs("temp_output/mass.pdf");
   c->SaveAs("temp_output/mass.root");

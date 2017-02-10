@@ -75,7 +75,7 @@ void generatePairTrees_mc() {
   TFile *infile = TFile::Open("inputData/FT2_AnalysisResults_Upgrade.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
-  TFile *outfile = TFile::Open("pairtrees.root","RECREATE");
+  TFile *outfile = TFile::Open("output_pairtrees.root","RECREATE");
   TTree *pairTree_rp = new TTree("pairTree_rp","pairTree_rp");
   TTree *pairTree_us = new TTree("pairTree_us","pairTree_us");
   TTree *pairTree_ls = new TTree("pairTree_ls","pairTree_ls");
@@ -333,7 +333,7 @@ void generatePairTrees_mc() {
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Int_t singleTree_nEvents = singleTree->GetEntries()/100; // todo: extend to full size
+  Int_t singleTree_nEvents = singleTree->GetEntries();
   std::cout << std::endl;
   std::cout << "Start event processing...";
   TStopwatch *watch = new TStopwatch();
@@ -354,9 +354,6 @@ void generatePairTrees_mc() {
 
     // cut to ignore unphysical DCAz values (specific to prior analysis):
     if(ST_dcaZ == 999) continue;
-
-    // pt cut:
-    //if(pt1<.4 || pt1>5) continue;
 
     // already available, pairing-independent variables of 1st leg for output tree:
     EventID1 = ST_event;
@@ -388,9 +385,6 @@ void generatePairTrees_mc() {
       
       // cut to ignore unphysical DCAz values (specific to prior analysis):
       if(ST_dcaZ == 999) { tr2++; continue; }
-      
-      // pt cut:
-      //if(pt1<.4 || pt1>5) continue;
 
       // already available, pairing-independent variables of 2nd leg for output tree:
       EventID2 = ST_event;
