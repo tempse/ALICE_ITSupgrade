@@ -138,7 +138,8 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // Create a set of variables and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-   Float_t var_p, var_phiv, var_pz_diff, var_diffz, var_opang, var_DCAxy1, var_DCAxy2;
+   Float_t var_p, var_phiv, var_pz_diff, var_diffz, var_opang;
+   Float_t var_DCAxy1, var_DCAxy2;
    Float_t var_mass;
    Float_t var_nITS1, var_nITS2;
 
@@ -175,7 +176,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // --- Book the MVA methods
 
-   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split/weights/";
+   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train-noDCA_1-100-split/weights/";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
@@ -215,38 +216,40 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    TTree* theTree = (TTree*)input->Get("pairTree_us");
 
    
-   Int_t app_TrackID1, app_TrackID2;
-   Int_t app_EventID1, app_EventID2;
-   Int_t app_IsRP, app_IsUS, app_IsConv, app_IsHF;
-   Int_t app_IsCorrCharm, app_IsCorrBottom, app_IsCorrCharmFromBottom;
-   Int_t app_ChargeSign;
-   Float_t app_opang, app_diffz, app_mass, app_sumz, app_phiv;
+   // Int_t app_TrackID1, app_TrackID2;
+   // Int_t app_EventID1, app_EventID2;
+   // Int_t app_IsRP, app_IsUS, app_IsConv, app_IsHF;
+   // Int_t app_IsCorrCharm, app_IsCorrBottom, app_IsCorrCharmFromBottom;
+   // Int_t app_ChargeSign;
+   Float_t app_opang, app_diffz, app_mass;
+   // Float_t app_sumz
+   Float_t app_phiv;
    Float_t app_px1, app_px2, app_py1, app_py2, app_pz1, app_pz2;
-   Float_t app_mcPx1, app_mcPx2, app_mcPy1, app_mcPy2, app_mcPz1, app_mcPz2;
-   Int_t app_motherPdg1, app_motherPdg2;
-   Int_t app_pdg1, app_pdg2;
+   // Float_t app_mcPx1, app_mcPx2, app_mcPy1, app_mcPy2, app_mcPz1, app_mcPz2;
+   // Int_t app_motherPdg1, app_motherPdg2;
+   // Int_t app_pdg1, app_pdg2;
    Float_t app_DCAxy1, app_DCAxy2;
    Float_t app_DCAz1, app_DCAz2;
    Int_t app_nITS1, app_nITS2;
-   Float_t app_phi1, app_phi2;
-   Float_t app_eta1, app_eta2;
-   Float_t app_pt1, app_pt2;
-   theTree->SetBranchAddress( "TrackID1", &app_TrackID1 );
-   theTree->SetBranchAddress( "TrackID2", &app_TrackID2 );
-   theTree->SetBranchAddress( "EventID1", &app_EventID1 );
-   theTree->SetBranchAddress( "EventID2", &app_EventID2 );
-   theTree->SetBranchAddress( "IsRP", &app_IsRP );
-   theTree->SetBranchAddress( "IsUS", &app_IsUS );
-   theTree->SetBranchAddress( "IsConv", &app_IsConv );
-   theTree->SetBranchAddress( "IsHF", &app_IsHF );
-   theTree->SetBranchAddress( "IsCorrCharm", &app_IsCorrCharm );
-   theTree->SetBranchAddress( "IsCorrBottom", &app_IsCorrBottom );
-   theTree->SetBranchAddress( "IsCorrCharmFromBottom", &app_IsCorrCharmFromBottom );
-   theTree->SetBranchAddress( "ChargeSign", &app_ChargeSign );
+   // Float_t app_phi1, app_phi2;
+   // Float_t app_eta1, app_eta2;
+   // Float_t app_pt1, app_pt2;
+   // theTree->SetBranchAddress( "TrackID1", &app_TrackID1 );
+   // theTree->SetBranchAddress( "TrackID2", &app_TrackID2 );
+   // theTree->SetBranchAddress( "EventID1", &app_EventID1 );
+   // theTree->SetBranchAddress( "EventID2", &app_EventID2 );
+   // theTree->SetBranchAddress( "IsRP", &app_IsRP );
+   // theTree->SetBranchAddress( "IsUS", &app_IsUS );
+   // theTree->SetBranchAddress( "IsConv", &app_IsConv );
+   // theTree->SetBranchAddress( "IsHF", &app_IsHF );
+   // theTree->SetBranchAddress( "IsCorrCharm", &app_IsCorrCharm );
+   // theTree->SetBranchAddress( "IsCorrBottom", &app_IsCorrBottom );
+   // theTree->SetBranchAddress( "IsCorrCharmFromBottom", &app_IsCorrCharmFromBottom );
+   // theTree->SetBranchAddress( "ChargeSign", &app_ChargeSign );
    theTree->SetBranchAddress( "opang", &app_opang );
    theTree->SetBranchAddress( "diffz", &app_diffz );
    theTree->SetBranchAddress( "mass", &app_mass );
-   theTree->SetBranchAddress( "sumz", &app_sumz );
+   // theTree->SetBranchAddress( "sumz", &app_sumz );
    theTree->SetBranchAddress( "phiv", &app_phiv );
    theTree->SetBranchAddress( "px1", &app_px1 );
    theTree->SetBranchAddress( "px2", &app_px2 );
@@ -254,28 +257,28 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    theTree->SetBranchAddress( "py2", &app_py2 );
    theTree->SetBranchAddress( "pz1", &app_pz1 );
    theTree->SetBranchAddress( "pz2", &app_pz2 );
-   theTree->SetBranchAddress( "mcPx1", &app_mcPx1 );
-   theTree->SetBranchAddress( "mcPx2", &app_mcPx2 );
-   theTree->SetBranchAddress( "mcPy1", &app_mcPy1 );
-   theTree->SetBranchAddress( "mcPy2", &app_mcPy2 );
-   theTree->SetBranchAddress( "mcPz1", &app_mcPz1 );
-   theTree->SetBranchAddress( "mcPz2", &app_mcPz2 );
-   theTree->SetBranchAddress( "motherPdg1", &app_motherPdg1 );
-   theTree->SetBranchAddress( "motherPdg2", &app_motherPdg2 );
-   theTree->SetBranchAddress( "pdg1", &app_pdg1 );
-   theTree->SetBranchAddress( "pdg2", &app_pdg2 );
+   // theTree->SetBranchAddress( "mcPx1", &app_mcPx1 );
+   // theTree->SetBranchAddress( "mcPx2", &app_mcPx2 );
+   // theTree->SetBranchAddress( "mcPy1", &app_mcPy1 );
+   // theTree->SetBranchAddress( "mcPy2", &app_mcPy2 );
+   // theTree->SetBranchAddress( "mcPz1", &app_mcPz1 );
+   // theTree->SetBranchAddress( "mcPz2", &app_mcPz2 );
+   // theTree->SetBranchAddress( "motherPdg1", &app_motherPdg1 );
+   // theTree->SetBranchAddress( "motherPdg2", &app_motherPdg2 );
+   // theTree->SetBranchAddress( "pdg1", &app_pdg1 );
+   // theTree->SetBranchAddress( "pdg2", &app_pdg2 );
    theTree->SetBranchAddress( "DCAxy1", &app_DCAxy1 );
    theTree->SetBranchAddress( "DCAxy2", &app_DCAxy2 );
-   theTree->SetBranchAddress( "DCAz1", &app_DCAz1 );
-   theTree->SetBranchAddress( "DCAz2", &app_DCAz2 );
+   // theTree->SetBranchAddress( "DCAz1", &app_DCAz1 );
+   // theTree->SetBranchAddress( "DCAz2", &app_DCAz2 );
    theTree->SetBranchAddress( "nITS1", &app_nITS1 );
    theTree->SetBranchAddress( "nITS2", &app_nITS2 );
-   theTree->SetBranchAddress( "phi1", &app_phi1 );
-   theTree->SetBranchAddress( "phi2", &app_phi2 );
-   theTree->SetBranchAddress( "eta1", &app_eta1 );
-   theTree->SetBranchAddress( "eta2", &app_eta2 );
-   theTree->SetBranchAddress( "pt1", &app_pt1 );
-   theTree->SetBranchAddress( "pt2", &app_pt2 );
+   // theTree->SetBranchAddress( "phi1", &app_phi1 );
+   // theTree->SetBranchAddress( "phi2", &app_phi2 );
+   // theTree->SetBranchAddress( "eta1", &app_eta1 );
+   // theTree->SetBranchAddress( "eta2", &app_eta2 );
+   // theTree->SetBranchAddress( "pt1", &app_pt1 );
+   // theTree->SetBranchAddress( "pt2", &app_pt2 );
 
    // output tree:
    TFile *target  = new TFile( "TMVApp.root","RECREATE" );
