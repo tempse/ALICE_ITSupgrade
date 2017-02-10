@@ -71,7 +71,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 
-void generatePairTrees_mc() {
+void GeneratePairTrees() {
   TFile *infile = TFile::Open("inputData/FT2_AnalysisResults_Upgrade.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 

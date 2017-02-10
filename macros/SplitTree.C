@@ -1,4 +1,4 @@
-void splitTree(TString f, TString method) {
+void SplitTree(TString f, TString method) {
 
   TString infileName = "pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root";
 
