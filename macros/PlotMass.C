@@ -44,6 +44,11 @@ void plot_mass() {
   // highest significance for
   // pairtree_us_MLP_classifier-S-0.1mass
   //const float MVAcut = .28;
+
+  
+  const float stepSize = .2;
+  const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
+
   
   TFile *f = new TFile(fileName_testData,"READ");
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
@@ -114,9 +119,12 @@ void plot_mass() {
     new TH1F("h_RPConv_currentMVAcut","",nBins,min,max);
 
 
+  TH1F *h_signalOverBackground =
+    new TH1F("h_signalOverBackground","",nBins,min,max);
   
-  const float stepSize = 1;
-  const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
+  
+
+  
   
   TH2F *h_significance_MVAcutScan =
     new TH2F("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
@@ -263,6 +271,10 @@ void plot_mass() {
       
       binContents_signalOverBackground_MVAcutScan[j-1][i-1] =
 	signalOverBackground;
+
+      if(stepSize*(i-1)<MVAcut && MVAcut<=stepSize*i) {
+	h_signalOverBackground->SetBinContent(j, signalOverBackground);
+      }
     }
     
     h_S_currentMVAcut->Reset();
@@ -457,6 +469,10 @@ void plot_mass() {
   h_HF_eff->SetMarkerColor(kOrange);
   h_RPConv_eff->SetMarkerColor(13);
 
+  h_signalOverBackground->SetMarkerStyle(7);
+
+  
+
   TCanvas *c = new TCanvas("c","",800,600);
   c->SetLogy();
   c->SetGridy();
@@ -509,4 +525,21 @@ void plot_mass() {
 
   c_eff->SaveAs("temp_output/mass_eff.pdf");
   c_eff->SaveAs("temp_output/mass_eff.root");
+
+
+  TCanvas *c_signalOverBackground =
+    new TCanvas("c_signalOverBackground","",800,600);
+  c_signalOverBackground->SetLogy();
+  c_signalOverBackground->SetGridy();
+  h_signalOverBackground->SetXTitle("M_{ee} / (GeV/c^2)");
+  h_signalOverBackground->SetYTitle("Signal over background");
+  h_signalOverBackground->GetXaxis()->SetTitleOffset(1.2);
+  h_signalOverBackground->GetYaxis()->SetTitleOffset(1.3);
+  h_signalOverBackground->GetYaxis()->SetTitleOffset(1.3);
+  h_signalOverBackground->GetYaxis()->SetRangeUser(1e-6,1.1);
+  h_signalOverBackground->Draw("e1 x0");
+
+  c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.pdf");
+  c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.root");
+  
 }
