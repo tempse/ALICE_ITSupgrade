@@ -46,8 +46,8 @@ void PlotMass() {
   //const float MVAcut = .28;
 
   
-  const float stepSize = .2;
-  const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
+  const float stepSize = .1;
+  const int nSteps = 10; // NB: 1/(nSteps)==stepSize must apply
 
   
   TFile *f = new TFile(fileName_testData,"READ");
@@ -69,7 +69,7 @@ void PlotMass() {
   MVAoutputTree->SetBranchAddress("MLP", &MLP);
   
   
-  const unsigned int min=0, max=5, nBins=50;
+  const unsigned int min=0, max=2, nBins=20;
   
   
   TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
@@ -135,6 +135,13 @@ void PlotMass() {
   float binContents_significance_MVAcutScan[nBins][nSteps];
 
   float binContents_signalOverBackground_MVAcutScan[nBins][nSteps];
+
+  for(unsigned int i=0; i<nSteps; i++) {
+    for(unsigned int j=0; j<nBins; j++) {
+      binContents_significance_MVAcutScan[j][i] = 0.;
+      binContents_signalOverBackground_MVAcutScan[j][i] = 0.;
+    }
+  }
 
   
   if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
@@ -234,7 +241,7 @@ void PlotMass() {
 	
       }
       
-    }
+    } // end ev loop
 
     
     
@@ -261,17 +268,13 @@ void PlotMass() {
       float significance = (B==0) ? 0 : S/TMath::Sqrt(S+B);
       float signalOverBackground = (B==0) ? 0 : S/B;
       
-      h_significance_MVAcutScan->SetBinContent(bin_MVAcutScan,
-					       significance);
-      
-      h_signalOverBackground_MVAcutScan->SetBinContent(bin_MVAcutScan,
-						       signalOverBackground);
-      
-      binContents_significance_MVAcutScan[j-1][i-1] = significance;
+      binContents_significance_MVAcutScan[j-1][i-1] =
+	significance;
       
       binContents_signalOverBackground_MVAcutScan[j-1][i-1] =
 	signalOverBackground;
 
+      
       if(stepSize*(i-1)<MVAcut && MVAcut<=stepSize*i) {
 	h_signalOverBackground->SetBinContent(j, signalOverBackground);
       }
@@ -287,7 +290,8 @@ void PlotMass() {
     std::cout << "  (Time elapsed: " << passed_seconds-passed_seconds_prev << " seconds)";
     passed_seconds_prev = passed_seconds;
     watch->Continue();
-  }
+    
+  } // end i loop
 
   
   // f->Close();
@@ -302,6 +306,24 @@ void PlotMass() {
   std::cout << std::endl;
   watch->Stop();
 
+
+  for(unsigned int i=0; i<nSteps; i++) {
+    for(unsigned int j=0; j<nBins; j++) {
+      
+      Float_t significance_norm = (binContents_significance_MVAcutScan[j][nSteps-1] == 0) ?
+	0 : binContents_significance_MVAcutScan[j][i] / binContents_significance_MVAcutScan[j][nSteps-1];
+      
+      Float_t signalOverBackground_norm = (binContents_signalOverBackground_MVAcutScan[j][nSteps-1] == 0) ?
+	0 : binContents_signalOverBackground_MVAcutScan[j][i] / binContents_signalOverBackground_MVAcutScan[j][nSteps-1];
+      
+      h_significance_MVAcutScan->SetBinContent(h_significance_MVAcutScan->GetBin(j+1,i+1),
+					       significance_norm);
+
+      h_signalOverBackground_MVAcutScan->SetBinContent(h_signalOverBackground_MVAcutScan->GetBin(j+1,i+1),
+						       signalOverBackground_norm);
+      
+    }
+  }
 
   
   float AUCs_significance[nSteps],
@@ -345,15 +367,19 @@ void PlotMass() {
 	    << std::endl << std::endl;
   
 
+
+  
+  //////////////////// SETTING UP THE PLOTS:  
+
   
   gStyle->SetOptStat(0);
   
   TCanvas *c_significance_scan = new TCanvas("c_significance_scan","",800,600);
   c_significance_scan->SetGridy();
-  c_significance_scan->SetLogz();
+  // c_significance_scan->SetLogz();
   h_significance_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_significance_MVAcutScan->SetYTitle("MVA cut");
-  h_significance_MVAcutScan->SetZTitle("S/#sqrt{S+B}");
+  h_significance_MVAcutScan->SetZTitle("(S/#sqrt{S+B} after MVA cut)/(S/#sqrt{S+B} before MVA cut)");
   gStyle->SetPalette(54);
   // gStyle->SetPaintTextFormat("A %.2f");
   h_significance_MVAcutScan->Draw("colz");
@@ -366,17 +392,18 @@ void PlotMass() {
   c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.root");
   TCanvas *c_significance_scan_3D =
     new TCanvas("c_significance_scan_3D","",800,600);
-  c_significance_scan_3D->SetLogz();
+  // c_significance_scan_3D->SetLogz();
   h_significance_MVAcutScan->Draw("lego2");
+  h_significance_MVAcutScan->SaveAs("temp_output/mass_significance_MVAscan_3D.root");
 
   TCanvas *c_signalOverBackground_scan =
     new TCanvas("c_signalOverBackground_scan","",800,600);
   c_signalOverBackground_scan->SetGridy();
   c_signalOverBackground_scan->SetLogz();
-  h_signalOverBackground_MVAcutScan->SetMinimum(1e-6);
+  // h_signalOverBackground_MVAcutScan->SetMinimum(1e-6);
   h_signalOverBackground_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_signalOverBackground_MVAcutScan->SetYTitle("MVA cut");
-  h_signalOverBackground_MVAcutScan->SetZTitle("S/B");
+  h_signalOverBackground_MVAcutScan->SetZTitle("(S/B after MVA cut)/(S/B before MVA cut)");
   gStyle->SetPalette(54);
   // gStyle->SetPaintTextFormat("A %.2f");
   h_signalOverBackground_MVAcutScan->Draw("colz");
@@ -393,6 +420,7 @@ void PlotMass() {
     new TCanvas("c_signalOverBackground_scan_3D","",800,600);
   c_signalOverBackground_scan_3D->SetLogz();
   h_signalOverBackground_MVAcutScan->Draw("lego2");
+  h_signalOverBackground_MVAcutScan->SaveAs("temp_output/mass_signalOverBackground_MVAscan_3D.root");
 
   
   TH1F *h_SB_eff = (TH1F*)h_SB_MVAcut->Clone();
@@ -422,8 +450,6 @@ void PlotMass() {
 
 
 
-
-  //////////////////// SETTING UP THE PLOTS:  
   
   h_SB->SetLineColor(kBlack);
   h_S->SetLineColor(kGreen+1);
