@@ -155,11 +155,12 @@ void PlotMass() {
   TStopwatch *watch = new TStopwatch();
 
   watch->Start();
-  for(Int_t i=1; i<=nSteps; i++) {
+  for(Int_t i=nSteps; i>=1; i--) {
+  // for(Int_t i=1; i<=nSteps; i++) {
     std::cout << std::endl;
     
     for(Int_t ev=0; ev<nEv; ev++) {
-      if((ev%10000)==0) std::cout << "\rRun " << i << " of " << nSteps
+      if((ev%10000)==0) std::cout << "\rRun " << nSteps-i+1 << " of " << nSteps
 				  << ":  Processing entry " << ev << " of "
 				  << nEv << " (" << ev*100/nEv << "%)...";
       
@@ -281,7 +282,7 @@ void PlotMass() {
     h_SB_currentMVAcut->Reset();
 
     
-    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing entry "
+    std::cout << "\rRun " << nSteps-i+1 << " of " << nSteps << ":  Processing entry "
 	      << nEv << " of " << nEv << " (100%)... DONE.";
     Float_t passed_seconds = watch->RealTime();
     std::cout << "  (Time elapsed: " << passed_seconds-passed_seconds_prev << " seconds)";
