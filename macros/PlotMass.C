@@ -16,9 +16,9 @@
 
 
 
-void plot_mass() {
+void PlotMass() {
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
-  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_noDCAxy.root";
+  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp.root";
   
   TString h_text = "Combinatorial MLP";
 
@@ -149,9 +149,12 @@ void plot_mass() {
   
   
   Int_t nEv = TestTree->GetEntries();
+
+  Float_t passed_seconds_prev = 0.;
   
   TStopwatch *watch = new TStopwatch();
-    
+
+  watch->Start();
   for(Int_t i=1; i<=nSteps; i++) {
     std::cout << std::endl;
     
@@ -232,9 +235,6 @@ void plot_mass() {
       }
       
     }
-    
-    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing entry "
-	      << nEv << " of " << nEv << " (100%)... DONE.";
 
     
     
@@ -279,6 +279,14 @@ void plot_mass() {
     
     h_S_currentMVAcut->Reset();
     h_SB_currentMVAcut->Reset();
+
+    
+    std::cout << "\rRun " << i << " of " << nSteps << ":  Processing entry "
+	      << nEv << " of " << nEv << " (100%)... DONE.";
+    Float_t passed_seconds = watch->RealTime();
+    std::cout << "  (Time elapsed: " << passed_seconds-passed_seconds_prev << " seconds)";
+    passed_seconds_prev = passed_seconds;
+    watch->Continue();
   }
 
   
@@ -287,7 +295,7 @@ void plot_mass() {
 
 
   
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
   std::cout << "Time elapsed since begin of processing: " << std::endl;
   std::cout << "\t";
   watch->Print();
@@ -365,6 +373,7 @@ void plot_mass() {
     new TCanvas("c_signalOverBackground_scan","",800,600);
   c_signalOverBackground_scan->SetGridy();
   c_signalOverBackground_scan->SetLogz();
+  h_signalOverBackground_MVAcutScan->SetMinimum(1e-6);
   h_signalOverBackground_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_signalOverBackground_MVAcutScan->SetYTitle("MVA cut");
   h_signalOverBackground_MVAcutScan->SetZTitle("S/B");
@@ -410,6 +419,7 @@ void plot_mass() {
   h_RPConv_eff->Sumw2();
   h_RPConv->Sumw2();
   h_RPConv_eff->Divide(h_RPConv);
+
 
 
 
@@ -531,7 +541,7 @@ void plot_mass() {
     new TCanvas("c_signalOverBackground","",800,600);
   c_signalOverBackground->SetLogy();
   c_signalOverBackground->SetGridy();
-  h_signalOverBackground->SetXTitle("M_{ee} / (GeV/c^2)");
+  h_signalOverBackground->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_signalOverBackground->SetYTitle("Signal over background");
   h_signalOverBackground->GetXaxis()->SetTitleOffset(1.2);
   h_signalOverBackground->GetYaxis()->SetTitleOffset(1.3);
