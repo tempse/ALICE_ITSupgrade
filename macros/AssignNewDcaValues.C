@@ -1,8 +1,15 @@
+// This macro copies an input tree containing pairTree data and adds additional
+// leafs with "fake DCAxy" values for heavy-flavor events. The fake values are
+// chosen randomly and accordingly to DCAxy values from an external data file.
+
+
 #include <iostream>
 
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TH1F.h>
+#include <TGraph.h>
 #include <TRandom.h>
 #include <TStopwatch.h>
 
@@ -10,20 +17,52 @@
 
 void AssignNewDcaValues() {
 
-  TString infile_name = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split.root";
+  TString infile_name = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root";
+
+  TString infile_DCAdata_name = "../inputData/FT2_AnalysisResults_DCAresults_DCAresultsFit.root";
+
+  
+  TFile *infile_DCAdata = new TFile(infile_DCAdata_name, "READ");
+
+  // stores start values and ranges of the different pt intervals:
+  Float_t pt_binStart[20];
+  pt_binStart[0] = 0.;
+  Float_t pt_binWidth[20];
+  
+  TGraph *gDCA = (TGraph*)infile_DCAdata->Get("gDCA");
+  Float_t temp_sum = 0.;
+  for(unsigned int i=0; i<20; i++) {
+    pt_binWidth[i] = 2 * gDCA->GetErrorX(i);
+
+    pt_binStart[i] = temp_sum;
+    temp_sum += pt_binWidth[i];
+  }
+  
+  
+  TH1F *h_DCA_0 = (TH1F*)infile_DCAdata->Get("hDCA1_0"); // DCA distribution for pt_binStart[0] <= pt < pt_binStart[1]
+  TH1F *h_DCA_1 = (TH1F*)infile_DCAdata->Get("hDCA1_1"); // DCA distribution for pt_binStart[1] <= pt < pt_binStart[2]
+  TH1F *h_DCA_2 = (TH1F*)infile_DCAdata->Get("hDCA1_2"); // ...
+  TH1F *h_DCA_3 = (TH1F*)infile_DCAdata->Get("hDCA1_3");
+  TH1F *h_DCA_4 = (TH1F*)infile_DCAdata->Get("hDCA1_4");
+  TH1F *h_DCA_5 = (TH1F*)infile_DCAdata->Get("hDCA1_5");
+  TH1F *h_DCA_6 = (TH1F*)infile_DCAdata->Get("hDCA1_6");
+  TH1F *h_DCA_7 = (TH1F*)infile_DCAdata->Get("hDCA1_7");
+  TH1F *h_DCA_8 = (TH1F*)infile_DCAdata->Get("hDCA1_8");
+  TH1F *h_DCA_9 = (TH1F*)infile_DCAdata->Get("hDCA1_9");
+  TH1F *h_DCA_10 = (TH1F*)infile_DCAdata->Get("hDCA1_10");
+  TH1F *h_DCA_11 = (TH1F*)infile_DCAdata->Get("hDCA1_11");
+  TH1F *h_DCA_12 = (TH1F*)infile_DCAdata->Get("hDCA1_12");
+  TH1F *h_DCA_13 = (TH1F*)infile_DCAdata->Get("hDCA1_13");
+  TH1F *h_DCA_14 = (TH1F*)infile_DCAdata->Get("hDCA1_14");
+  TH1F *h_DCA_15 = (TH1F*)infile_DCAdata->Get("hDCA1_15");
+  TH1F *h_DCA_16 = (TH1F*)infile_DCAdata->Get("hDCA1_16");
+  TH1F *h_DCA_17 = (TH1F*)infile_DCAdata->Get("hDCA1_17");
+  TH1F *h_DCA_18 = (TH1F*)infile_DCAdata->Get("hDCA1_18");
+  TH1F *h_DCA_19 = (TH1F*)infile_DCAdata->Get("hDCA1_19");
+
+
   
   TString outfile_name = "temp_fakeDcaTree.root";//"../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split_fakeDcaValues.root";
-
-
-  // definition of Gaussian fit parameters of DCAxy distributions:
-  const Int_t dcaxy1_ccbar_mu    =  1.77e-4;
-  const Int_t dcaxy1_ccbar_sigma =  9.07e-3;
-  const Int_t dcaxy2_ccbar_mu    = -1.24e-4;
-  const Int_t dcaxy2_ccbar_sigma =  7.40e-3;
-  const Int_t dcaxy1_bbbar_mu    =  8.26e-5;
-  const Int_t dcaxy1_bbbar_sigma = -5.86e-3;
-  const Int_t dcaxy2_bbbar_mu    = -4.07e-4;
-  const Int_t dcaxy2_bbbar_sigma = -1.06e-2;
 
   
   TFile *infile = new TFile(infile_name, "READ");
@@ -133,6 +172,7 @@ void AssignNewDcaValues() {
   Int_t out_pdg1, out_pdg2;
   Int_t out_motherpdg1, out_motherpdg2;
   Float_t out_dcaxy1, out_dcaxy2;
+  Float_t out_dcaxy1_fake, out_dcaxy2_fake;
   Float_t out_dcaz1, out_dcaz2;
   Int_t out_nits1, out_nits2;
   Float_t out_phi1, out_phi2;
@@ -173,6 +213,8 @@ void AssignNewDcaValues() {
   output_tree->Branch("motherPdg2", &out_motherpdg2);
   output_tree->Branch("DCAxy1", &out_dcaxy1);
   output_tree->Branch("DCAxy2", &out_dcaxy2);
+  output_tree->Branch("DCAxy1_fakeHF", &out_dcaxy1_fake);
+  output_tree->Branch("DCAxy2_fakeHF", &out_dcaxy2_fake);
   output_tree->Branch("DCAz1", &out_dcaz1);
   output_tree->Branch("DCAz2", &out_dcaz2);
   output_tree->Branch("nITS1", &out_nits1);
@@ -184,18 +226,19 @@ void AssignNewDcaValues() {
   output_tree->Branch("pt1", &out_pt1);
   output_tree->Branch("pt2", &out_pt2);
 
-  TRandom *rand = new TRandom();
   
   
-  Int_t num_entries = input_tree->GetEntries();
+  Long64_t num_entries = input_tree->GetEntries();
 
   TStopwatch *watch = new TStopwatch();
   
   std::cout << std::endl;
   watch->Start();
-  for(Int_t entry=0; entry<num_entries; entry++) {
-    if((entry%1000)==0) std::cout << "\rProcessing entry " << entry << " of "
+  for(Long64_t entry=0; entry<num_entries; entry++) {
+    if((entry%10000)==0) {
+      std::cout << "\rProcessing entry " << entry << " of "
 				  << num_entries << " (" << entry*100/num_entries << " %)...";
+    }
     input_tree->GetEntry(entry);
 
     out_trackid1 = in_trackid1;
@@ -242,22 +285,68 @@ void AssignNewDcaValues() {
     out_pt1 = in_pt1;
     out_pt2 = in_pt2;
 
+
+    
     // assign fake DCAxy values to HF events:
     if(in_ishf == 1) {
-      if(in_iscorrcharm == 1) {
-	out_dcaxy1 = rand->Gaus(dcaxy1_ccbar_mu, dcaxy1_ccbar_sigma);
-	out_dcaxy2 = rand->Gaus(dcaxy2_ccbar_mu, dcaxy2_ccbar_sigma);
-      }
-      if(in_iscorrbottom == 1) {
-	out_dcaxy1 = rand->Gaus(dcaxy1_bbbar_mu, dcaxy1_bbbar_sigma);
-	out_dcaxy2 = rand->Gaus(dcaxy2_bbbar_mu, dcaxy2_bbbar_sigma);
-      }
+
+      // first leg:
+      if(in_pt1 < pt_binStart[1])                     out_dcaxy1_fake = h_DCA_0->GetRandom();
+      if(pt_binStart[1] <= in_pt1 < pt_binStart[2])   out_dcaxy1_fake = h_DCA_1->GetRandom();
+      if(pt_binStart[2] <= in_pt1 < pt_binStart[3])   out_dcaxy1_fake = h_DCA_2->GetRandom();
+      if(pt_binStart[3] <= in_pt1 < pt_binStart[4])   out_dcaxy1_fake = h_DCA_3->GetRandom();
+      if(pt_binStart[4] <= in_pt1 < pt_binStart[5])   out_dcaxy1_fake = h_DCA_4->GetRandom();
+      if(pt_binStart[5] <= in_pt1 < pt_binStart[6])   out_dcaxy1_fake = h_DCA_5->GetRandom();
+      if(pt_binStart[6] <= in_pt1 < pt_binStart[7])   out_dcaxy1_fake = h_DCA_6->GetRandom();
+      if(pt_binStart[7] <= in_pt1 < pt_binStart[8])   out_dcaxy1_fake = h_DCA_7->GetRandom();
+      if(pt_binStart[8] <= in_pt1 < pt_binStart[9])   out_dcaxy1_fake = h_DCA_8->GetRandom();
+      if(pt_binStart[9] <= in_pt1 < pt_binStart[10])  out_dcaxy1_fake = h_DCA_9->GetRandom();
+      if(pt_binStart[10] <= in_pt1 < pt_binStart[11]) out_dcaxy1_fake = h_DCA_10->GetRandom();
+      if(pt_binStart[11] <= in_pt1 < pt_binStart[12]) out_dcaxy1_fake = h_DCA_11->GetRandom();
+      if(pt_binStart[12] <= in_pt1 < pt_binStart[13]) out_dcaxy1_fake = h_DCA_12->GetRandom();
+      if(pt_binStart[13] <= in_pt1 < pt_binStart[14]) out_dcaxy1_fake = h_DCA_13->GetRandom();
+      if(pt_binStart[14] <= in_pt1 < pt_binStart[15]) out_dcaxy1_fake = h_DCA_14->GetRandom();
+      if(pt_binStart[15] <= in_pt1 < pt_binStart[16]) out_dcaxy1_fake = h_DCA_15->GetRandom();
+      if(pt_binStart[16] <= in_pt1 < pt_binStart[17]) out_dcaxy1_fake = h_DCA_16->GetRandom();
+      if(pt_binStart[17] <= in_pt1 < pt_binStart[18]) out_dcaxy1_fake = h_DCA_17->GetRandom();
+      if(pt_binStart[18] <= in_pt1 < pt_binStart[19]) out_dcaxy1_fake = h_DCA_18->GetRandom();
+      if(pt_binStart[19] <= in_pt1)                   out_dcaxy1_fake = h_DCA_19->GetRandom();
+
+      // second leg:
+      if(in_pt2 < pt_binStart[1])                     out_dcaxy2_fake = h_DCA_0->GetRandom();
+      if(pt_binStart[1] <= in_pt2 < pt_binStart[2])   out_dcaxy2_fake = h_DCA_1->GetRandom();
+      if(pt_binStart[2] <= in_pt2 < pt_binStart[3])   out_dcaxy2_fake = h_DCA_2->GetRandom();
+      if(pt_binStart[3] <= in_pt2 < pt_binStart[4])   out_dcaxy2_fake = h_DCA_3->GetRandom();
+      if(pt_binStart[4] <= in_pt2 < pt_binStart[5])   out_dcaxy2_fake = h_DCA_4->GetRandom();
+      if(pt_binStart[5] <= in_pt2 < pt_binStart[6])   out_dcaxy2_fake = h_DCA_5->GetRandom();
+      if(pt_binStart[6] <= in_pt2 < pt_binStart[7])   out_dcaxy2_fake = h_DCA_6->GetRandom();
+      if(pt_binStart[7] <= in_pt2 < pt_binStart[8])   out_dcaxy2_fake = h_DCA_7->GetRandom();
+      if(pt_binStart[8] <= in_pt2 < pt_binStart[9])   out_dcaxy2_fake = h_DCA_8->GetRandom();
+      if(pt_binStart[9] <= in_pt2 < pt_binStart[10])  out_dcaxy2_fake = h_DCA_9->GetRandom();
+      if(pt_binStart[10] <= in_pt2 < pt_binStart[11]) out_dcaxy2_fake = h_DCA_10->GetRandom();
+      if(pt_binStart[11] <= in_pt2 < pt_binStart[12]) out_dcaxy2_fake = h_DCA_11->GetRandom();
+      if(pt_binStart[12] <= in_pt2 < pt_binStart[13]) out_dcaxy2_fake = h_DCA_12->GetRandom();
+      if(pt_binStart[13] <= in_pt2 < pt_binStart[14]) out_dcaxy2_fake = h_DCA_13->GetRandom();
+      if(pt_binStart[14] <= in_pt2 < pt_binStart[15]) out_dcaxy2_fake = h_DCA_14->GetRandom();
+      if(pt_binStart[15] <= in_pt2 < pt_binStart[16]) out_dcaxy2_fake = h_DCA_15->GetRandom();
+      if(pt_binStart[16] <= in_pt2 < pt_binStart[17]) out_dcaxy2_fake = h_DCA_16->GetRandom();
+      if(pt_binStart[17] <= in_pt2 < pt_binStart[18]) out_dcaxy2_fake = h_DCA_17->GetRandom();
+      if(pt_binStart[18] <= in_pt2 < pt_binStart[19]) out_dcaxy2_fake = h_DCA_18->GetRandom();
+      if(pt_binStart[19] <= in_pt2)                   out_dcaxy2_fake = h_DCA_19->GetRandom();
+      
+    }else { // copy real DCA values for non-HF events
+      
+      out_dcaxy1_fake = out_dcaxy1;
+      out_dcaxy2_fake = out_dcaxy2;
+      
     }
     
 
     output_tree->Fill();
   }
+  
   watch->Stop();
+  
   std::cout << "\rProcessing entry " << num_entries << " of " << num_entries
 	    << " (100 %)" << std::endl << std::endl;
 
