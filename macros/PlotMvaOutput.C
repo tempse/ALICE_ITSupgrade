@@ -20,8 +20,8 @@ void PlotMvaOutput() {
   TString h_text = "Combinatorial MLP";
 
   
-  // float massCut_lower=0.1;
-  // float massCut_upper=1.1;
+  const Float_t massCut_lower=0.1;
+  // const Float_t massCut_upper=1.1;
   
   TFile *infile = new TFile(fileName,"READ");
   TTree *TestTree = (TTree*)infile->Get("pairTree_us");
@@ -81,6 +81,8 @@ void PlotMvaOutput() {
 
     if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
 				<< nEv << " (" << ev*100/nEv << "%)...";
+
+    if(mass < massCut_lower) continue;
     
     h_SB->Fill(MLP);
     if(IsRP==1 && IsConv==0) {
