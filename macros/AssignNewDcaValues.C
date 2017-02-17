@@ -17,10 +17,14 @@
 
 void AssignNewDcaValues() {
 
-  TString infile_name = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root";
+  // File containing the input pairtree:
+  TString infile_name = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
 
+  // File containing DCA(pt) data:
   TString infile_DCAdata_name = "../inputData/FT2_AnalysisResults_DCAresults_DCAresultsFit.root";
 
+  // Output file:
+  TString outfile_name = "temp_fakeDcaTree.root";//"../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split_fakeDcaValues.root";
   
   TFile *infile_DCAdata = new TFile(infile_DCAdata_name, "READ");
 
@@ -62,7 +66,6 @@ void AssignNewDcaValues() {
 
 
   
-  TString outfile_name = "temp_fakeDcaTree.root";//"../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split_fakeDcaValues.root";
 
   
   TFile *infile = new TFile(infile_name, "READ");

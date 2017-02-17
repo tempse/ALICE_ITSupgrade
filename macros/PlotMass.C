@@ -155,7 +155,7 @@ void PlotMass() {
   }
   
   
-  Int_t nEv = TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries();
 
   Float_t passed_seconds_prev = 0.;
   
@@ -165,7 +165,7 @@ void PlotMass() {
   for(Int_t i=1; i<=nSteps; i++) {
     std::cout << std::endl;
     
-    for(Int_t ev=0; ev<nEv; ev++) {
+    for(Long64_t ev=0; ev<nEv; ev++) {
       if((ev%10000)==0) std::cout << "\rRun " << i << " of " << nSteps
 				  << ":  Processing entry " << ev << " of "
 				  << nEv << " (" << ev*100/nEv << "%)...";

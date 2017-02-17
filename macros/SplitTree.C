@@ -41,16 +41,16 @@ void SplitTree(TString f, TString method) {
   TFile *infile = new TFile(infileName, "READ");
   TTree *infileTree = (TTree*)infile->Get("pairTree_us");
 
-  TFile *outfile_train = new TFile("inputData/output_splitTree_train.root", "RECREATE");
+  TFile *outfile_train = new TFile("temp_output/output_splitTree_train.root", "RECREATE");
   TTree *splitTree_train = infileTree->CloneTree(0);
 
-  TFile *outfile_test = new TFile("inputData/output_splitTree_test.root", "RECREATE");
+  TFile *outfile_test = new TFile("temp_output/output_splitTree_test.root", "RECREATE");
   TTree *splitTree_test = infileTree->CloneTree(0);
   
   
-  Int_t infileTree_nEvents = infileTree->GetEntries();
-  Int_t splitTree_train_nEvents = part1 * infileTree_nEvents / (part1+part2);
-  Int_t splitTree_test_nEvents = infileTree_nEvents - splitTree_train_nEvents;
+  Long64_t infileTree_nEvents = infileTree->GetEntries();
+  Long64_t splitTree_train_nEvents = part1 * infileTree_nEvents / (part1+part2);
+  Long64_t splitTree_test_nEvents = infileTree_nEvents - splitTree_train_nEvents;
 
 
   std::cout << "Input file: " << infileName << std::endl << std::endl;
@@ -58,7 +58,7 @@ void SplitTree(TString f, TString method) {
   // create tree with training data:
   if(method.Contains("train")) {
     std::cout << std::endl << "Create tree with training data..." << std::endl;
-    for(Int_t ev=0; ev<splitTree_train_nEvents; ev++) {
+    for(Long64_t ev=0; ev<splitTree_train_nEvents; ev++) {
       if((ev%1000)==0) {
 	std::cout << "\rProcessing event " << ev << " of "
 		  << splitTree_train_nEvents << " ("

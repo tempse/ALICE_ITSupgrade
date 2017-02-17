@@ -157,8 +157,9 @@ void PlotMvaOutput() {
   
   outfile->Write();
 
-  
+    
   TCanvas *c = new TCanvas("c","",800,600);
+  gStyle->SetOptStat(0);
   c->SetLogy();
   c->SetGridy();
   h_SB->GetYaxis()->SetRangeUser(.5,1e9);
@@ -176,6 +177,7 @@ void PlotMvaOutput() {
   leg->AddEntry(h_S,"S","l");
   leg->AddEntry(h_CombiWithConvLeg,"Comb. w. conv. leg");
   leg->AddEntry(h_CombiWithoutConvLeg,"Comb. w/o conv. leg");
+  leg->AddEntry(h_HF,"Comb. HF","l");
   leg->AddEntry(h_RPConv,"RP conv.","l");
   leg->Draw();
 
