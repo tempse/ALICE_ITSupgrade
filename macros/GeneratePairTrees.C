@@ -5,6 +5,15 @@
 // us <-> unlike sign
 // ls <-> like sign
 
+#include <iostream>
+#include <cstdlib>
+
+#include <TROOT.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TParticle.h>
+#include <TMath.h>
+#include <TStopwatch.h>
 
 Bool_t isCharm(Int_t );
 Bool_t isBottom(Int_t );
