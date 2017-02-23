@@ -62,7 +62,11 @@ Int_t firstMotherLabel1_max, firstMotherLabel2_max;
 Float_t DCAxy1, DCAxy2;
 Float_t DCAz1, DCAz2;
 Int_t nITS1, nITS2;
-Float_t chi2g1, chi2g2;
+Float_t nITSshared1, nITSshared2;
+Int_t nTPC1, nTPC2;
+// Float_t chi2g1, chi2g2;
+Float_t ITSchi21, ITSchi22;
+Float_t TPCchi21, TPCchi22;
 Float_t phi1, phi2;
 Float_t eta1, eta2;
 Float_t pt1, pt2;
@@ -81,10 +85,10 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("inputData/FT2_AnalysisResults_Upgrade.root","READ");
+  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat_temp.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
-  TFile *outfile = TFile::Open("output_pairtrees.root","RECREATE");
+  TFile *outfile = TFile::Open("temp_output/output_pairtrees.root","RECREATE");
   TTree *pairTree_rp = new TTree("pairTree_rp","pairTree_rp");
   TTree *pairTree_us = new TTree("pairTree_us","pairTree_us");
   TTree *pairTree_ls = new TTree("pairTree_ls","pairTree_ls");
@@ -114,7 +118,10 @@ void GeneratePairTrees() {
   Int_t ST_pdgMother;
   Int_t ST_pdgFirstMother;
   Int_t ST_nITS;
+  Int_t ST_nITSshared;
   Int_t ST_nTPC;
+  Double_t ST_ITSchi2;
+  Double_t ST_TPCchi2;
 
   
   TParticle* ST_particle = NULL;
@@ -140,7 +147,10 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("pdgMother",&ST_pdgMother);
   singleTree->SetBranchAddress("pdgFirstMother",&ST_pdgFirstMother);
   singleTree->SetBranchAddress("nITS",&ST_nITS);
+  singleTree->SetBranchAddress("nITSshared",&ST_nITSshared);
   singleTree->SetBranchAddress("nTPC",&ST_nTPC);
+  singleTree->SetBranchAddress("ITSchi2",&ST_ITSchi2);
+  singleTree->SetBranchAddress("TPCchi2",&ST_TPCchi2);
 
 
   if(isPairTree_rp) {
@@ -183,6 +193,12 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("DCAz2",&DCAz2);
     pairTree_rp->Branch("nITS1",&nITS1);
     pairTree_rp->Branch("nITS2",&nITS2);
+    pairTree_rp->Branch("nITSshared1",&nITSshared1);
+    pairTree_rp->Branch("nITSshared2",&nITSshared2);
+    pairTree_rp->Branch("nTPC1",&nTPC1);
+    pairTree_rp->Branch("nTPC2",&nTPC2);
+    pairTree_rp->Branch("ITSchi21",&ITSchi21);
+    pairTree_rp->Branch("ITSchi22",&ITSchi22);
     pairTree_rp->Branch("phi1",&phi1);
     pairTree_rp->Branch("phi2",&phi2);
     pairTree_rp->Branch("eta1",&eta1);
@@ -231,6 +247,12 @@ void GeneratePairTrees() {
     pairTree_us->Branch("DCAz2",&DCAz2);
     pairTree_us->Branch("nITS1",&nITS1);
     pairTree_us->Branch("nITS2",&nITS2);
+    pairTree_us->Branch("nITSshared1",&nITSshared1);
+    pairTree_us->Branch("nITSshared2",&nITSshared2);
+    pairTree_us->Branch("nTPC1",&nTPC1);
+    pairTree_us->Branch("nTPC2",&nTPC2);
+    pairTree_us->Branch("ITSchi21",&ITSchi21);
+    pairTree_us->Branch("ITSchi22",&ITSchi22);
     pairTree_us->Branch("phi1",&phi1);
     pairTree_us->Branch("phi2",&phi2);
     pairTree_us->Branch("eta1",&eta1);
@@ -279,6 +301,12 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("DCAz2",&DCAz2);
     pairTree_ls->Branch("nITS1",&nITS1);
     pairTree_ls->Branch("nITS2",&nITS2);
+    pairTree_ls->Branch("nITSshared1",&nITSshared1);
+    pairTree_ls->Branch("nITSshared2",&nITSshared2);
+    pairTree_ls->Branch("nTPC1",&nTPC1);
+    pairTree_ls->Branch("nTPC2",&nTPC2);
+    pairTree_ls->Branch("ITSchi21",&ITSchi21);
+    pairTree_ls->Branch("ITSchi22",&ITSchi22);
     pairTree_ls->Branch("phi1",&phi1);
     pairTree_ls->Branch("phi2",&phi2);
     pairTree_ls->Branch("eta1",&eta1);
@@ -327,6 +355,12 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("DCAz2",&DCAz2);
     pairTree_us_ls->Branch("nITS1",&nITS1);
     pairTree_us_ls->Branch("nITS2",&nITS2);
+    pairTree_us_ls->Branch("nITSshared1",&nITSshared1);
+    pairTree_us_ls->Branch("nITSshared2",&nITSshared2);
+    pairTree_us_ls->Branch("nTPC1",&nTPC1);
+    pairTree_us_ls->Branch("nTPC2",&nTPC2);
+    pairTree_us_ls->Branch("ITSchi21",&ITSchi21);
+    pairTree_us_ls->Branch("ITSchi22",&ITSchi22);
     pairTree_us_ls->Branch("phi1",&phi1);
     pairTree_us_ls->Branch("phi2",&phi2);
     pairTree_us_ls->Branch("eta1",&eta1);
@@ -342,12 +376,13 @@ void GeneratePairTrees() {
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Int_t singleTree_nEvents = singleTree->GetEntries();
+  Long64_t singleTree_nEvents = singleTree->GetEntries();
   std::cout << std::endl;
   std::cout << "Start event processing...";
   TStopwatch *watch = new TStopwatch();
+  watch->Start();
   
-  for(Int_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
+  for(Long64_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
     if((tr1%1000)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
 			       << " (" << tr1*100/singleTree_nEvents << "%)...";
     singleTree->GetEntry(tr1);
@@ -380,6 +415,10 @@ void GeneratePairTrees() {
     DCAxy1 = ST_dcaR;
     DCAz1 = ST_dcaZ;
     nITS1 = ST_nITS;
+    nITSshared1 = ST_nITSshared;
+    nTPC1 = ST_nTPC;
+    ITSchi21 = ST_ITSchi2;
+    TPCchi21 = ST_TPCchi2;
     phi1 = ST_phi;
     eta1 = ST_eta;
     pt1 = ST_pt;
@@ -411,6 +450,10 @@ void GeneratePairTrees() {
       DCAxy2 = ST_dcaR;
       DCAz2 = ST_dcaZ;
       nITS2 = ST_nITS;
+      nITSshared2 = ST_nITSshared;
+      nTPC2 = ST_nTPC;
+      ITSchi22 = ST_ITSchi2;
+      TPCchi22 = ST_TPCchi2;
       phi2 = ST_phi;
       eta2 = ST_eta;
       pt2 = ST_pt;
@@ -476,7 +519,9 @@ void GeneratePairTrees() {
   std::cout << "\rProcessing event " << singleTree_nEvents << " of " << singleTree_nEvents
 	    << " (100%)... DONE." << std::endl;
   std::cout << "Time elapsed since begin of event processing: " << std::endl;
-  std::cout << "\t" << watch->Print() << std::endl;
+  std::cout << "\t";
+  watch->Print();
+  std::cout << std::endl;
   watch->Stop();
 
   infile->Close();
