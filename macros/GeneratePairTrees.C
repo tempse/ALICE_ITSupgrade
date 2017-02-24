@@ -85,7 +85,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat_temp.root","READ");
+  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
   TFile *outfile = TFile::Open("temp_output/output_pairtrees.root","RECREATE");
@@ -118,7 +118,7 @@ void GeneratePairTrees() {
   Int_t ST_pdgMother;
   Int_t ST_pdgFirstMother;
   Int_t ST_nITS;
-  Int_t ST_nITSshared;
+  Double_t ST_nITSshared;
   Int_t ST_nTPC;
   Double_t ST_ITSchi2;
   Double_t ST_TPCchi2;
@@ -199,6 +199,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("nTPC2",&nTPC2);
     pairTree_rp->Branch("ITSchi21",&ITSchi21);
     pairTree_rp->Branch("ITSchi22",&ITSchi22);
+    pairTree_rp->Branch("TPCchi21",&TPCchi21);
+    pairTree_rp->Branch("TPCchi22",&TPCchi22);
     pairTree_rp->Branch("phi1",&phi1);
     pairTree_rp->Branch("phi2",&phi2);
     pairTree_rp->Branch("eta1",&eta1);
@@ -253,6 +255,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("nTPC2",&nTPC2);
     pairTree_us->Branch("ITSchi21",&ITSchi21);
     pairTree_us->Branch("ITSchi22",&ITSchi22);
+    pairTree_us->Branch("TPCchi21",&TPCchi21);
+    pairTree_us->Branch("TPCchi22",&TPCchi22);
     pairTree_us->Branch("phi1",&phi1);
     pairTree_us->Branch("phi2",&phi2);
     pairTree_us->Branch("eta1",&eta1);
@@ -307,6 +311,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("nTPC2",&nTPC2);
     pairTree_ls->Branch("ITSchi21",&ITSchi21);
     pairTree_ls->Branch("ITSchi22",&ITSchi22);
+    pairTree_ls->Branch("TPCchi21",&TPCchi21);
+    pairTree_ls->Branch("TPCchi22",&TPCchi22);
     pairTree_ls->Branch("phi1",&phi1);
     pairTree_ls->Branch("phi2",&phi2);
     pairTree_ls->Branch("eta1",&eta1);
@@ -361,6 +367,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("nTPC2",&nTPC2);
     pairTree_us_ls->Branch("ITSchi21",&ITSchi21);
     pairTree_us_ls->Branch("ITSchi22",&ITSchi22);
+    pairTree_us_ls->Branch("TPCchi21",&TPCchi21);
+    pairTree_us_ls->Branch("TPCchi22",&TPCchi22);
     pairTree_us_ls->Branch("phi1",&phi1);
     pairTree_us_ls->Branch("phi2",&phi2);
     pairTree_us_ls->Branch("eta1",&eta1);
