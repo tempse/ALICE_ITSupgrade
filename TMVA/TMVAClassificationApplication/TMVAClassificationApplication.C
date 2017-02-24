@@ -18,6 +18,7 @@
 #include "TString.h"
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TMath.h"
 #include "TStopwatch.h"
 
 #include "TMVA/Tools.h"
@@ -176,7 +177,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // --- Book the MVA methods
 
-   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train-noDCA_1-100-split/weights/";
+   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split/weights/";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
@@ -195,7 +196,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    // we'll later on use only the "signal" events for the test in this example.
    //   
    TFile *input(0);
-   TString fname = "../../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";  
+   TString fname = "../../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split_wFakeDcaxy.root";  
    if (!gSystem->AccessPathName( fname )) 
      input = TFile::Open( fname, "READ" ); // check if file in local directory exists
    
@@ -267,8 +268,8 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    // theTree->SetBranchAddress( "motherPdg2", &app_motherPdg2 );
    // theTree->SetBranchAddress( "pdg1", &app_pdg1 );
    // theTree->SetBranchAddress( "pdg2", &app_pdg2 );
-   theTree->SetBranchAddress( "DCAxy1", &app_DCAxy1 );
-   theTree->SetBranchAddress( "DCAxy2", &app_DCAxy2 );
+   theTree->SetBranchAddress( "DCAxy1_fakeHF", &app_DCAxy1 );
+   theTree->SetBranchAddress( "DCAxy2_fakeHF", &app_DCAxy2 );
    // theTree->SetBranchAddress( "DCAz1", &app_DCAz1 );
    // theTree->SetBranchAddress( "DCAz2", &app_DCAz2 );
    theTree->SetBranchAddress( "nITS1", &app_nITS1 );

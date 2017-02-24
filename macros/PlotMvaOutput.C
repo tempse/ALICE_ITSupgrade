@@ -11,7 +11,7 @@
 #include <TLatex.h>
 
 void PlotMvaOutput() {
-  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
+  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split_wFakeDcaxy.root";
   
   TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_test.root";
 
@@ -73,7 +73,7 @@ void PlotMvaOutput() {
 
 
   
-  Long64_t nEv = TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries()/100;
   
   for(Long64_t ev=0; ev<nEv; ev++) {
     TestTree->GetEvent(ev);
@@ -144,8 +144,8 @@ void PlotMvaOutput() {
   h_RPConv->GetYaxis()->SetTitleOffset(1.3);
 
 
+  
   TFile *outfile = new TFile(outfileName, "RECREATE");  
-
 
   // write histograms to output file:
   h_SB->SetDirectory(outfile);

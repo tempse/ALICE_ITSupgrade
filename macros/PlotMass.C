@@ -17,8 +17,11 @@
 
 
 void PlotMass() {
+  // File containing the input pairtree (test) data:
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
-  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp.root";
+
+  // File containing the corresponding MVA output values:
+  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_test_1-100-split_wFakeDcaxy.root";
   
   TString h_text = "Combinatorial MLP";
 
@@ -35,7 +38,7 @@ void PlotMass() {
   //// optimal MVA cuts for "signal = physical signal":
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  const float MVAcut = .5;
+  const float MVAcut = .4;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S
@@ -46,8 +49,8 @@ void PlotMass() {
   //const float MVAcut = .28;
 
   
-  const float stepSize = .1;
-  const int nSteps = 10; // NB: 1/(nSteps)==stepSize must apply
+  const float stepSize = .2;
+  const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
 
   
   TFile *f = new TFile(fileName_testData,"READ");

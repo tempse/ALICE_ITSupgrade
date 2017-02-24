@@ -164,13 +164,14 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    // Read training and test data
    // (it is also possible to use ASCII format as input -> see TMVA Users Guide)
-   TString fname = "../inputData/FT2_AnalysisResults_Upgrade_train_1-100-split.root";
+   //TString fname = "../inputData/FT2_AnalysisResults_Upgrade_addFeat_train_1-100-split.root";
+   TString fname = "/home/sebastian/Downloads/FT2_AnalysisResults.root";
 
    // if (gSystem->AccessPathName( fname ))  // file does not exist in local directory
    //    gSystem->Exec("curl -O http://root.cern.ch/files/tmva_class_example.root");
 
    TFile *input = TFile::Open( fname );
-   TTree *Track_Tree = (TTree*)input->Get("tracks");
+   TTree *Track_Tree = (TTree*)input->Get("outputITSup/tracks");
 
    std::cout << "--- TMVAClassification       : Using input file: " << input->GetName() << std::endl;
 
@@ -216,10 +217,13 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    dataloader->AddVariable( "var_phi := phi", 'F' );
    dataloader->AddVariable( "var_pt := pt", 'F' );
    dataloader->AddVariable( "var_dcaR := log(abs(dcaR))", 'F' );
-   // dataloader->AddVariable( "var_dcaZ := dcaZ", 'F' );
+   dataloader->AddVariable( "var_dcaZ := log(abs(dcaZ))", 'F' );
    dataloader->AddVariable( "var_p := sqrt(particle.fPx*particle.fPx + particle.fPy*particle.fPy + particle.fPz*particle.fPz)", 'F' );
-   dataloader->AddVariable( "var_nITS := nITS", 'F' );
-   dataloader->AddVariable( "var_nTPC := nTPC", 'F' );
+   dataloader->AddVariable( "var_nITS := abs(nITS)", 'F' );
+   dataloader->AddVariable( "var_nTPC := abs(nTPC)", 'F' );
+   dataloader->AddVariable( "var_nITSshared := abs(nITSshared)", 'F' );
+   dataloader->AddVariable( "var_ITSchi2 := abs(ITSchi2)", 'F' );
+   dataloader->AddVariable( "var_TPCchi2 := abs(TPCchi2)", 'F' );
    
 
    // You can add so-called "Spectator variables", which are not used in the MVA training,
@@ -250,8 +254,8 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    // dataloader->AddSignalTree    ( signalTree,     signalWeight );
    // dataloader->AddBackgroundTree( background, backgroundWeight );
 
-   TCut signalCut = "!(pdgMother==22)";
-   TCut backgrCut = "pdgMother==22";
+   TCut signalCut = "pdgMother!=22";
+   TCut backgrCut = "!(pdgMother!=22)";
    
    dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
 
@@ -316,7 +320,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    //    dataloader->PrepareTrainingAndTestTree( mycut,
    //         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
    dataloader->PrepareTrainingAndTestTree( mycuts, mycutb,
-                                        "nTrain_Signal=50000:nTrain_Background=50000:SplitMode=Random:!V" );
+					   "!V:SplitMode=Random:nTrain_Signal=5000:nTrain_Background=5000" );//Test_Signal=5000:nTest_Background=5000" );
 
    // ### Book MVA methods
    //
@@ -349,17 +353,17 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    // Likelihood ("naive Bayes estimator")
    if (Use["Likelihood"])
       factory->BookMethod( dataloader, TMVA::Types::kLikelihood, "Likelihood",
-                           "H:!V:TransformOutput:PDFInterpol=Spline2:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50" );
+                           "!H:!V:TransformOutput:PDFInterpol=Spline3:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50" );
 
    // Decorrelated likelihood
    if (Use["LikelihoodD"])
       factory->BookMethod( dataloader, TMVA::Types::kLikelihood, "LikelihoodD",
-                           "!H:!V:TransformOutput:PDFInterpol=Spline2:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmooth=5:NAvEvtPerBin=50:VarTransform=Decorrelate" );
+                           "!H:!V:TransformOutput:PDFInterpol=Spline3:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmooth=5:NAvEvtPerBin=50:VarTransform=Decorrelate" );
 
    // PCA-transformed likelihood
    if (Use["LikelihoodPCA"])
       factory->BookMethod( dataloader, TMVA::Types::kLikelihood, "LikelihoodPCA",
-                           "!H:!V:!TransformOutput:PDFInterpol=Spline2:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmooth=5:NAvEvtPerBin=50:VarTransform=PCA" );
+                           "!H:!V:!TransformOutput:PDFInterpol=Spline3:NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmooth=5:NAvEvtPerBin=50:VarTransform=PCA" );
 
    // Use a kernel density estimator to approximate the PDFs
    if (Use["LikelihoodKDE"])
@@ -450,7 +454,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
    if (Use["MLP"])
-      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:ConvergenceTests=30:HiddenLayers=N+N,N:!UseRegulator" );
+      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N:NCycles=800:ConvergenceTests=30:HiddenLayers=N,N-1:UseRegulator" );
 
    if (Use["MLPBFGS"])
       factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
@@ -522,7 +526,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    if (Use["BDT"])  // Adaptive Boost
       factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=800:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
+                           "!H:!V:NTrees=800:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
 
    if (Use["BDTB"]) // Bagging
       factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB",

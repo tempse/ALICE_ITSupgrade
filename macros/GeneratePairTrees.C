@@ -388,13 +388,11 @@ void GeneratePairTrees() {
   }
   
 
-
-
   Int_t ev_temp = -1; // used to detect new events
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries();
+  Long64_t singleTree_nEvents = singleTree->GetEntries()/10;
   std::cout << std::endl;
   std::cout << "Start event processing...";
   TStopwatch *watch = new TStopwatch();
