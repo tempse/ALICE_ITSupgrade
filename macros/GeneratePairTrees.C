@@ -13,6 +13,7 @@
 #include <TTree.h>
 #include <TParticle.h>
 #include <TMath.h>
+#include <TRandom.h>
 #include <TStopwatch.h>
 
 Bool_t isCharm(Int_t );
@@ -28,6 +29,10 @@ void calculateDiffz();
 void calculateSumz();
 void calculateHF();
 
+
+
+const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
+Bool_t doSwapCurrentPair = kTRUE;
 
 
 // output variables (1,2 <-> 1st leg, 2nd leg):
@@ -96,6 +101,11 @@ void GeneratePairTrees() {
   
   // TH1F *histDiagnosis1 = new TH1F("histDiagnosis1","",1000,-500,500);
   // TH1F *histDiagnosis2 = new TH1F("histDiagnosis2","",1000,-500,500);
+
+
+  TRandom rand;
+
+
 
   
   // variables of input tree ("ST" <-> "single tree"):
@@ -407,45 +417,44 @@ void GeneratePairTrees() {
     // cut to ignore unphysical DCAz values (specific to prior analysis):
     if(ST_dcaZ == 999) continue;
 
-    // already available, pairing-independent variables of 1st leg for output tree:
-    EventID1 = ST_event;
-    TrackID1 = tr1;
-    mcPx1 = ST_particle->Px();
-    mcPy1 = ST_particle->Py();
-    mcPz1 = ST_particle->Pz();
-    pdg1 = ST_pdg;
-    motherPdg1 = ST_pdgMother;
-    firstMotherPdg1 = ST_pdgFirstMother;
-    motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
-    firstMotherLabel1 = ST_labelFirstMother;
-    firstMotherLabel1_min = ST_labelMinFirstMother;
-    firstMotherLabel1_max = ST_labelMaxFirstMother;
-    DCAxy1 = ST_dcaR;
-    DCAz1 = ST_dcaZ;
-    nITS1 = ST_nITS;
-    nITSshared1 = ST_nITSshared;
-    nTPC1 = ST_nTPC;
-    ITSchi21 = ST_ITSchi2;
-    TPCchi21 = ST_TPCchi2;
-    phi1 = ST_phi;
-    eta1 = ST_eta;
-    pt1 = ST_pt;
     
-    Int_t tr2 = tr1+1;
-    while(true) { // loop over remaining tracks of the same event
-      singleTree->GetEntry(tr2);
-      if(ev_temp != ST_event) break; // exit loop over remaining tracks if event number changes
+    // prepare random pair swapping if doRandPairSwap==kTRUE:
+    Bool_t doSwapCurrentPair;
+    if(doRandPairSwap) {
+      doSwapCurrentPair = (rand.Uniform() < .5) ? kTRUE : kFALSE;
+    }else {
+      doSwapCurrentPair = kTRUE;
+    }
 
-      // pdg cut:
-      if(abs(ST_pdg) != 11) { tr2++; continue; }
-      
-      // cut to ignore unphysical DCAz values (specific to prior analysis):
-      if(ST_dcaZ == 999) { tr2++; continue; }
-
-      // already available, pairing-independent variables of 2nd leg for output tree:
+    
+    // already available, pairing-independent variables of 1st leg for output tree:
+    if(!doSwapCurrentPair) {
+      EventID1 = ST_event;
+      TrackID1 = tr1;
+      mcPx1 = ST_particle->Px();
+      mcPy1 = ST_particle->Py();
+      mcPz1 = ST_particle->Pz();
+      pdg1 = ST_pdg;
+      motherPdg1 = ST_pdgMother;
+      firstMotherPdg1 = ST_pdgFirstMother;
+      motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+      firstMotherLabel1 = ST_labelFirstMother;
+      firstMotherLabel1_min = ST_labelMinFirstMother;
+      firstMotherLabel1_max = ST_labelMaxFirstMother;
+      DCAxy1 = ST_dcaR;
+      DCAz1 = ST_dcaZ;
+      nITS1 = ST_nITS;
+      nITSshared1 = ST_nITSshared;
+      nTPC1 = ST_nTPC;
+      ITSchi21 = ST_ITSchi2;
+      TPCchi21 = ST_TPCchi2;
+      phi1 = ST_phi;
+      eta1 = ST_eta;
+      pt1 = ST_pt;
+    }else {
       EventID2 = ST_event;
-      TrackID2 = tr2;
-      mcPx2= ST_particle->Px();
+      TrackID2 = tr1;
+      mcPx2 = ST_particle->Px();
       mcPy2 = ST_particle->Py();
       mcPz2 = ST_particle->Pz();
       pdg2 = ST_pdg;
@@ -465,6 +474,68 @@ void GeneratePairTrees() {
       phi2 = ST_phi;
       eta2 = ST_eta;
       pt2 = ST_pt;
+    }
+
+    
+    Int_t tr2 = tr1+1;
+    while(true) { // loop over remaining tracks of the same event
+      singleTree->GetEntry(tr2);
+      if(ev_temp != ST_event) break; // exit loop over remaining tracks if event number changes
+
+      // pdg cut:
+      if(abs(ST_pdg) != 11) { tr2++; continue; }
+      
+      // cut to ignore unphysical DCAz values (specific to prior analysis):
+      if(ST_dcaZ == 999) { tr2++; continue; }
+
+      // already available, pairing-independent variables of 2nd leg for output tree:
+      if(!doSwapCurrentPair) {
+	EventID2 = ST_event;
+	TrackID2 = tr2;
+	mcPx2 = ST_particle->Px();
+	mcPy2 = ST_particle->Py();
+	mcPz2 = ST_particle->Pz();
+	pdg2 = ST_pdg;
+	motherPdg2 = ST_pdgMother;
+	firstMotherPdg2 = ST_pdgFirstMother;
+	motherLabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+	firstMotherLabel2 = ST_labelFirstMother;
+	firstMotherLabel2_min = ST_labelMinFirstMother;
+	firstMotherLabel2_max = ST_labelMaxFirstMother;
+	DCAxy2 = ST_dcaR;
+	DCAz2 = ST_dcaZ;
+	nITS2 = ST_nITS;
+	nITSshared2 = ST_nITSshared;
+	nTPC2 = ST_nTPC;
+	ITSchi22 = ST_ITSchi2;
+	TPCchi22 = ST_TPCchi2;
+	phi2 = ST_phi;
+	eta2 = ST_eta;
+	pt2 = ST_pt;
+      }else {
+	EventID1 = ST_event;
+	TrackID1 = tr2;
+	mcPx1 = ST_particle->Px();
+	mcPy1 = ST_particle->Py();
+	mcPz1 = ST_particle->Pz();
+	pdg1 = ST_pdg;
+	motherPdg1 = ST_pdgMother;
+	firstMotherPdg1 = ST_pdgFirstMother;
+	motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+	firstMotherLabel1 = ST_labelFirstMother;
+	firstMotherLabel1_min = ST_labelMinFirstMother;
+	firstMotherLabel1_max = ST_labelMaxFirstMother;
+	DCAxy1 = ST_dcaR;
+	DCAz1 = ST_dcaZ;
+	nITS1 = ST_nITS;
+	nITSshared1 = ST_nITSshared;
+	nTPC1 = ST_nTPC;
+	ITSchi21 = ST_ITSchi2;
+	TPCchi21 = ST_TPCchi2;
+	phi1 = ST_phi;
+	eta1 = ST_eta;
+	pt1 = ST_pt;
+      }
 
       IsRP = 0; // default value
       
@@ -541,8 +612,11 @@ void GeneratePairTrees() {
 
   outfile->Close();
 
+
   // histDiagnosis1->SaveAs("histDiagnosis1.root");
   // histDiagnosis2->SaveAs("histDiagnosis2.root");
+
+  
   
 }
 
@@ -566,16 +640,29 @@ Bool_t isBottom(Int_t pdg) {
 
 
 void calculateMomenta() { // has to be called before other methods that need momentum variables!
-  px1 = pt1*TMath::Cos(phi1);
-  py1 = pt1*TMath::Sin(phi1);
-  pz1 = pt1*TMath::SinH(eta1);
+  if(!doSwapCurrentPair) {
+    px1 = pt1*TMath::Cos(phi1);
+    py1 = pt1*TMath::Sin(phi1);
+    pz1 = pt1*TMath::SinH(eta1);
 
-  px2 = pt2*TMath::Cos(phi2);
-  py2 = pt2*TMath::Sin(phi2);
-  pz2 = pt2*TMath::SinH(eta2);
+    px2 = pt2*TMath::Cos(phi2);
+    py2 = pt2*TMath::Sin(phi2);
+    pz2 = pt2*TMath::SinH(eta2);
 
-  pv1.SetXYZ(px1, py1, pz1);
-  pv2.SetXYZ(px2, py2, pz2);
+    pv1.SetXYZ(px1, py1, pz1);
+    pv2.SetXYZ(px2, py2, pz2);
+  } else { // swap pairs
+    px2 = pt1*TMath::Cos(phi1);
+    py2 = pt1*TMath::Sin(phi1);
+    pz2 = pt1*TMath::SinH(eta1);
+
+    px1 = pt2*TMath::Cos(phi2);
+    py1 = pt2*TMath::Sin(phi2);
+    pz1 = pt2*TMath::SinH(eta2);
+
+    pv2.SetXYZ(px1, py1, pz1);
+    pv1.SetXYZ(px2, py2, pz2);
+  }
 }
 
 
@@ -595,6 +682,7 @@ void calculatePhiv() {
   u = u.Unit();
 
   v = pv1.Cross(pv2);
+  if(doSwapCurrentPair) v -= v;
 
   w = u.Cross(v);
 
@@ -634,6 +722,7 @@ void calculateDiffz() {
   }
   
   temp = pv1.Unit() - pv2.Unit();
+  if(doSwapCurrentPair) temp -= temp;
   diffz = temp.Angle(z);
 }
 
