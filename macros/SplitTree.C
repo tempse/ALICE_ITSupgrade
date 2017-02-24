@@ -5,16 +5,34 @@
 #include <TFile.h>
 #include <TTree.h>
 
-void SplitTree(TString f, TString method) {
+void SplitTree(TString fname, TString tname, TString frac, TString method) {
 
-  TString infileName = "pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us.root";
+  // TString infileName = "../inputData/FT2_AnalysisResults_Upgrade_addFeat.root";
+  TString infileName;
+  if(fname.IsNull() || !fname.EndsWith(".root")) {
+    std::cout << "  ERROR: You must provide a ROOT file name with the first argument."
+	      << std::endl;
+    exit(1);
+  }else {
+    infileName = fname;
+  }
+
+
+  TString treeName = "tracks";
+  if(tname.IsNull()) {
+    std::cout << "  Warning: No tree name provided. Default value (\""
+	      << treeName << "\") will be used." << std::endl;
+  }else {
+    treeName = tname;
+  }
+  
 
   TString splitFraction = "1:1";
-  if(f.IsNull() || !f.Contains(":")) {
+  if(frac.IsNull() || !frac.Contains(":")) {
     std::cout << "  Warning: Invalid format/value of second argument. "
 	      << "  The default value \"1:1\" will be used." << std::endl;
   }else {
-    splitFraction = f;
+    splitFraction = frac;
   }
 
   TString temp_str = splitFraction;
@@ -39,7 +57,7 @@ void SplitTree(TString f, TString method) {
 
   
   TFile *infile = new TFile(infileName, "READ");
-  TTree *infileTree = (TTree*)infile->Get("pairTree_us");
+  TTree *infileTree = (TTree*)infile->Get(treeName);
 
   TFile *outfile_train = new TFile("temp_output/output_splitTree_train.root", "RECREATE");
   TTree *splitTree_train = infileTree->CloneTree(0);
