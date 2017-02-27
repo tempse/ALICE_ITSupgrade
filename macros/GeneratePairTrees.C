@@ -31,7 +31,7 @@ void calculateHF();
 
 
 
-const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
+const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
 Bool_t doSwapCurrentPair = kTRUE;
 
@@ -682,7 +682,7 @@ void calculatePhiv() {
   u = u.Unit();
 
   v = pv1.Cross(pv2);
-  if(doSwapCurrentPair) v -= v;
+  // if(doSwapCurrentPair) v -= v;
 
   w = u.Cross(v);
 
@@ -722,7 +722,7 @@ void calculateDiffz() {
   }
   
   temp = pv1.Unit() - pv2.Unit();
-  if(doSwapCurrentPair) temp -= temp;
+  if(doSwapCurrentPair) temp *= -1;
   diffz = temp.Angle(z);
 }
 
