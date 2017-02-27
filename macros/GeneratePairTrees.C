@@ -20,7 +20,7 @@ Bool_t isCharm(Int_t );
 Bool_t isBottom(Int_t );
 
 // The following functions use the globally defined output tree variables. Make
-// sure that these variables have the correct values when calling one of them!
+// sure that these variables have the correct values when calling them!
 void calculateMomenta();
 void calculatePhiv();
 void calculateOpang();
@@ -32,6 +32,7 @@ void calculateHF();
 
 
 const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
+
 Bool_t doSwapCurrentPair = kTRUE;
 
 
@@ -388,11 +389,11 @@ void GeneratePairTrees() {
   }
   
 
-  Int_t ev_temp = -1; // used to detect new events
+  // Int_t ev_temp = -1; // used to detect new events
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries()/10;
+  Long64_t singleTree_nEvents = singleTree->GetEntries();
   std::cout << std::endl;
   std::cout << "Start event processing...";
   TStopwatch *watch = new TStopwatch();
@@ -404,10 +405,11 @@ void GeneratePairTrees() {
     singleTree->GetEntry(tr1);
 
     // detect new events:
-    if(ev_temp != ST_event) {
-      ev_temp = ST_event;
-      firstTrack = tr1;
-    }
+    // if(ev_temp != ST_event) {
+    //   ev_temp = ST_event;
+    //   firstTrack = tr1;
+    // }
+    Int_t ev_temp = ST_event; // marks the current event number
 
     // pdg cut:
     if(abs(ST_pdg) != 11) continue; // keep electrons/positrons only
@@ -421,7 +423,7 @@ void GeneratePairTrees() {
     if(doRandPairSwap) {
       doSwapCurrentPair = (rand.Uniform() < .5) ? kTRUE : kFALSE;
     }else {
-      doSwapCurrentPair = kTRUE;
+      doSwapCurrentPair = kFALSE;
     }
 
     
@@ -537,7 +539,7 @@ void GeneratePairTrees() {
 
       IsRP = 0; // default value
       
-      if(pdg1*ST_pdg < 0) { // <-> unlike sign pair (via MC info!)
+      if(pdg1*pdg2 < 0) { // <-> unlike sign pair (via MC info!)
 	IsUS = 1;
 	
 	ChargeSign = 0;
