@@ -139,25 +139,50 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // Create a set of variables and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-   Float_t var_p, var_phiv, var_pz_diff, var_diffz, var_opang;
+   Float_t var_p, var_phiv, var_pz_diff, var_diffz, var_sumz, var_opang;
    Float_t var_DCAxy1, var_DCAxy2;
+   Float_t var_DCAz1, var_DCAz2;
    Float_t var_mass;
    Float_t var_nITS1, var_nITS2;
+   Float_t var_nITSshared1, var_nITSshared2;
+   Float_t var_nTPC1, var_nTPC2;
+   Float_t var_ITSchi21, var_ITSchi22;
+   Float_t var_TPCchi21, var_TPCchi22;
 
    reader->AddVariable( "var_p := sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", &var_p );
    reader->AddVariable( "var_phiv := abs(phiv-1.57)", &var_phiv );
    reader->AddVariable( "var_mass := mass", &var_mass );
    reader->AddVariable( "var_pz_diff := abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", &var_pz_diff );
+   reader->AddVariable( "var_sumz := sumz", &var_sumz );
    reader->AddVariable( "var_diffz := abs(diffz-1.57)", &var_diffz );
    reader->AddVariable( "var_opang := abs(opang)", &var_opang );
-   reader->AddVariable( "var_nITS1 := nITS1", &var_nITS1 );
-   reader->AddVariable( "var_nITS2 := nITS2", &var_nITS2 );
+   reader->AddVariable( "var_nITS1 := abs(nITS1)", &var_nITS1 );
+   reader->AddVariable( "var_nITS2 := abs(nITS2)", &var_nITS2 );
+   reader->AddVariable( "var_nITSshared1 := abs(nITSshared1)", &var_nITSshared1 );
+   reader->AddVariable( "var_nITSshared2 := abs(nITSshared2)", &var_nITSshared2 );
+   reader->AddVariable( "var_nTPC1 := abs(nTPC1)", &var_nTPC1 );
+   reader->AddVariable( "var_nTPC2 := abs(nTPC2)", &var_nTPC2 );
    reader->AddVariable( "var_DCAxy1 := log(abs(DCAxy1))", &var_DCAxy1 );
    reader->AddVariable( "var_DCAxy2 := log(abs(DCAxy2))", &var_DCAxy2 );
-   
+   reader->AddVariable( "var_DCAz1 := log(abs(DCAz1))", &var_DCAz1 );
+   reader->AddVariable( "var_DCAz2 := log(abs(DCAz2))", &var_DCAz2 );
+   // reader->AddVariable( "var_chi2g1 := chi2g1", &var_chi2g1 ); 
+   // reader->AddVariable( "var_chi2g2 := chi2g2", &var_chi2g2 );
+   reader->AddVariable( "var_ITSchi21 := abs(ITSchi21)", &var_ITSchi21 );
+   reader->AddVariable( "var_ITSchi22 := abs(ITSchi22)", &var_ITSchi22 );
+   reader->AddVariable( "var_TPCchi21 := abs(TPCchi21)", &var_TPCchi21 );
+   reader->AddVariable( "var_TPCchi22 := abs(TPCchi22)", &var_TPCchi22 );
+   // reader->AddVariable( "var_pt1 := pt1", &var_pt1 );
+   // reader->AddVariable( "var_pt2 := pt2", &var_pt2 );
+   // reader->AddVariable( "var_eta1 := eta1", &var_eta1 );
+   // reader->AddVariable( "var_eta2 := eta2", &var_eta2 );
+   // reader->AddVariable( "var_phi1 := phi1", &var_phi1 ); 
+   // reader->AddVariable( "var_phi2 := phi2", &var_phi2 );
 
+   
    // Spectator variables declared in the training have to be added to the reader, too
-   Float_t IsRP, IsHF, IsConv, pdg1, pdg2, motherPdg1, motherPdg2;
+   Float_t IsRP, IsHF, IsConv;
+   Float_t pdg1, pdg2, motherPdg1, motherPdg2;
    reader->AddSpectator( "IsRP", &IsRP );
    reader->AddSpectator( "IsHF", &IsHF );
    reader->AddSpectator( "IsConv", &IsConv );
@@ -165,6 +190,31 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    reader->AddSpectator( "pdg2", &pdg2 );
    reader->AddSpectator( "motherPdg1", &motherPdg1 );
    reader->AddSpectator( "motherPdg2", &motherPdg2 );
+
+   
+   // reader->AddVariable( "var_p := sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", &var_p );
+   // reader->AddVariable( "var_phiv := abs(phiv-1.57)", &var_phiv );
+   // reader->AddVariable( "var_mass := mass", &var_mass );
+   // reader->AddVariable( "var_pz_diff := abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", &var_pz_diff );
+   // reader->AddVariable( "var_diffz := abs(diffz-1.57)", &var_diffz );
+   // reader->AddVariable( "var_opang := abs(opang)", &var_opang );
+   // reader->AddVariable( "var_nITS1 := nITS1", &var_nITS1 );
+   // reader->AddVariable( "var_nITS2 := nITS2", &var_nITS2 );
+   // reader->AddVariable( "var_DCAxy1 := log(abs(DCAxy1))", &var_DCAxy1 );
+   // reader->AddVariable( "var_DCAxy2 := log(abs(DCAxy2))", &var_DCAxy2 );
+   
+
+   // // Spectator variables declared in the training have to be added to the reader, too
+   // Float_t IsRP, IsHF, IsConv, pdg1, pdg2, motherPdg1, motherPdg2;
+   // reader->AddSpectator( "IsRP", &IsRP );
+   // reader->AddSpectator( "IsHF", &IsHF );
+   // reader->AddSpectator( "IsConv", &IsConv );
+   // reader->AddSpectator( "pdg1", &pdg1 );
+   // reader->AddSpectator( "pdg2", &pdg2 );
+   // reader->AddSpectator( "motherPdg1", &motherPdg1 );
+   // reader->AddSpectator( "motherPdg2", &motherPdg2 );
+
+
    
 
    // Float_t Category_cat1, Category_cat2, Category_cat3;
@@ -177,7 +227,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
 
    // --- Book the MVA methods
 
-   TString dir    = "../trainData/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_train_1-100-split/weights/";
+   TString dir    = "trainData/FT2_AnalysisResults_Upgrade_addFeat_subsample/dataset/weights";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
@@ -196,7 +246,7 @@ void TMVAClassificationApplication( TString myMethodList = "" )
    // we'll later on use only the "signal" events for the test in this example.
    //   
    TFile *input(0);
-   TString fname = "../../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split_wFakeDcaxy.root";  
+   TString fname = "../../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";  
    if (!gSystem->AccessPathName( fname )) 
      input = TFile::Open( fname, "READ" ); // check if file in local directory exists
    

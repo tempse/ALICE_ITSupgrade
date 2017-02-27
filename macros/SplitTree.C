@@ -92,6 +92,7 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
 	      << std::endl << std::endl;
   
     outfile_train->Write();
+    outfile_train->Close();
   }
 
   
@@ -116,6 +117,7 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
     std::cout << std::endl;
 
     outfile_test->Write();
+    outfile_test->Close();
   }
 
 

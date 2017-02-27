@@ -139,16 +139,21 @@ void TMVAClassificationApplication_singleTrackTree( TString myMethodList = "" )
 
    // Create a set of variables and declare them to the reader
    // - the variable names MUST corresponds in name and type to those given in the weight file(s) used
-   Float_t var_eta, var_phi, var_pt, var_dcaR, var_p, var_nITS, var_nTPC;
+   Float_t var_eta, var_phi, var_pt, var_dcaR, var_dcaZ, var_p, var_nITS, var_nTPC,
+     var_nITSshared, var_ITSchi2, var_TPCchi2;
 
    reader->AddVariable( "var_eta := eta", &var_eta );
    reader->AddVariable( "var_phi := phi", &var_phi);
    reader->AddVariable( "var_pt := pt", &var_pt );
    reader->AddVariable( "var_dcaR := log(abs(dcaR))", &var_dcaR );
-   // reader->AddVariable( "var_dcaZ := &dcaZ", var_dcaZ);
+   reader->AddVariable( "var_dcaZ := dcaZ", &var_dcaZ);
    reader->AddVariable( "var_p := sqrt(particle.fPx*particle.fPx + particle.fPy*particle.fPy + particle.fPz*particle.fPz)", &var_p );
    reader->AddVariable( "var_nITS := nITS", &var_nITS );
    reader->AddVariable( "var_nTPC := nTPC", &var_nTPC );
+   reader->AddVariable( "var_nITSshared := abs(nITSshared)", &var_nITSshared );
+   reader->AddVariable( "var_ITSchi2 := abs(ITSchi2)", &var_ITSchi2 );
+   reader->AddVariable( "var_TPCchi2 := abs(TPCchi2)", &var_TPCchi2 );
+   
    
 
    // Spectator variables declared in the training have to be added to the reader, too
@@ -176,7 +181,7 @@ void TMVAClassificationApplication_singleTrackTree( TString myMethodList = "" )
 
    // --- Book the MVA methods
 
-   TString dir    = "../singleTrackTree_MVA/MVA1/dataset/weights/";
+   TString dir    = "trainData/FT2_AnalysisResults_Upgrade_addFeat_subsample/dataset/weights/";
    TString prefix = "TMVAClassification";
 
    // Book method(s)
@@ -195,7 +200,7 @@ void TMVAClassificationApplication_singleTrackTree( TString myMethodList = "" )
    // we'll later on use only the "signal" events for the test in this example.
    //   
    TFile *input(0);
-   TString fname = "../../inputData/FT2_AnalysisResults_Upgrade_test_1-10-split.root";  
+   TString fname = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_train_1-100-split.root";  
    if (!gSystem->AccessPathName( fname )) 
      input = TFile::Open( fname, "READ" ); // check if file in local directory exists
    

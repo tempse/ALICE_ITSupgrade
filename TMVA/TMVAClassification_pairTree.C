@@ -119,7 +119,7 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
    Use["FDA_MCMT"]        = 0;
    //
    // --- Neural Networks (all are feed-forward Multilayer Perceptrons)
-   Use["MLP"]             = 1; // Recommended ANN
+   Use["MLP"]             = 0; // Recommended ANN
    Use["MLPBFGS"]         = 0; // Recommended ANN with optional training method
    Use["MLPBNN"]          = 0; // Recommended ANN with BFGS training method and bayesian regulator
    Use["CFMlpANN"]        = 0; // Depreciated ANN from ALEPH
@@ -164,8 +164,8 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
 
    // --- Here the preparation phase begins
 
-   TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat_temp_train_1-100-split.root");
-   TTree *Track_Tree = (TTree*)infile->Get("tracks");
+   TFile *infile = TFile::Open("../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_rand_train_1-100-split.root");
+   TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
    
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
    TString outfileName( "TMVA.root" );
@@ -192,10 +192,11 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
    TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset");
    
 
-   dataloader->AddVariable( "var_p := sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", 'F' );       // Abs(pair_pt))
+   dataloader->AddVariable( "var_p := sqrt((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2))", 'F' );
    dataloader->AddVariable( "var_phiv := abs(phiv-1.57)", 'F' );
    dataloader->AddVariable( "var_mass := mass", 'F' );
    dataloader->AddVariable( "var_pz_diff := abs(pz1/sqrt(px1*px1+py1*py1)-pz2/sqrt(px2*px2+py2*py2))", 'F' );
+   dataloader->AddVariable( "var_sumz := sumz", 'F' );
    dataloader->AddVariable( "var_diffz := abs(diffz-1.57)", 'F' );
    dataloader->AddVariable( "var_opang := abs(opang)", 'F' );
    dataloader->AddVariable( "var_nITS1 := abs(nITS1)" );
@@ -214,12 +215,12 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
    dataloader->AddVariable( "var_ITSchi22 := abs(ITSchi22)" );
    dataloader->AddVariable( "var_TPCchi21 := abs(TPCchi21)" );
    dataloader->AddVariable( "var_TPCchi22 := abs(TPCchi22)" );
-   // dataloader->AddVariable( "var_pt1 := pt1");
-   // dataloader->AddVariable( "var_pt2 := pt2");
-   // dataloader->AddVariable( "var_eta1 := eta1");
-   // dataloader->AddVariable( "var_eta2 := eta2");
-   // dataloader->AddVariable( "var_phi1 := phi1"); 
-   // dataloader->AddVariable( "var_phi2 := phi2");
+   dataloader->AddVariable( "var_pt1 := pt1");
+   dataloader->AddVariable( "var_pt2 := pt2");
+   dataloader->AddVariable( "var_eta1 := eta1");
+   dataloader->AddVariable( "var_eta2 := eta2");
+   dataloader->AddVariable( "var_phi1 := phi1"); 
+   dataloader->AddVariable( "var_phi2 := phi2");
 
    
    dataloader->AddSpectator( "IsRP" );
@@ -310,7 +311,7 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    //    factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
    // To also specify the number of testing events, use:
 //       factory->PrepareTrainingAndTestTree( mycut,       "NTrain_Signal=3751:NTrain_Background=52925:NTest_Signal=0:NTest_Background=0:SplitMode=Random:!V" );
-   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTrain_Signal=5000:NTrain_Background=5000" );
+   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTrain_Signal=5000:NTrain_Background=5000:NTest_Signal=5000:NTest_Background=5000" );
 
    // ---- Book MVA methods
    //
