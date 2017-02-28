@@ -18,35 +18,35 @@
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split.root";
+  TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_test_1-100-split_wFakeDcaxy.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand/TMVApp_BDT.root";
   
-  TString h_text = "Combinatorial MLP";
+  TString h_text = "Combinatorial BDT";
 
   //// optimal MVA cuts for "signal = CombWithConvLegs":
   //
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs:
-  //const float MVAcut = .42;
+  // float MVAcut = .42;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass:
-  //const float MVAcut = .40;
+  // float MVAcut = .40;
   //
   //// optimal MVA cuts for "signal = physical signal":
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  const float MVAcut = .4;
+  float MVAcut = -.2;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S
-  //const float MVAcut = .40;
+  // float MVAcut = .40;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S-0.1mass
-  //const float MVAcut = .28;
+  // float MVAcut = .28;
 
   
   const float stepSize = .2;
@@ -68,11 +68,13 @@ void PlotMass() {
   // input MVA output information from file:
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
-  Float_t MLP;
-  MVAoutputTree->SetBranchAddress("MLP", &MLP);
+  // Float_t MLP;
+  Float_t BDT;
+  // MVAoutputTree->SetBranchAddress("MLP", &MLP);
+  MVAoutputTree->SetBranchAddress("BDT", &BDT);
   
   
-  const unsigned int min=0, max=2, nBins=20;
+  const unsigned int min=0, max=5, nBins=50;
   
   
   TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
@@ -158,13 +160,19 @@ void PlotMass() {
   }
   
   
-  Long64_t nEv = TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries()/100;
 
   Float_t passed_seconds_prev = 0.;
   
   TStopwatch *watch = new TStopwatch();
 
   watch->Start();
+
+  
+  // linear mapping of the MVA cut value: [-1,1] -> [0,1]:
+  MVAcut = (MVAcut+1)/2.;
+
+  
   for(Int_t i=1; i<=nSteps; i++) {
     std::cout << std::endl;
     
@@ -176,13 +184,17 @@ void PlotMass() {
       TestTree->GetEvent(ev);
       MVAoutputTree->GetEvent(ev);
 
+      // linear mapping of the BDT values: [-1,1] -> [0,1]:
+      BDT = (BDT+1)/2.;
+
+      
       // The TMVA reader tags defective events with MLP = -999. Skip those:
-      if(MLP == -999) continue;
+      // if(MLP == -999) continue;
 
       
       // "<=" instead of ">=" in case the network
       // is trained on the (physical) background:
-      if(MLP <= stepSize*i) {
+      if(BDT <= stepSize*i) {
 	h_SB_currentMVAcut->Fill(mass);
 	if(IsRP==1 && IsConv==0) {
 	  h_S_currentMVAcut->Fill(mass);
@@ -223,7 +235,7 @@ void PlotMass() {
 	
 	// "<=" instead of ">=" in case the network
 	// is trained on the (physical) background:
-	if(MLP <= MVAcut) {
+	if(BDT <= MVAcut) {
 	  h_SB_MVAcut->Fill(mass);
 	  if(IsRP==1 && IsConv==0) {
 	    h_S_MVAcut->Fill(mass);
@@ -581,4 +593,10 @@ void PlotMass() {
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.pdf");
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.root");
   
+}
+
+
+int main() {
+  PlotMass();
+  return 0;
 }

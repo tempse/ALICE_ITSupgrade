@@ -9,18 +9,23 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TLatex.h>
+#include <TStopwatch.h>
 
 void PlotMvaOutput() {
-  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us_test_1-100-split_wFakeDcaxy.root";
+  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_rand_test_1-100-split.root";
   
-  TString fileName_MVAoutput = "../pairTrees/FT2_AnalysisResults_Upgrade_all-Ev_pairtree_us/TMVApp_test.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_rand/TMVApp_BDT.root";
 
   TString outfileName = "temp_output/MVAoutput.root";
-  
-  TString h_text = "Combinatorial MLP";
 
-  
-  const Float_t massCut_lower=0.1;
+  // text on canvas:
+  TString h_text = "Combinatorial BDT";
+
+  // histogram ranges (note: BDT=-1..1, MLP=0..1):
+  unsigned int min=-1, max=1, nBins=100;
+
+  // mass cuts:
+  const Float_t massCut_lower=0.;
   // const Float_t massCut_upper=1.1;
   
   TFile *infile = new TFile(fileName,"READ");
@@ -37,11 +42,13 @@ void PlotMvaOutput() {
   TestTree->SetBranchAddress("mass",&mass);
 
 
-  Float_t MLP;
+  // Float_t MLP;
+  Float_t BDT;
   
   TFile *infile_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)infile_MVAoutput->Get("pairTree_MVAoutput");
-  MVAoutputTree->SetBranchAddress("MLP",&MLP);
+  // MVAoutputTree->SetBranchAddress("MLP",&MLP);
+  MVAoutputTree->SetBranchAddress("BDT", &BDT);
 
 
     
@@ -56,7 +63,6 @@ void PlotMvaOutput() {
   }
 
   
-  unsigned int min=0, max=1, nBins=100;
   
   TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
   
@@ -72,8 +78,11 @@ void PlotMvaOutput() {
   TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
 
 
+  TStopwatch *watch = new TStopwatch();
+  watch->Start();
+
   
-  Long64_t nEv = TestTree->GetEntries()/100;
+  Long64_t nEv = TestTree->GetEntries();
   
   for(Long64_t ev=0; ev<nEv; ev++) {
     TestTree->GetEvent(ev);
@@ -84,27 +93,33 @@ void PlotMvaOutput() {
 
     if(mass < massCut_lower) continue;
     
-    h_SB->Fill(MLP);
+    h_SB->Fill(BDT);
     if(IsRP==1 && IsConv==0) {
-      h_S->Fill(MLP);
+      h_S->Fill(BDT);
     }
     if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
-      h_CombiWithConvLeg->Fill(MLP);
+      h_CombiWithConvLeg->Fill(BDT);
     }
     if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
-      h_CombiWithoutConvLeg->Fill(MLP);
+      h_CombiWithoutConvLeg->Fill(BDT);
     }
     if(IsRP==0 && IsHF==1) {
-      h_HF->Fill(MLP);
+      h_HF->Fill(BDT);
     }
     if(IsRP==1 && IsConv==1) {
-      h_RPConv->Fill(MLP);
+      h_RPConv->Fill(BDT);
     }
   }
 
   std::cout << "\rProcessing entry "
 	    << nEv << " of " << nEv << " (100%)... DONE." << std::endl;
 
+  watch->Stop();
+
+  std::cout << "Elapsed time: ";
+  watch->Print();
+  std::cout << std::endl;
+  
   
   h_SB->SetLineColor(kBlack);
   h_S->SetLineColor(kGreen+1);
@@ -113,32 +128,32 @@ void PlotMvaOutput() {
   h_HF->SetLineColor(kOrange);
   h_RPConv->SetLineColor(13);
 
-  h_SB->SetXTitle("MLP");
+  h_SB->SetXTitle("BDT");
   h_SB->SetYTitle("Entries");
   h_SB->GetXaxis()->SetTitleOffset(1.2);
   h_SB->GetYaxis()->SetTitleOffset(1.3);
 
-  h_S->SetXTitle("MLP");
+  h_S->SetXTitle("BDT");
   h_S->SetYTitle("Entries");
   h_S->GetXaxis()->SetTitleOffset(1.2);
   h_S->GetYaxis()->SetTitleOffset(1.3);
 
-  h_CombiWithConvLeg->SetXTitle("MLP");
+  h_CombiWithConvLeg->SetXTitle("BDT");
   h_CombiWithConvLeg->SetYTitle("Entries");
   h_CombiWithConvLeg->GetXaxis()->SetTitleOffset(1.2);
   h_CombiWithConvLeg->GetYaxis()->SetTitleOffset(1.3);
 
-  h_CombiWithoutConvLeg->SetXTitle("MLP");
+  h_CombiWithoutConvLeg->SetXTitle("BDT");
   h_CombiWithoutConvLeg->SetYTitle("Entries");
   h_CombiWithoutConvLeg->GetXaxis()->SetTitleOffset(1.2);
   h_CombiWithoutConvLeg->GetYaxis()->SetTitleOffset(1.3);
 
-  h_HF->SetXTitle("MLP");
+  h_HF->SetXTitle("BDT");
   h_HF->SetYTitle("Entries");
   h_HF->GetXaxis()->SetTitleOffset(1.2);
   h_HF->GetYaxis()->SetTitleOffset(1.3);
 
-  h_RPConv->SetXTitle("MLP");
+  h_RPConv->SetXTitle("BDT");
   h_RPConv->SetYTitle("Entries");
   h_RPConv->GetXaxis()->SetTitleOffset(1.2);
   h_RPConv->GetYaxis()->SetTitleOffset(1.3);
@@ -183,7 +198,7 @@ void PlotMvaOutput() {
 
   TLatex l;
   l.SetTextSize(.025);
-  l.DrawLatex(.1,1e8+1e3,h_text);
+  l.DrawLatex(-.7,1e8+1e3,h_text);
 
   c->Write();
 
