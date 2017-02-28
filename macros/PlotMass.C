@@ -25,6 +25,10 @@ void PlotMass() {
   
   TString h_text = "Combinatorial BDT";
 
+  // set the used MVA method:
+  Bool_t isMLP = kFALSE;
+  Bool_t isBDT = kTRUE;
+
   //// optimal MVA cuts for "signal = CombWithConvLegs":
   //
   // highest significance for
@@ -68,10 +72,10 @@ void PlotMass() {
   // input MVA output information from file:
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
-  // Float_t MLP;
+  Float_t MLP;
   Float_t BDT;
-  // MVAoutputTree->SetBranchAddress("MLP", &MLP);
-  MVAoutputTree->SetBranchAddress("BDT", &BDT);
+  if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MLP);
+  if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &BDT);
   
   
   const unsigned int min=0, max=5, nBins=50;
@@ -170,7 +174,7 @@ void PlotMass() {
 
   
   // linear mapping of the MVA cut value: [-1,1] -> [0,1]:
-  MVAcut = (MVAcut+1)/2.;
+  if(isBDT) MVAcut = (MVAcut+1)/2.;
 
   
   for(Int_t i=1; i<=nSteps; i++) {
@@ -185,7 +189,7 @@ void PlotMass() {
       MVAoutputTree->GetEvent(ev);
 
       // linear mapping of the BDT values: [-1,1] -> [0,1]:
-      BDT = (BDT+1)/2.;
+      if(isBDT) BDT = (BDT+1)/2.;
 
       
       // The TMVA reader tags defective events with MLP = -999. Skip those:
