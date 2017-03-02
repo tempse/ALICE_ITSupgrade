@@ -21,13 +21,20 @@ void PlotMass() {
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand/TMVApp_BDT.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCuts/TMVApp_BDT.root";
   
   TString h_text = "Combinatorial BDT";
 
   // set the used MVA method:
   Bool_t isMLP = kFALSE;
   Bool_t isBDT = kTRUE;
+
+  
+  if(isMLP & isBDT) {
+    std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
+    exit(1);
+  }
+  
 
   //// optimal MVA cuts for "signal = CombWithConvLegs":
   //
@@ -72,10 +79,9 @@ void PlotMass() {
   // input MVA output information from file:
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
-  Float_t MLP;
-  Float_t BDT;
-  if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MLP);
-  if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &BDT);
+  Float_t MVAoutput;
+  if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MVAoutput);
+  if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &MVAoutput);
   
   
   const unsigned int min=0, max=5, nBins=50;
@@ -164,7 +170,7 @@ void PlotMass() {
   }
   
   
-  Long64_t nEv = TestTree->GetEntries()/100;
+  Long64_t nEv = TestTree->GetEntries();
 
   Float_t passed_seconds_prev = 0.;
   
@@ -189,7 +195,7 @@ void PlotMass() {
       MVAoutputTree->GetEvent(ev);
 
       // linear mapping of the BDT values: [-1,1] -> [0,1]:
-      if(isBDT) BDT = (BDT+1)/2.;
+      if(isBDT) MVAoutput = (MVAoutput+1)/2.;
 
       
       // The TMVA reader tags defective events with MLP = -999. Skip those:
@@ -198,7 +204,7 @@ void PlotMass() {
       
       // "<=" instead of ">=" in case the network
       // is trained on the (physical) background:
-      if(BDT <= stepSize*i) {
+      if(MVAoutput <= stepSize*i) {
 	h_SB_currentMVAcut->Fill(mass);
 	if(IsRP==1 && IsConv==0) {
 	  h_S_currentMVAcut->Fill(mass);
@@ -239,7 +245,7 @@ void PlotMass() {
 	
 	// "<=" instead of ">=" in case the network
 	// is trained on the (physical) background:
-	if(BDT <= MVAcut) {
+	if(MVAoutput <= MVAcut) {
 	  h_SB_MVAcut->Fill(mass);
 	  if(IsRP==1 && IsConv==0) {
 	    h_S_MVAcut->Fill(mass);

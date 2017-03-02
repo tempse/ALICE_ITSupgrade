@@ -12,20 +12,24 @@
 #include <TStopwatch.h>
 
 void PlotMvaOutput() {
-  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_rand_test_1-100-split.root";
+  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
   
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_rand/TMVApp_BDT.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCuts/TMVApp_BDT.root";
 
   TString outfileName = "temp_output/MVAoutput.root";
 
   // text on canvas:
-  TString h_text = "Combinatorial BDT";
+  TString h_text = "Combinatorial BDT (M_{ee} > 0.1 GeV/c^{2})";
 
+  // set the used MVA method:
+  Bool_t isMLP = kFALSE;
+  Bool_t isBDT = kTRUE;
+  
   // histogram ranges (note: BDT=-1..1, MLP=0..1):
   unsigned int min=-1, max=1, nBins=100;
 
   // mass cuts:
-  const Float_t massCut_lower=0.;
+  const Float_t massCut_lower=0.1;
   // const Float_t massCut_upper=1.1;
   
   TFile *infile = new TFile(fileName,"READ");
@@ -42,24 +46,28 @@ void PlotMvaOutput() {
   TestTree->SetBranchAddress("mass",&mass);
 
 
-  // Float_t MLP;
-  Float_t BDT;
+  Float_t MVAoutput;
   
   TFile *infile_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)infile_MVAoutput->Get("pairTree_MVAoutput");
-  // MVAoutputTree->SetBranchAddress("MLP",&MLP);
-  MVAoutputTree->SetBranchAddress("BDT", &BDT);
+  if(isMLP) MVAoutputTree->SetBranchAddress("MLP",&MVAoutput);
+  if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &MVAoutput);
 
-
+  
+  if(isMLP && isBDT) {
+    std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
+    exit(1);
+  }
+  
     
   if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
     std::cout << "   ERROR: The trees of the input files have different sizes."
 	      << std::endl;
-    std::cout << "   Size of tree in file " << fileName << ": "
+    std::cout << "     Size of tree in file " << fileName << ": "
 	      << TestTree->GetEntries() << std::endl;
-    std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
+    std::cout << "     Size of tree in file " << fileName_MVAoutput << ": "
 	      << MVAoutputTree->GetEntries() << std::endl;
-    return;
+    exit(1);
   }
 
   
@@ -92,22 +100,23 @@ void PlotMvaOutput() {
 				<< nEv << " (" << ev*100/nEv << "%)...";
 
     if(mass < massCut_lower) continue;
-    
-    h_SB->Fill(BDT);
+
+    h_SB->Fill(MVAoutput);
+
     if(IsRP==1 && IsConv==0) {
-      h_S->Fill(BDT);
+      h_S->Fill(MVAoutput);
     }
     if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
-      h_CombiWithConvLeg->Fill(BDT);
+      h_CombiWithConvLeg->Fill(MVAoutput);
     }
     if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
-      h_CombiWithoutConvLeg->Fill(BDT);
+      h_CombiWithoutConvLeg->Fill(MVAoutput);
     }
     if(IsRP==0 && IsHF==1) {
-      h_HF->Fill(BDT);
+      h_HF->Fill(MVAoutput);
     }
     if(IsRP==1 && IsConv==1) {
-      h_RPConv->Fill(BDT);
+      h_RPConv->Fill(MVAoutput);
     }
   }
 
@@ -128,32 +137,39 @@ void PlotMvaOutput() {
   h_HF->SetLineColor(kOrange);
   h_RPConv->SetLineColor(13);
 
-  h_SB->SetXTitle("BDT");
+  if(isMLP) h_SB->SetXTitle("MLP");
+  if(isBDT) h_SB->SetXTitle("BDT");
   h_SB->SetYTitle("Entries");
   h_SB->GetXaxis()->SetTitleOffset(1.2);
   h_SB->GetYaxis()->SetTitleOffset(1.3);
 
-  h_S->SetXTitle("BDT");
+  
+  if(isMLP) h_S->SetXTitle("MLP");
+  if(isBDT) h_S->SetXTitle("BDT");
   h_S->SetYTitle("Entries");
   h_S->GetXaxis()->SetTitleOffset(1.2);
   h_S->GetYaxis()->SetTitleOffset(1.3);
 
-  h_CombiWithConvLeg->SetXTitle("BDT");
+  if(isMLP) h_CombiWithConvLeg->SetXTitle("MLP");
+  if(isBDT) h_CombiWithConvLeg->SetXTitle("BDT");
   h_CombiWithConvLeg->SetYTitle("Entries");
   h_CombiWithConvLeg->GetXaxis()->SetTitleOffset(1.2);
   h_CombiWithConvLeg->GetYaxis()->SetTitleOffset(1.3);
 
-  h_CombiWithoutConvLeg->SetXTitle("BDT");
+  if(isMLP) h_CombiWithoutConvLeg->SetXTitle("MLP");
+  if(isBDT) h_CombiWithoutConvLeg->SetXTitle("BDT");
   h_CombiWithoutConvLeg->SetYTitle("Entries");
   h_CombiWithoutConvLeg->GetXaxis()->SetTitleOffset(1.2);
   h_CombiWithoutConvLeg->GetYaxis()->SetTitleOffset(1.3);
 
-  h_HF->SetXTitle("BDT");
+  if(isMLP) h_HF->SetXTitle("MLP");
+  if(isBDT) h_HF->SetXTitle("BDT");
   h_HF->SetYTitle("Entries");
   h_HF->GetXaxis()->SetTitleOffset(1.2);
   h_HF->GetYaxis()->SetTitleOffset(1.3);
 
-  h_RPConv->SetXTitle("BDT");
+  if(isMLP) h_RPConv->SetXTitle("MLP");
+  if(isBDT) h_RPConv->SetXTitle("BDT");
   h_RPConv->SetYTitle("Entries");
   h_RPConv->GetXaxis()->SetTitleOffset(1.2);
   h_RPConv->GetYaxis()->SetTitleOffset(1.3);
@@ -177,7 +193,7 @@ void PlotMvaOutput() {
   gStyle->SetOptStat(0);
   c->SetLogy();
   c->SetGridy();
-  h_SB->GetYaxis()->SetRangeUser(.5,1e9);
+  h_SB->GetYaxis()->SetRangeUser(.5,1.5e7);
   h_SB->Draw("hist");
   h_S->Draw("hist same");
   h_CombiWithConvLeg->Draw("hist same");
@@ -198,7 +214,7 @@ void PlotMvaOutput() {
 
   TLatex l;
   l.SetTextSize(.025);
-  l.DrawLatex(-.7,1e8+1e3,h_text);
+  l.DrawLatex(-.7,1e7,h_text);
 
   c->Write();
 
