@@ -34,7 +34,9 @@ const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
 
 Bool_t doSwapCurrentPair = kFALSE;
 
-Bool_t doSwapCurrentPair = kTRUE;
+
+// some counting variables:
+Int_t cnt_ls = 0, cnt_us = 0, cnt_us_ls = 0, cnt_rp = 0;
 
 
 // output variables (1,2 <-> 1st leg, 2nd leg):
@@ -560,10 +562,19 @@ void GeneratePairTrees() {
 
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
-	  if(isPairTree_rp) pairTree_rp->Fill();
+	  if(isPairTree_rp) {
+	    pairTree_rp->Fill();
+	    cnt_rp++;
+	  }
 	}
-	if(isPairTree_us) pairTree_us->Fill();
-	if(isPairTree_us_ls) pairTree_us_ls->Fill();
+	if(isPairTree_us) {
+	  pairTree_us->Fill();
+	  cnt_us++;
+	}
+	if(isPairTree_us_ls) {
+	  pairTree_us_ls->Fill();
+	  cnt_us_ls++;
+	}
       }else { // <-> like sign pair
 	IsUS = 0;
 	
@@ -586,10 +597,19 @@ void GeneratePairTrees() {
 
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
-	  if(isPairTree_rp) pairTree_rp->Fill();
+	  if(isPairTree_rp) {
+	    pairTree_rp->Fill();
+	    cnt_rp++;
+	  }
 	}
-	if(isPairTree_ls) pairTree_ls->Fill();
-	if(isPairTree_us_ls) pairTree_us_ls->Fill();
+	if(isPairTree_ls) {
+	  pairTree_ls->Fill();
+	  cnt_ls++;
+	}
+	if(isPairTree_us_ls) {
+	  pairTree_us_ls->Fill();
+	  cnt_us_ls++;
+	}
       }
       
       tr2++;
@@ -612,6 +632,11 @@ void GeneratePairTrees() {
 
   outfile->Close();
 
+  std::cout << std::endl << "---------- SUMMARY: ----------" << std::endl;
+  std::cout << "Filled the histograms with the following number of entries:" << std::endl;
+  std::cout << "  us: " << "\t" << cnt_us << std::endl
+	    << "  ls: " << "\t" << cnt_ls << std::endl
+	    << "  ls+us: " << "\t" << cnt_us_ls << std::endl << std::endl;
 
   // histDiagnosis1->SaveAs("histDiagnosis1.root");
   // histDiagnosis2->SaveAs("histDiagnosis2.root");
