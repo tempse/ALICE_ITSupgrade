@@ -30,8 +30,9 @@ void calculateSumz();
 void calculateHF();
 
 
+const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
 
-const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
+Bool_t doSwapCurrentPair = kFALSE;
 
 Bool_t doSwapCurrentPair = kTRUE;
 
@@ -419,7 +420,6 @@ void GeneratePairTrees() {
 
     
     // prepare random pair swapping if doRandPairSwap==kTRUE:
-    Bool_t doSwapCurrentPair;
     if(doRandPairSwap) {
       doSwapCurrentPair = (rand.Uniform() < .5) ? kTRUE : kFALSE;
     }else {
@@ -640,7 +640,7 @@ Bool_t isBottom(Int_t pdg) {
 
 
 void calculateMomenta() { // has to be called before other methods that need momentum variables!
-  if(!doSwapCurrentPair) {
+  if(!doSwapCurrentPair) { // <-> do not swap pairs
     px1 = pt1*TMath::Cos(phi1);
     py1 = pt1*TMath::Sin(phi1);
     pz1 = pt1*TMath::SinH(eta1);
@@ -651,7 +651,7 @@ void calculateMomenta() { // has to be called before other methods that need mom
 
     pv1.SetXYZ(px1, py1, pz1);
     pv2.SetXYZ(px2, py2, pz2);
-  } else { // swap pairs
+  } else { // <-> swap pairs
     px2 = pt1*TMath::Cos(phi1);
     py2 = pt1*TMath::Sin(phi1);
     pz2 = pt1*TMath::SinH(eta1);
