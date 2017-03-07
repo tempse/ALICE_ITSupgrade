@@ -44,6 +44,7 @@
 #include <map>
 #include <string>
 
+#include "TApplication.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -311,7 +312,7 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    //    factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
    // To also specify the number of testing events, use:
 //       factory->PrepareTrainingAndTestTree( mycut,       "NTrain_Signal=3751:NTrain_Background=52925:NTest_Signal=0:NTest_Background=0:SplitMode=Random:!V" );
-   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTrain_Signal=10000:NTrain_Background=10000:NTest_Signal=10000:NTest_Background=10000" );
+   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTrain_Signal=5000:NTrain_Background=5000:NTest_Signal=5000:NTest_Background=5000" );
 
    // ---- Book MVA methods
    //
@@ -531,8 +532,9 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    delete factory;
 
    // Launch the GUI for the root macros
-   if (!gROOT->IsBatch()) TMVA::TMVAGui( outfileName );
+   //if (!gROOT->IsBatch()) TMVA::TMVAGui( outfileName );
 
+   gApplication->Terminate();
    return 0;
 }
 
@@ -546,5 +548,5 @@ int main( int argc, char** argv )
       if (!methodList.IsNull()) methodList += TString(","); 
       methodList += regMethod;
    }
-   return TMVAClassification_pairTree(methodList); 
+   return TMVAClassification_pairTree(methodList);
 }

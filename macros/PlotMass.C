@@ -21,7 +21,7 @@ void PlotMass() {
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCuts/TMVApp_BDT.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCut/TMVApp_MLP_BDT.root";
   
   TString h_text = "Combinatorial BDT";
 
@@ -49,7 +49,7 @@ void PlotMass() {
   //// optimal MVA cuts for "signal = physical signal":
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  float MVAcut = -.2;
+  float MVAcut = -.25;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S
@@ -170,7 +170,7 @@ void PlotMass() {
   }
   
   
-  Long64_t nEv = TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries()/5;
 
   Float_t passed_seconds_prev = 0.;
   
@@ -204,7 +204,7 @@ void PlotMass() {
       
       // "<=" instead of ">=" in case the network
       // is trained on the (physical) background:
-      if(MVAoutput <= stepSize*i) {
+      if(MVAoutput >= stepSize*i) {
 	h_SB_currentMVAcut->Fill(mass);
 	if(IsRP==1 && IsConv==0) {
 	  h_S_currentMVAcut->Fill(mass);
@@ -245,7 +245,7 @@ void PlotMass() {
 	
 	// "<=" instead of ">=" in case the network
 	// is trained on the (physical) background:
-	if(MVAoutput <= MVAcut) {
+	if(MVAoutput >= MVAcut) {
 	  h_SB_MVAcut->Fill(mass);
 	  if(IsRP==1 && IsConv==0) {
 	    h_S_MVAcut->Fill(mass);
@@ -284,11 +284,12 @@ void PlotMass() {
       // define your "signal"/"background" here:
       float S = h_S_currentMVAcut->GetBinContent(bin_S) + 
 	h_HF_currentMVAcut->GetBinContent(bin_HF) + 
-        h_RPConv_currentMVAcut->GetBinContent(bin_RPConv);
+        h_RPConv_currentMVAcut->GetBinContent(bin_RPConv) +
+	h_CombiWithoutConvLeg_currentMVAcut->GetBinContent(bin_CombiWithoutConvLeg);
       
       float B =
-	h_CombiWithConvLeg_currentMVAcut->GetBinContent(bin_CombiWithConvLeg) + 
-	h_CombiWithoutConvLeg_currentMVAcut->GetBinContent(bin_CombiWithoutConvLeg);
+	h_CombiWithConvLeg_currentMVAcut->GetBinContent(bin_CombiWithConvLeg);// + 
+      //h_CombiWithoutConvLeg_currentMVAcut->GetBinContent(bin_CombiWithoutConvLeg);
       
       float significance = (B==0) ? 0 : S/TMath::Sqrt(S+B);
       float signalOverBackground = (B==0) ? 0 : S/B;
@@ -331,22 +332,22 @@ void PlotMass() {
   std::cout << std::endl;
   watch->Stop();
 
-
+  
+  // normalize bins to the "no MVA cuts" case:
   for(unsigned int i=0; i<nSteps; i++) {
     for(unsigned int j=0; j<nBins; j++) {
       
-      Float_t significance_norm = (binContents_significance_MVAcutScan[j][nSteps-1] == 0) ?
-	0 : binContents_significance_MVAcutScan[j][i] / binContents_significance_MVAcutScan[j][nSteps-1];
-      
-      Float_t signalOverBackground_norm = (binContents_signalOverBackground_MVAcutScan[j][nSteps-1] == 0) ?
-	0 : binContents_signalOverBackground_MVAcutScan[j][i] / binContents_signalOverBackground_MVAcutScan[j][nSteps-1];
+      Float_t significance_norm = (binContents_significance_MVAcutScan[j][0] == 0.) ?
+   	0. : binContents_significance_MVAcutScan[j][i] / binContents_significance_MVAcutScan[j][0];
+     
+      Float_t signalOverBackground_norm = (binContents_signalOverBackground_MVAcutScan[j][0] == 0.) ?
+  	0. : binContents_signalOverBackground_MVAcutScan[j][i] / binContents_signalOverBackground_MVAcutScan[j][0];
       
       h_significance_MVAcutScan->SetBinContent(h_significance_MVAcutScan->GetBin(j+1,i+1),
-					       significance_norm);
-
+ 					       significance_norm);
       h_signalOverBackground_MVAcutScan->SetBinContent(h_signalOverBackground_MVAcutScan->GetBin(j+1,i+1),
-						       signalOverBackground_norm);
-      
+  						       signalOverBackground_norm);
+     
     }
   }
 
@@ -411,7 +412,7 @@ void PlotMass() {
   TLatex l_AUC_significance_max;
   l_AUC_significance_max.SetTextSize(.025);
   TString text_AUC_significance_max = "max(S/#sqrt{S+B}) for MVA cut at ";
-  text_AUC_significance_max += stepSize*(AUC_significance_max_pos+1);
+  text_AUC_significance_max += stepSize*(AUC_significance_max_pos);
   l_AUC_significance_max.DrawLatex(.05,.95,text_AUC_significance_max);
   c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.pdf");
   c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.root");
@@ -436,7 +437,7 @@ void PlotMass() {
   l_AUC_signalOverBackground_max.SetTextSize(.025);
   TString text_AUC_signalOverBackground_max = "max(S/B) for MVA cut at ";
   text_AUC_signalOverBackground_max +=
-    stepSize*(AUC_signalOverBackground_max_pos+1);
+    stepSize*(AUC_signalOverBackground_max_pos);
   l_AUC_signalOverBackground_max.DrawLatex(.05,.95,
 					   text_AUC_signalOverBackground_max);
   c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.pdf");

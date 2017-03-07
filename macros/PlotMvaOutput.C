@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <TApplication.h>
 #include <TROOT.h>
 #include <TStyle.h>
 #include <TString.h>
@@ -12,14 +13,14 @@
 #include <TStopwatch.h>
 
 void PlotMvaOutput() {
-  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
+  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-10-split.root";
   
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCuts/TMVApp_BDT.root";
+  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_CombConvRejection/TMVApp.root";
 
   TString outfileName = "temp_output/MVAoutput.root";
 
   // text on canvas:
-  TString h_text = "Combinatorial BDT (M_{ee} > 0.1 GeV/c^{2})";
+  TString h_text = "Combinatorial BDT";// (M_{ee} > 0.1 GeV/c^{2})";
 
   // set the used MVA method:
   Bool_t isMLP = kFALSE;
@@ -29,7 +30,7 @@ void PlotMvaOutput() {
   unsigned int min=-1, max=1, nBins=100;
 
   // mass cuts:
-  const Float_t massCut_lower=0.1;
+  const Float_t massCut_lower=0.;
   // const Float_t massCut_upper=1.1;
   
   TFile *infile = new TFile(fileName,"READ");
@@ -219,5 +220,6 @@ void PlotMvaOutput() {
   c->Write();
 
   outfile->Close();
-  
+
+  gApplication->Terminate();
 }
