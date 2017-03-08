@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #include <TROOT.h>
+#include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
@@ -30,7 +31,7 @@ void calculateSumz();
 void calculateHF();
 
 
-const Bool_t doRandPairSwap = kTRUE; // do random pair swapping?
+const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
 Bool_t doSwapCurrentPair = kFALSE;
 
@@ -50,6 +51,7 @@ Int_t IsCorrCharm;           // correlated charmed pair: 1, else: 0
 Int_t IsCorrBottom;          // correlated bottom pair: 1, else: 0
 Int_t IsCorrCharmFromBottom; // correlated charmed pair originating from a bottom: 1, else: 0
 Int_t ChargeSign;            // unlike sign: 0, like sign (++): 1, like sign (--): -1
+Int_t IsTaggedRPConv;        // tagged as real pair conversion event: 1, otherwise: 0
 Float_t opang;
 Float_t diffz;
 Float_t mass;
@@ -179,6 +181,7 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_rp->Branch("IsTaggedRPConv",&IsTaggedRPConv);
     pairTree_rp->Branch("ChargeSign",&ChargeSign);
     pairTree_rp->Branch("opang",&opang);
     pairTree_rp->Branch("diffz",&diffz);
@@ -235,6 +238,7 @@ void GeneratePairTrees() {
     pairTree_us->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_us->Branch("IsTaggedRPConv",&IsTaggedRPConv);
     pairTree_us->Branch("ChargeSign",&ChargeSign);
     pairTree_us->Branch("opang",&opang);
     pairTree_us->Branch("diffz",&diffz);
@@ -291,6 +295,7 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
     pairTree_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_ls->Branch("opang",&opang);
     pairTree_ls->Branch("diffz",&diffz);
@@ -347,6 +352,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_us_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
     pairTree_us_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_us_ls->Branch("opang",&opang);
     pairTree_us_ls->Branch("diffz",&diffz);
@@ -396,7 +402,7 @@ void GeneratePairTrees() {
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries();
+  Long64_t singleTree_nEvents = singleTree->GetEntries()/100;
   std::cout << std::endl;
   std::cout << "Start event processing...";
   TStopwatch *watch = new TStopwatch();
@@ -560,6 +566,14 @@ void GeneratePairTrees() {
 	  IsConv = 0;
 	}
 
+	// prefilter cuts - tagging RP conversions:
+	if(phiv<TMath::PiOver2() && mass<.05) {
+	  IsTaggedRPConv = 1;
+	}else {
+	  IsTaggedRPConv = 0;
+	}
+
+	
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
 	  if(isPairTree_rp) {
@@ -594,6 +608,15 @@ void GeneratePairTrees() {
 	}else {
 	  IsConv = 0;
 	}
+
+	
+	// prefilter cuts - tagging RP conversions:
+	if(phiv<TMath::PiOver2() && mass<.05) {
+	  IsTaggedRPConv = 1;
+	}else {
+	  IsTaggedRPConv = 0;
+	}
+	
 
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
@@ -642,7 +665,7 @@ void GeneratePairTrees() {
   // histDiagnosis2->SaveAs("histDiagnosis2.root");
 
   
-  
+  gApplication->Terminate();
 }
 
 
