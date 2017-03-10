@@ -466,6 +466,14 @@ void GeneratePairTrees() {
     // cut to ignore unphysical DCAz values (specific to prior analysis):
     if(ST_dcaZ == 999) continue;
 
+    
+    // prepare random pair swapping if doRandPairSwap==kTRUE:
+    if(doRandPairSwap) {
+      doSwapCurrentPair = (rand.Uniform() < .5) ? kTRUE : kFALSE;
+    }else {
+      doSwapCurrentPair = kFALSE;
+    }
+
 
     // MVA cut tagging (conversion track identification):
     if(MVAoutput_convTrack < MVAcut_convTrack) {
@@ -475,15 +483,8 @@ void GeneratePairTrees() {
       if(!doSwapCurrentPair) IsTaggedConvTrack1 = 0;
       else IsTaggedConvTrack2 = 0;
     }
-    
-    // prepare random pair swapping if doRandPairSwap==kTRUE:
-    if(doRandPairSwap) {
-      doSwapCurrentPair = (rand.Uniform() < .5) ? kTRUE : kFALSE;
-    }else {
-      doSwapCurrentPair = kFALSE;
-    }
 
-    
+
     // already available, pairing-independent variables of 1st leg for output tree:
     if(!doSwapCurrentPair) {
       EventID1 = ST_event;
