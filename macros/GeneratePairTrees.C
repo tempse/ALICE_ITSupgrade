@@ -31,6 +31,10 @@ void calculateSumz();
 void calculateHF();
 
 
+// MVA cut value (for identifying conversion tracks):
+const Float_t MVAcut_convTrack = -0.4218;
+
+
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
 Bool_t doSwapCurrentPair = kFALSE;
@@ -52,6 +56,8 @@ Int_t IsCorrBottom;          // correlated bottom pair: 1, else: 0
 Int_t IsCorrCharmFromBottom; // correlated charmed pair originating from a bottom: 1, else: 0
 Int_t ChargeSign;            // unlike sign: 0, like sign (++): 1, like sign (--): -1
 Int_t IsTaggedRPConv;        // tagged as real pair conversion event: 1, otherwise: 0
+Int_t IsTaggedConvTrack1,    // tagged as conversion track (by preceding...
+  IsTaggedConvTrack2;        // ...MVA classification): 1, otherwise: 0
 Float_t opang;
 Float_t diffz;
 Float_t mass;
@@ -96,17 +102,28 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat.root","READ");
-  TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
+  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat_test_1-10-split.root","READ");
+  TTree *singleTree = (TTree*)infile->Get("tracks");
 
+  TFile *infile_MVAoutputs = TFile::Open("../TMVA/TMVAClassification_singleTrackTree/TMVApp.root");
+  TTree *singleTree_MVAoutputs = (TTree*)infile_MVAoutputs->Get("tracks_MVAoutput");
+  
   TFile *outfile = TFile::Open("temp_output/output_pairtrees.root","RECREATE");
   TTree *pairTree_rp = new TTree("pairTree_rp","pairTree_rp");
   TTree *pairTree_us = new TTree("pairTree_us","pairTree_us");
   TTree *pairTree_ls = new TTree("pairTree_ls","pairTree_ls");
   TTree *pairTree_us_ls = new TTree("pairTree_us_ls","pairTree_us_ls");
-  
-  // TH1F *histDiagnosis1 = new TH1F("histDiagnosis1","",1000,-500,500);
-  // TH1F *histDiagnosis2 = new TH1F("histDiagnosis2","",1000,-500,500);
+
+
+  if(singleTree->GetEntries() != singleTree_MVAoutputs->GetEntries()) {
+    std::cout << "  ERROR: The trees in the input files have different sizes."
+	      << std::endl;
+    std::cout << "    Size of tree in file " << infile->GetName() << ": "
+	      << singleTree->GetEntries() << std::endl;
+    std::cout << "    Size of tree in file " << infile_MVAoutputs->GetName() << ": "
+	      << singleTree_MVAoutputs->GetEntries() << std::endl;
+    gApplication->Terminate();
+  }
 
 
   TRandom rand;
@@ -182,6 +199,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_rp->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_rp->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
+    pairTree_rp->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
     pairTree_rp->Branch("ChargeSign",&ChargeSign);
     pairTree_rp->Branch("opang",&opang);
     pairTree_rp->Branch("diffz",&diffz);
@@ -239,6 +258,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_us->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
+    pairTree_us->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
     pairTree_us->Branch("ChargeSign",&ChargeSign);
     pairTree_us->Branch("opang",&opang);
     pairTree_us->Branch("diffz",&diffz);
@@ -296,6 +317,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
+    pairTree_ls->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
     pairTree_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_ls->Branch("opang",&opang);
     pairTree_ls->Branch("diffz",&diffz);
@@ -353,6 +376,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
+    pairTree_us_ls->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
     pairTree_us_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_us_ls->Branch("opang",&opang);
     pairTree_us_ls->Branch("diffz",&diffz);
@@ -396,22 +421,32 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("pt1",&pt1);
     pairTree_us_ls->Branch("pt2",&pt2);
   }
+
+
+  Float_t MVAoutput_convTrack;
+  singleTree_MVAoutputs->SetBranchAddress("BDT", &MVAoutput_convTrack);
   
 
   // Int_t ev_temp = -1; // used to detect new events
   Int_t firstTrack; // first track number in given event
   Int_t nTracks; // total number of tracks in given event
+
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries()/100;
-  std::cout << std::endl;
-  std::cout << "Start event processing...";
+  Long64_t singleTree_nEvents = singleTree->GetEntries();
+
+  
+  std::cout << std::endl << "Start event processing...";
+  
   TStopwatch *watch = new TStopwatch();
   watch->Start();
-  
+
+
+
   for(Long64_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
     if((tr1%1000)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
-			       << " (" << tr1*100/singleTree_nEvents << "%)...";
+				<< " (" << tr1*100/singleTree_nEvents << "%)...";
     singleTree->GetEntry(tr1);
+    singleTree_MVAoutputs->GetEntry(tr1);
 
     
     // do not look for partner tracks of the last event in the tree:
@@ -431,6 +466,15 @@ void GeneratePairTrees() {
     // cut to ignore unphysical DCAz values (specific to prior analysis):
     if(ST_dcaZ == 999) continue;
 
+
+    // MVA cut tagging (conversion track identification):
+    if(MVAoutput_convTrack < MVAcut_convTrack) {
+      if(!doSwapCurrentPair) IsTaggedConvTrack1 = 1;
+      else IsTaggedConvTrack2 = 1;
+    }else {
+      if(!doSwapCurrentPair) IsTaggedConvTrack1 = 0;
+      else IsTaggedConvTrack2 = 0;
+    }
     
     // prepare random pair swapping if doRandPairSwap==kTRUE:
     if(doRandPairSwap) {
@@ -493,6 +537,7 @@ void GeneratePairTrees() {
     Int_t tr2 = tr1+1;
     while(true) { // loop over remaining tracks of the same event
       singleTree->GetEntry(tr2);
+      singleTree_MVAoutputs->GetEntry(tr2);
 
       // exit loop over remaining tracks if event number changes or if the last
       // event of the tree is reached:
@@ -503,6 +548,15 @@ void GeneratePairTrees() {
       
       // cut to ignore unphysical DCAz values (specific to prior analysis):
       if(ST_dcaZ == 999) { tr2++; continue; }
+
+      // MVA cut tagging (conversion track identification):
+      if(MVAoutput_convTrack < MVAcut_convTrack) {
+	if(!doSwapCurrentPair) IsTaggedConvTrack2 = 1;
+	else IsTaggedConvTrack1 = 1;
+      }else {
+	if(!doSwapCurrentPair) IsTaggedConvTrack2 = 0;
+	else IsTaggedConvTrack1 = 0;
+      }
 
       // already available, pairing-independent variables of 2nd leg for output tree:
       if(!doSwapCurrentPair) {
