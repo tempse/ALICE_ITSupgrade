@@ -165,7 +165,7 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
 
    // --- Here the preparation phase begins
 
-   TFile *infile = TFile::Open("../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_train_1-100-split.root");
+   TFile *infile = TFile::Open("../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_train_1-10-split.root");
    TTree *Track_Tree = (TTree*)infile->Get("pairTree_us");
    
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
@@ -233,7 +233,7 @@ int TMVAClassification_pairTree( TString myMethodList = "" )
    dataloader->AddSpectator( "motherPdg2" );
    
 TCut signalCut = "!(IsRP==0 && IsConv==1)"; // how to identify signal events
-TCut backgrCut = "IsRP==0 && IsConv==1"; // how to identify background events  
+TCut backgrCut = "(IsRP==0 && IsConv==1)"; // how to identify background events  
 // TCut signalCut = "IsRP==1 && !(motherPdg1==22 || motherPdg2==22)"; // how to identify signal events
 // TCut backgrCut = "!(IsRP==1 && !(motherPdg1==22 || motherPdg2==22))"; // how to identify background events
  
@@ -303,7 +303,7 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    // Apply additional cuts on the signal and background samples (can be different)
 //   TCut mycuts = ""; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
 //   TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
-   TCut mycut = "";
+   TCut mycut = "mass>.1";
 //   TCut mycut = "";
    // Tell the factory how to use the training and testing events
    //
@@ -312,7 +312,7 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    //    factory->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
    // To also specify the number of testing events, use:
 //       factory->PrepareTrainingAndTestTree( mycut,       "NTrain_Signal=3751:NTrain_Background=52925:NTest_Signal=0:NTest_Background=0:SplitMode=Random:!V" );
-   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTrain_Signal=5000:NTrain_Background=5000:NTest_Signal=5000:NTest_Background=5000" );
+   dataloader->PrepareTrainingAndTestTree( mycut, "!V:SplitMode=random:NTest_Signal=5000:NTest_Background=5000:NTrain_Signal=5000:NTrain_Background=5000" );
 
    // ---- Book MVA methods
    //
@@ -472,7 +472,7 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
 
     if (Use["BDT"])  // Adaptive Boost
       factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=1000:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.05:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
+                           "!H:!V:NTrees=800:MinNodeSize=5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.05:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
 
   
    
@@ -534,6 +534,8 @@ dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
    // Launch the GUI for the root macros
    //if (!gROOT->IsBatch()) TMVA::TMVAGui( outfileName );
 
+   
+   // exit ROOT session:
    gApplication->Terminate();
    return 0;
 }
@@ -548,5 +550,5 @@ int main( int argc, char** argv )
       if (!methodList.IsNull()) methodList += TString(","); 
       methodList += regMethod;
    }
-   return TMVAClassification_pairTree(methodList);
+   return TMVAClassification_pairTree(methodList); 
 }

@@ -46,6 +46,7 @@
 #include <map>
 #include <string>
 
+#include "TApplication.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -164,13 +165,13 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    // Read training and test data
    // (it is also possible to use ASCII format as input -> see TMVA Users Guide)
-   TString fname = "../inputData/FT2_AnalysisResults_Upgrade_addFeat_train_1-10-split.root";
+   TString fname = "../../inputData/FT2_AnalysisResults_Upgrade_addFeat_train_1-10-split.root";
 
    // if (gSystem->AccessPathName( fname ))  // file does not exist in local directory
    //    gSystem->Exec("curl -O http://root.cern.ch/files/tmva_class_example.root");
 
    TFile *input = TFile::Open( fname );
-   TTree *Track_Tree = (TTree*)input->Get("tracks");
+   TTree *TrackTree = (TTree*)input->Get("tracks");
 
    std::cout << "--- TMVAClassification       : Using input file: " << input->GetName() << std::endl;
 
@@ -180,7 +181,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    // TTree *background     = (TTree*)input->Get("TreeB");
 
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-   TString outfileName( "TMVA_singleTrack.root" );
+   TString outfileName( "TMVA.root" );
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
    // Create the factory object. Later you can choose the methods
@@ -212,18 +213,17 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    // dataloader->AddVariable( "var4",                "Variable 4", "units", 'F' );
 
 
-   
    dataloader->AddVariable( "var_eta := eta", 'F' );
    dataloader->AddVariable( "var_phi := phi", 'F' );
    dataloader->AddVariable( "var_pt := pt", 'F' );
    dataloader->AddVariable( "var_dcaR := log(abs(dcaR))", 'F' );
    dataloader->AddVariable( "var_dcaZ := log(abs(dcaZ))", 'F' );
    dataloader->AddVariable( "var_p := sqrt(particle.fPx*particle.fPx + particle.fPy*particle.fPy + particle.fPz*particle.fPz)", 'F' );
-   dataloader->AddVariable( "var_nITS := nITS", 'F' );
-   dataloader->AddVariable( "var_nITSshared := nITSshared", 'F' );
-   dataloader->AddVariable( "var_nTPC := nTPC", 'F' );
-   dataloader->AddVariable( "var_ITSchi2 := ITSchi2", 'F' );
-   dataloader->AddVariable( "var_TPCchi2 := TPCchi2", 'F' );
+   dataloader->AddVariable( "var_nITS := abs(nITS)", 'F' );
+   dataloader->AddVariable( "var_nTPC := abs(nTPC)", 'F' );
+   dataloader->AddVariable( "var_nITSshared := abs(nITSshared)", 'F' );
+   dataloader->AddVariable( "var_ITSchi2 := abs(ITSchi2)", 'F' );
+   dataloader->AddVariable( "var_TPCchi2 := abs(TPCchi2)", 'F' );
    
 
    // You can add so-called "Spectator variables", which are not used in the MVA training,
@@ -257,7 +257,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    TCut signalCut = "pdgMother!=22";
    TCut backgrCut = "!(pdgMother!=22)";
    
-   dataloader->SetInputTrees( Track_Tree, signalCut, backgrCut );
+   dataloader->SetInputTrees( TrackTree, signalCut, backgrCut );
 
    // To give different trees for training and testing, do as follows:
    //
@@ -320,7 +320,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    //    dataloader->PrepareTrainingAndTestTree( mycut,
    //         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
    dataloader->PrepareTrainingAndTestTree( mycuts, mycutb,
-					   "!V:SplitMode=Random:nTrain_Signal=10000:nTrain_Background=10000:nTest_Signal=10000:nTest_Background=10000" );
+					   "!V:SplitMode=Random:nTest_Signal=10000:nTest_Background=10000" );
 
    // ### Book MVA methods
    //
@@ -454,7 +454,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
    if (Use["MLP"])
-      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N:NCycles=800:ConvergenceTests=30:HiddenLayers=N,N-1:UseRegulator" );
+      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "!H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:ConvergenceTests=50:HiddenLayers=N,N-3:UseRegulator" );
 
    if (Use["MLPBFGS"])
       factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
@@ -526,7 +526,7 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
 
    if (Use["BDT"])  // Adaptive Boost
       factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=800:MinNodeSize=2.5%:MaxDepth=4:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
+                           "!H:!V:NTrees=800:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.05:UseBaggedBoost:BaggedSampleFraction=0.6:SeparationType=GiniIndex:nCuts=20:VarTransform=N" );
 
    if (Use["BDTB"]) // Bagging
       factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB",
@@ -578,8 +578,10 @@ int TMVAClassification_singleTrackTree( TString myMethodList = "" )
    delete factory;
    delete dataloader;
    // Launch the GUI for the root macros
-   if (!gROOT->IsBatch()) TMVA::TMVAGui( outfileName );
+   // if (!gROOT->IsBatch()) TMVA::TMVAGui( outfileName );
 
+   gApplication->Terminate();
+   
    return 0;
 }
 
