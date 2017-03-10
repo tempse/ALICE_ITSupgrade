@@ -413,6 +413,11 @@ void GeneratePairTrees() {
 			       << " (" << tr1*100/singleTree_nEvents << "%)...";
     singleTree->GetEntry(tr1);
 
+    
+    // do not look for partner tracks of the last event in the tree:
+    if(tr1 == singleTree_nEvents-1) break;
+
+    
     // detect new events:
     // if(ev_temp != ST_event) {
     //   ev_temp = ST_event;
@@ -488,7 +493,10 @@ void GeneratePairTrees() {
     Int_t tr2 = tr1+1;
     while(true) { // loop over remaining tracks of the same event
       singleTree->GetEntry(tr2);
-      if(ev_temp != ST_event) break; // exit loop over remaining tracks if event number changes
+
+      // exit loop over remaining tracks if event number changes or if the last
+      // event of the tree is reached:
+      if(ev_temp != ST_event || tr2 == singleTree_nEvents-1) break;
 
       // pdg cut:
       if(abs(ST_pdg) != 11) { tr2++; continue; }
