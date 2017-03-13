@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <TROOT.h>
+#include <TApplication.h>
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -130,5 +131,7 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
 	    << " events (" << splitTree_test_nEvents/((Float_t)infileTree_nEvents)
 	    << "% of input tree)" << std::endl;
   std::cout << std::endl;
-  
+
+
+  gApplication->Terminate();
 }
