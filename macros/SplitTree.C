@@ -30,7 +30,7 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
 
   TString splitFraction = "1:1:8";
   if(frac.IsNull() || !frac.Contains(":")) {
-    std::cout << "  Warning: Invalid format/value of third argument. "
+    std::cout << "  Warning: Invalid format or missing value of third argument. "
 	      << "  The default value \"1:1:8\" will be used." << std::endl;
   }else {
     splitFraction = frac;
@@ -43,13 +43,13 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
   str2.Remove(str2.Last(':'), str2.Length());
   TString str3 = temp2_str.Remove(0, temp2_str.Last(':')+1);
   Int_t part1, part2, part3;
-  if(!str1.IsDigit() || !str2.IsDigit() || !str3.IsDigit()) {
+  if(!frac.IsNull() && (!str1.IsDigit() || !str2.IsDigit() || !str3.IsDigit())) {
     std::cout << "  Warning: invalid format of third argument. "
 	      << "  (You should enter something like \"1:1:8\".)" << std::endl
 	      << "  Default values will be used." << std::endl;
     part1 = 1; // default value
     part2 = 1; // default value
-    part3 = 8;
+    part3 = 8; // default value
   }else {
     part1 = str1.Atoi();
     part2 = str2.Atoi();
@@ -58,7 +58,7 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
 
 
   if(method.IsNull()) {
-    method = "train+test"; // default value
+    method = "1+2+3"; // default value
   }
 
   
@@ -86,7 +86,9 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
   // create first tree:
   if(method.Contains("1")) {
     std::cout << std::endl << "Processing first part of the tree..." << std::endl;
-    for(Long64_t ev=0; ev<splitTree_part1_nEvents; ev++) {
+    for(Long64_t ev=0;
+	ev<splitTree_part1_nEvents;
+	ev++) {
       if((ev%1000)==0) {
 	std::cout << "\rProcessing event " << ev << " of "
 		  << splitTree_part1_nEvents << " ("
@@ -109,7 +111,9 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
   // create second tree:
   if(method.Contains("2")) {
     std::cout << "Processing second part of the tree..." << std::endl;
-    for(Long64_t ev=splitTree_part1_nEvents+1; ev<splitTree_part2_nEvents; ev++) {
+    for(Long64_t ev=splitTree_part1_nEvents + 1;
+	ev<splitTree_part1_nEvents + splitTree_part2_nEvents;
+	ev++) {
       if((ev%1000)==0) {
 	std::cout << "\rProcessing event " << ev << " of "
 		  << infileTree_nEvents << " ("
@@ -134,7 +138,9 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
   // create third tree:
   if(method.Contains("3")) {
     std::cout << "Processing third part of the tree..." << std::endl;
-    for(Long64_t ev=splitTree_part2_nEvents+1; ev<splitTree_part3_nEvents; ev++) {
+    for(Long64_t ev=splitTree_part1_nEvents + splitTree_part2_nEvents + 1;
+	ev<splitTree_part1_nEvents + splitTree_part2_nEvents + splitTree_part3_nEvents;
+	ev++) {
       if((ev%1000)==0) {
 	std::cout << "\rProcessing event " << ev << " of "
 		  << infileTree_nEvents << " ("
@@ -160,15 +166,15 @@ void SplitTree(TString fname, TString tname, TString frac, TString method) {
   std::cout << "The following trees were created:" << std::endl;
   if(method.Contains("1"))
     std::cout << "  1st tree containing " << splitTree_part1_nEvents
-	    << " events (" << splitTree_part1_nEvents/((Float_t)infileTree_nEvents)
+	    << " events (" << splitTree_part1_nEvents/((Float_t)infileTree_nEvents)*100
 	    << "% of input tree)" << std::endl;
   if(method.Contains("2"))
     std::cout << "  2nd tree containing " << splitTree_part2_nEvents
-	    << " events (" << splitTree_part2_nEvents/((Float_t)infileTree_nEvents)
+	    << " events (" << splitTree_part2_nEvents/((Float_t)infileTree_nEvents)*100
 	    << "% of input tree)" << std::endl;
   if(method.Contains("3"))
     std::cout << "  3rd tree containing " << splitTree_part3_nEvents
-	    << " events (" << splitTree_part3_nEvents/((Float_t)infileTree_nEvents)
+	    << " events (" << splitTree_part3_nEvents/((Float_t)infileTree_nEvents)*100
 	    << "% of input tree)" << std::endl;
   std::cout << std::endl;
 
