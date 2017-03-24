@@ -21,13 +21,13 @@ void PlotMass() {
   TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_notrand_massCut/TMVApp_MLP_BDT.root";
+  TString fileName_MVAoutput_CombConvRejection = "../TMVA/TMVAClassification_pairTree_notrand_massCut/TMVApp_MLP_BDT.root";
   
   TString h_text = "Combinatorial BDT";
 
   // set the used MVA method:
-  Bool_t isMLP = kFALSE;
-  Bool_t isBDT = kTRUE;
+  const Bool_t isMLP = kFALSE;
+  const Bool_t isBDT = kTRUE;
 
   
   if(isMLP & isBDT) {
@@ -77,7 +77,7 @@ void PlotMass() {
 
   
   // input MVA output information from file:
-  TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
+  TFile *f_MVAoutput = new TFile(fileName_MVAoutput_CombConvRejection,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
   Float_t MVAoutput;
   if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MVAoutput);
@@ -164,7 +164,7 @@ void PlotMass() {
 	      << std::endl;
     std::cout << "   Size of tree in file " << fileName_testData << ": "
 	      << TestTree->GetEntries() << std::endl;
-    std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
+    std::cout << "   Size of tree in file " << fileName_MVAoutput_CombConvRejection << ": "
 	      << MVAoutputTree->GetEntries() << std::endl;
     return;
   }
