@@ -198,8 +198,9 @@ void PlotMass() {
       if(isBDT) MVAoutput = (MVAoutput+1)/2.;
 
       
-      // The TMVA reader tags defective events with MLP = -999. Skip those:
-      // if(MLP == -999) continue;
+      // Skip irrelevant events (tagged with MVAoutput = -999 by the TMVA reader
+      // or with MVAoutput = 999 by prior analyses):
+      if(TMath::Abs(MVAoutput) == 999) continue;
 
       
       // "<=" instead of ">=" in case the network

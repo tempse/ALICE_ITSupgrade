@@ -17,7 +17,8 @@ void PlotMvaOutput() {
   
   TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_CombConvRejection/TMVApp.root";
 
-  TString outfileName = "temp_output/MVAoutput.root";
+  TString outfileName_root = "temp_output/MVAoutput.root";
+  TString outfileName_pdf = "temp_output/MVAoutput.pdf";
 
   // text on canvas:
   TString h_text = "Combinatorial BDT";// (M_{ee} > 0.1 GeV/c^{2})";
@@ -96,6 +97,9 @@ void PlotMvaOutput() {
   for(Long64_t ev=0; ev<nEv; ev++) {
     TestTree->GetEvent(ev);
     MVAoutputTree->GetEvent(ev);
+
+    // Skip events which are tagged as irrelevant:
+    if(TMath::Abs(MVAoutput) == 999) continue;
 
     if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
 				<< nEv << " (" << ev*100/nEv << "%)...";
@@ -177,7 +181,7 @@ void PlotMvaOutput() {
 
 
   
-  TFile *outfile = new TFile(outfileName, "RECREATE");  
+  TFile *outfile = new TFile(outfileName_root, "RECREATE");  
 
   // write histograms to output file:
   h_SB->SetDirectory(outfile);
@@ -218,6 +222,8 @@ void PlotMvaOutput() {
   l.DrawLatex(-.7,1e7,h_text);
 
   c->Write();
+
+  c->SaveAs(outfileName_pdf);
 
   outfile->Close();
 
