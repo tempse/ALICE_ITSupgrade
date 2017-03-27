@@ -1,0 +1,315 @@
+#include <iostream>
+#include <cstdlib>
+
+#include <TROOT.h>
+#include <TApplication.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TStopwatch.h>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TLatex.h>
+
+
+void PlotMass_prefilterCuts() {
+
+  // File containing the input pairtree (test) data:
+  TString fileName_testData = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/trainingPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_preFilterVars_pairtree_us_part2_1-1-8-split.root";
+
+  TString prefilterTagName = "IsTaggedRPConv_MVAcuts";
+
+  // After prefiltering, use events with this tag value only:
+  const Int_t wantedPrefilterTagValue = 0.;
+  
+  TString h_text = "Combinatorial BDT";
+
+  // set the used MVA method:
+  const Bool_t isMLP = kFALSE;
+  const Bool_t isBDT = kTRUE;
+
+
+  if( !(wantedPrefilterTagValue==0 || wantedPrefilterTagValue==1) ) {
+    std::cout << "   ERROR: Variable 'wantedPrefilterTagValue' is required to have values "
+	      << " 0 or 1, but has value " << wantedPrefilterTagValue << " instead."
+	      << std::endl;
+    gApplication->Terminate();
+  }
+  
+  if(isMLP & isBDT) {
+    std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
+    exit(1);
+  }
+
+
+  TFile *f = new TFile(fileName_testData,"READ");
+  TTree *TestTree = (TTree*)f->Get("pairTree_us");
+
+  Float_t mass;
+  Int_t IsRP, IsConv, IsHF;
+  Int_t IsTag; // generic variable whose value depends on the particular analysis
+  TestTree->SetBranchAddress("mass", &mass);
+  TestTree->SetBranchAddress("IsRP", &IsRP);
+  TestTree->SetBranchAddress("IsConv", &IsConv);
+  TestTree->SetBranchAddress("IsHF", &IsHF);
+  if(TestTree->GetListOfBranches()->FindObject(prefilterTagName) != NULL) {
+    TestTree->SetBranchAddress(prefilterTagName, &IsTag);
+  }else {
+    std::cout << "  ERROR: The branch " << prefilterTagName
+	      << " does not exist in the file " << f->GetName() << std::endl;
+    gApplication->Terminate();
+  }
+
+
+  
+  const unsigned int min=0, max=5, nBins=50;
+
+  
+  TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
+  
+  TH1F *h_S = new TH1F("h_S","",nBins,min,max);
+  
+  TH1F *h_CombiWithConvLeg = new TH1F("h_CombiWithConvLeg","",nBins,min,max);
+  
+  TH1F *h_CombiWithoutConvLeg =
+    new TH1F("h_CombiWithoughConvLeg","",nBins,min,max);
+  
+  TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
+  
+  TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
+  
+
+  TH1F *h_S_prefilterCut = new TH1F("h_S_prefilterCut","",nBins,min,max);
+  
+  TH1F *h_SB_prefilterCut = new TH1F("h_SB_prefilterCut","",nBins,min,max);
+  
+  TH1F *h_CombiWithConvLeg_prefilterCut =
+    new TH1F("h_CombiWithConvLeg_prefilterCut","",nBins,min,max);
+  
+  TH1F *h_CombiWithoutConvLeg_prefilterCut =
+    new TH1F("h_CombiWithoutConvLeg_prefilterCut","",nBins,min,max);
+  
+  TH1F *h_HF_prefilterCut = new TH1F("h_HF_prefilterCut","",nBins,min,max);
+  
+  TH1F *h_RPConv_prefilterCut =
+    new TH1F("h_RPConv_prefilterCut","",nBins,min,max);
+
+
+
+  Long64_t nEv = TestTree->GetEntries();
+
+  
+  Float_t passed_seconds_prev = 0.;
+  
+  TStopwatch *watch = new TStopwatch();
+
+  watch->Start();
+
+
+  for(Long64_t ev=0; ev<nEv; ev++) {
+
+    if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
+				<< nEv << " (" << ev*100/nEv << "%)...";
+      
+    TestTree->GetEvent(ev);
+    
+    h_SB->Fill(mass);
+    if(IsRP==1 && IsConv==0) {
+      h_S->Fill(mass);
+    }
+    if(IsRP==0 && IsConv==1) {
+      h_CombiWithConvLeg->Fill(mass);
+    }
+    if(IsRP==0 && IsConv==0) {
+      h_CombiWithoutConvLeg->Fill(mass);
+    }
+    if(IsRP==0 && IsHF==1) {
+      h_HF->Fill(mass);
+    }
+    if(IsRP==1 && IsConv==1) {
+      h_RPConv->Fill(mass);
+    }
+    
+    // (IsTag == 0) if "unwanted tag" corresponds to 1
+    // in the input file, (IsTag == 1) otherwise:
+    if(IsTag == wantedPrefilterTagValue) {
+      h_SB_prefilterCut->Fill(mass);
+      if(IsRP==1 && IsConv==0) {
+	h_S_prefilterCut->Fill(mass);
+      }
+      if(IsRP==0 && IsConv==1) {
+	h_CombiWithConvLeg_prefilterCut->Fill(mass);
+      }
+      if(IsRP==0 && IsConv==0) {
+	h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+      }
+      if(IsRP==0 && IsHF==1) {
+	h_HF_prefilterCut->Fill(mass);
+      }
+      if(IsRP==1 && IsConv==1) {
+	h_RPConv_prefilterCut->Fill(mass);
+      }
+    }
+    
+  } // end ev loop
+
+   
+  std::cout << std::endl << std::endl;
+  std::cout << "Time elapsed since begin of processing: " << std::endl;
+  std::cout << "\t";
+  watch->Print();
+  std::cout << std::endl;
+  watch->Stop();
+
+
+
+  
+  //////////////////// SETTING UP THE PLOTS:  
+
+  
+  gStyle->SetOptStat(0);
+
+  TH1F *h_SB_eff = (TH1F*)h_SB_prefilterCut->Clone();
+  TH1F *h_S_eff = (TH1F*)h_S_prefilterCut->Clone();
+  TH1F *h_CombiWithConvLeg_eff = (TH1F*)h_CombiWithConvLeg_prefilterCut->Clone();
+  TH1F *h_CombiWithoutConvLeg_eff = (TH1F*)h_CombiWithoutConvLeg_prefilterCut->Clone();
+  TH1F *h_HF_eff = (TH1F*)h_HF_prefilterCut->Clone();
+  TH1F *h_RPConv_eff = (TH1F*)h_RPConv_prefilterCut->Clone();
+  h_SB_eff->Sumw2();
+  h_SB->Sumw2();
+  h_SB_eff->Divide(h_SB);
+  h_S_eff->Sumw2();
+  h_S->Sumw2();
+  h_S_eff->Divide(h_S);
+  h_CombiWithConvLeg_eff->Sumw2();
+  h_CombiWithConvLeg->Sumw2();
+  h_CombiWithConvLeg_eff->Divide(h_CombiWithConvLeg);
+  h_CombiWithoutConvLeg_eff->Sumw2();
+  h_CombiWithoutConvLeg->Sumw2();
+  h_CombiWithoutConvLeg_eff->Divide(h_CombiWithoutConvLeg);
+  h_HF_eff->Sumw2();
+  h_HF->Sumw2();
+  h_HF_eff->Divide(h_HF);
+  h_RPConv_eff->Sumw2();
+  h_RPConv->Sumw2();
+  h_RPConv_eff->Divide(h_RPConv);
+
+
+  h_SB->SetLineColor(kBlack);
+  h_S->SetLineColor(kGreen+1);
+  h_CombiWithConvLeg->SetLineColor(kRed);
+  h_CombiWithoutConvLeg->SetLineColor(kBlue);
+  h_HF->SetLineColor(kOrange);
+  h_RPConv->SetLineColor(13);
+
+  h_SB_prefilterCut->SetLineColor(kBlack);
+  h_SB_prefilterCut->SetMarkerColor(kBlack);
+  h_S_prefilterCut->SetLineColor(kGreen+1);
+  h_S_prefilterCut->SetMarkerColor(kGreen+1);
+  h_CombiWithConvLeg_prefilterCut->SetLineColor(kRed);
+  h_CombiWithConvLeg_prefilterCut->SetMarkerColor(kRed);
+  h_CombiWithoutConvLeg_prefilterCut->SetLineColor(kBlue);
+  h_CombiWithoutConvLeg_prefilterCut->SetMarkerColor(kBlue);
+  h_HF_prefilterCut->SetLineColor(kOrange);
+  h_HF_prefilterCut->SetMarkerColor(kOrange);
+  h_RPConv_prefilterCut->SetLineColor(13);
+  h_RPConv_prefilterCut->SetMarkerColor(13);
+  
+  h_SB_prefilterCut->SetMarkerStyle(7);
+  h_S_prefilterCut->SetMarkerStyle(7);
+  h_CombiWithConvLeg_prefilterCut->SetMarkerStyle(7);
+  h_CombiWithoutConvLeg_prefilterCut->SetMarkerStyle(7);
+  h_HF_prefilterCut->SetMarkerStyle(7);
+  h_RPConv_prefilterCut->SetMarkerStyle(7);
+
+  h_SB->GetYaxis()->SetRangeUser(1e-1,1e8);
+  h_SB->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_SB->SetYTitle("Entries");
+  h_SB->GetXaxis()->SetTitleOffset(1.2);
+  h_SB->GetYaxis()->SetTitleOffset(1.3);
+
+  h_SB_eff->SetLineColor(kBlack);
+  h_S_eff->SetLineColor(kGreen+1);
+  h_CombiWithConvLeg_eff->SetLineColor(kRed);
+  h_CombiWithoutConvLeg_eff->SetLineColor(kBlue);
+  h_HF_eff->SetLineColor(kOrange);
+  h_RPConv_eff->SetLineColor(13);
+
+  h_SB_eff->SetMarkerStyle(7);
+  h_S_eff->SetMarkerStyle(7);
+  h_CombiWithConvLeg_eff->SetMarkerStyle(7);
+  h_CombiWithoutConvLeg_eff->SetMarkerStyle(7);
+  h_HF_eff->SetMarkerStyle(7);
+  h_RPConv_eff->SetMarkerStyle(7);
+  
+  h_SB_eff->SetMarkerColor(kBlack);
+  h_S_eff->SetMarkerColor(kGreen+1);
+  h_CombiWithConvLeg_eff->SetMarkerColor(kRed);
+  h_CombiWithoutConvLeg_eff->SetMarkerColor(kBlue);
+  h_HF_eff->SetMarkerColor(kOrange);
+  h_RPConv_eff->SetMarkerColor(13);
+
+
+  TCanvas *c = new TCanvas("c","",800,600);
+  c->SetLogy();
+  c->SetGridy();
+  h_SB->Draw("hist e x0");
+  h_S->Draw("hist e x0 same");
+  h_CombiWithConvLeg->Draw("hist e x0 same");
+  h_CombiWithoutConvLeg->Draw("hist e x0 same");
+  h_HF->Draw("hist e x0 same");
+  h_RPConv->Draw("hist e x0 same");
+
+  h_SB_prefilterCut->Draw("e1 x0 same");
+  h_S_prefilterCut->Draw("e1 x0 same");
+  h_CombiWithConvLeg_prefilterCut->Draw("e1 x0 same");
+  h_CombiWithoutConvLeg_prefilterCut->Draw("e1 x0 same");
+  h_HF_prefilterCut->Draw("e1 x0 same");
+  h_RPConv_prefilterCut->Draw("e1 x0 same");
+
+  
+  TLegend *leg = new TLegend(.6,.8,.95,.95);
+  leg->AddEntry(h_SB,"S+B","l");
+  leg->AddEntry(h_S,"S","l");
+  leg->AddEntry(h_CombiWithConvLeg,"Comb. w. conv. leg","l");
+  leg->AddEntry(h_CombiWithoutConvLeg,"Comb. w/o conv. leg","l");
+  leg->AddEntry(h_HF,"Comb. HF","l");
+  leg->AddEntry(h_RPConv,"RP conv.","l");
+  leg->Draw();
+
+  TLatex l;
+  l.SetTextSize(.025);
+  l.DrawLatex(.1,1.5e7,h_text);
+
+
+  c->SaveAs("temp_output/mass_prefilterCuts.pdf");
+  c->SaveAs("temp_output/mass_prefilterCuts.root");
+
+
+
+  TCanvas *c_eff = new TCanvas("c_eff","",800,600);
+  c_eff->SetGridy();
+  h_SB_eff->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_SB_eff->SetYTitle("Efficiency");
+  h_SB_eff->GetXaxis()->SetTitleOffset(1.2);
+  h_SB_eff->GetYaxis()->SetTitleOffset(1.3);
+  h_SB_eff->GetYaxis()->SetRangeUser(0,1.1);
+  h_SB_eff->Draw("e1 x0");
+  h_HF_eff->Draw("e1 x0 same");
+  h_S_eff->Draw("e1 x0 same");
+  h_CombiWithConvLeg_eff->Draw("e1 x0 same");
+  h_CombiWithoutConvLeg_eff->Draw("e1 x0 same");
+  h_RPConv_eff->Draw("e1 x0 same");
+  leg->Draw();
+  l.DrawLatex(.1,1.125,h_text);
+
+  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.pdf");
+  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.root");
+
+
+  // gApplication->Terminate();
+}
