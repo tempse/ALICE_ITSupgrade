@@ -34,7 +34,7 @@ void calculateHF();
 
 // MVA cut value (for identifying conversion tracks):
 const Bool_t doConsiderMVAinfo_convTrack = kTRUE;
-const Float_t MVAcut_convTrack = -0.4218; // MVA output<MVAcut_convTrack <-> conversion track
+const Float_t MVAcut_convTrack = -0.4062; // MVA output<MVAcut_convTrack <-> conversion track
 
 // MVA cut value (For identifying real pair conversions):
 const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
@@ -52,17 +52,18 @@ Int_t cnt_ls = 0, cnt_us = 0, cnt_us_ls = 0, cnt_rp = 0;
 // output variables (1,2 <-> 1st leg, 2nd leg):
 Int_t TrackID1, TrackID2;
 Int_t EventID1, EventID2;
-Int_t IsRP;                  // real pairs: 1, combinatorial pairs: 0
-Int_t IsUS;                  // pair with unlike sign (regardless of IsRP)
-Int_t IsConv;                // both mother particles are gammas (can still be comb. pairs)
-Int_t IsHF;                  // HF = "heavy flavor"
-Int_t IsCorrCharm;           // correlated charmed pair: 1, else: 0
-Int_t IsCorrBottom;          // correlated bottom pair: 1, else: 0
-Int_t IsCorrCharmFromBottom; // correlated charmed pair originating from a bottom: 1, else: 0
-Int_t ChargeSign;            // unlike sign: 0, like sign (++): 1, like sign (--): -1
-Int_t IsTaggedRPConv;        // tagged as real pair conversion event: 1, otherwise: 0
-Int_t IsTaggedConvTrack1;    // tagged as conversion track (by preceding...
-Int_t IsTaggedConvTrack2;    // ...MVA classification): 1, otherwise: 0
+Int_t IsRP;                         // real pairs: 1, combinatorial pairs: 0
+Int_t IsUS;                         // pair with unlike sign (regardless of IsRP)
+Int_t IsConv;                       // both mother particles are gammas (can still be comb. pairs)
+Int_t IsHF;                         // HF = "heavy flavor"
+Int_t IsCorrCharm;                  // correlated charmed pair: 1, else: 0
+Int_t IsCorrBottom;                 // correlated bottom pair: 1, else: 0
+Int_t IsCorrCharmFromBottom;        // correlated charmed pair originating from a bottom: 1, else: 0
+Int_t ChargeSign;                   // unlike sign: 0, like sign (++): 1, like sign (--): -1
+Int_t IsTaggedRPConv_classicalCuts; // tagged as real pair conversion event: 1, otherwise: 0
+//Int_t IsTaggedRPConv_MVAcuts;       // tagged as real pair conversion event: 1, otherwise: 0
+Int_t IsTaggedConvTrack1;           // tagged as conversion track (by preceding...
+Int_t IsTaggedConvTrack2;           // ...MVA classification): 1, otherwise: 0
 Float_t opang;
 Float_t diffz;
 Float_t mass;
@@ -107,7 +108,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("../inputData/FT2_AnalysisResults_Upgrade_addFeat_test_1-10-split.root","READ");
+  TFile *infile = TFile::Open("../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/trainingPhase2/singleTrackTree/FT2_AnalysisResults_Upgrade_addFeat_part2_1-1-8-split.root","READ");
   TTree *singleTree = (TTree*)infile->Get("tracks");
 
   std::cout << std::endl;
@@ -118,7 +119,9 @@ void GeneratePairTrees() {
     gApplication->Terminate();
   }
 
-  TString infile_MVAoutputs_name = "../TMVA/TMVAClassification_singleTrackTree/TMVApp.root";
+  
+  TString infile_MVAoutputs_name = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/applicationPhase1/TMVApp_ConvRej_singleTracks_part2_1-1-8-split.root";
+  
   TChain *singleTree_MVAoutputs = new TChain("tracks_MVAoutput");
   if(doConsiderMVAinfo_convTrack) {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
@@ -214,7 +217,7 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
-    pairTree_rp->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_rp->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_rp->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -275,7 +278,7 @@ void GeneratePairTrees() {
     pairTree_us->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
-    pairTree_us->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_us->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -336,7 +339,7 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
-    pairTree_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -397,7 +400,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
-    pairTree_us_ls->Branch("IsTaggedRPConv",&IsTaggedRPConv);
+    pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -455,7 +458,7 @@ void GeneratePairTrees() {
   Int_t nTracks; // total number of tracks in given event
 
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries()/100;
+  Long64_t singleTree_nEvents = singleTree->GetEntries();
 
   
   std::cout << std::endl << "Start event processing...";
@@ -653,9 +656,9 @@ void GeneratePairTrees() {
 
 	// prefilter cuts - tagging RP conversions:
 	if(phiv<TMath::PiOver2() && mass<.05) {
-	  IsTaggedRPConv = 1;
+	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
-	  IsTaggedRPConv = 0;
+	  IsTaggedRPConv_classicalCuts = 0;
 	}
 
 	
@@ -697,9 +700,9 @@ void GeneratePairTrees() {
 	
 	// prefilter cuts - tagging RP conversions:
 	if(phiv<TMath::PiOver2() && mass<.05) {
-	  IsTaggedRPConv = 1;
+	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
-	  IsTaggedRPConv = 0;
+	  IsTaggedRPConv_classicalCuts = 0;
 	}
 	
 
