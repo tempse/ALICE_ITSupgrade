@@ -21,10 +21,17 @@ void PlotMass_prefilterCuts() {
   // File containing the input pairtree (test) data:
   TString fileName_testData = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/trainingPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_preFilterVars_pairtree_us_part2_1-1-8-split.root";
 
-  TString prefilterTagName = "IsTaggedRPConv_MVAcuts";
+  // two tags are combined via
+  // (tag1 == wantedPrefilterTagValue1 && tag2 == wantedPrefilterTagValue2)
+  // if the following variable is set to kTRUE:
+  Bool_t useTwoTags = kTRUE;
+
+  TString prefilterTagName1 = "IsTaggedConvTrack1";
+  TString prefilterTagName2 = "IsTaggedConvTrack2";
 
   // After prefiltering, use events with this tag value only:
-  const Int_t wantedPrefilterTagValue = 0.;
+  const Int_t wantedPrefilterTagValue1 = 0.;
+  const Int_t wantedPrefilterTagValue2 = 0.;
   
   TString h_text = "Combinatorial BDT";
 
@@ -33,9 +40,13 @@ void PlotMass_prefilterCuts() {
   const Bool_t isBDT = kTRUE;
 
 
-  if( !(wantedPrefilterTagValue==0 || wantedPrefilterTagValue==1) ) {
-    std::cout << "   ERROR: Variable 'wantedPrefilterTagValue' is required to have values "
-	      << " 0 or 1, but has value " << wantedPrefilterTagValue << " instead."
+  
+  /////////////////////////////////////////////////////////////////////////
+
+  
+  if( !(wantedPrefilterTagValue1==0 || wantedPrefilterTagValue1==1) ) {
+    std::cout << "   ERROR: Variable 'wantedPrefilterTagValue1' is required to have values "
+	      << " 0 or 1, but has value " << wantedPrefilterTagValue1 << " instead."
 	      << std::endl;
     gApplication->Terminate();
   }
@@ -51,17 +62,26 @@ void PlotMass_prefilterCuts() {
 
   Float_t mass;
   Int_t IsRP, IsConv, IsHF;
-  Int_t IsTag; // generic variable whose value depends on the particular analysis
+  Int_t IsTag1, IsTag2; // generic variables whose values depend on the particular analysis
   TestTree->SetBranchAddress("mass", &mass);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsHF", &IsHF);
-  if(TestTree->GetListOfBranches()->FindObject(prefilterTagName) != NULL) {
-    TestTree->SetBranchAddress(prefilterTagName, &IsTag);
+  if(TestTree->GetListOfBranches()->FindObject(prefilterTagName1) != NULL) {
+    TestTree->SetBranchAddress(prefilterTagName1, &IsTag1);
   }else {
-    std::cout << "  ERROR: The branch " << prefilterTagName
+    std::cout << "  ERROR: The branch " << prefilterTagName1
 	      << " does not exist in the file " << f->GetName() << std::endl;
     gApplication->Terminate();
+  }
+  if(useTwoTags) {
+    if(TestTree->GetListOfBranches()->FindObject(prefilterTagName2) != NULL) {
+      TestTree->SetBranchAddress(prefilterTagName2, &IsTag2);
+    }else {
+      std::cout << "  ERROR: The branch " << prefilterTagName2
+		<< " does not exist in the file " << f->GetName() << std::endl;
+      gApplication->Terminate();
+    }
   }
 
 
@@ -133,25 +153,52 @@ void PlotMass_prefilterCuts() {
     if(IsRP==1 && IsConv==1) {
       h_RPConv->Fill(mass);
     }
+
+
     
     // (IsTag == 0) if "unwanted tag" corresponds to 1
     // in the input file, (IsTag == 1) otherwise:
-    if(IsTag == wantedPrefilterTagValue) {
-      h_SB_prefilterCut->Fill(mass);
-      if(IsRP==1 && IsConv==0) {
-	h_S_prefilterCut->Fill(mass);
+
+    if(!useTwoTags) {
+      if(IsTag1 == wantedPrefilterTagValue1) {
+	h_SB_prefilterCut->Fill(mass);
+	if(IsRP==1 && IsConv==0) {
+	  h_S_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsConv==1) {
+	  h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsConv==0) {
+	  h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsHF==1) {
+	  h_HF_prefilterCut->Fill(mass);
+	}
+	if(IsRP==1 && IsConv==1) {
+	  h_RPConv_prefilterCut->Fill(mass);
+	}
       }
-      if(IsRP==0 && IsConv==1) {
-	h_CombiWithConvLeg_prefilterCut->Fill(mass);
-      }
-      if(IsRP==0 && IsConv==0) {
-	h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
-      }
-      if(IsRP==0 && IsHF==1) {
-	h_HF_prefilterCut->Fill(mass);
-      }
-      if(IsRP==1 && IsConv==1) {
-	h_RPConv_prefilterCut->Fill(mass);
+    }
+    
+    if(useTwoTags) {
+      if(IsTag1 == wantedPrefilterTagValue1 &&
+	 IsTag2 == wantedPrefilterTagValue2) {
+	h_SB_prefilterCut->Fill(mass);
+	if(IsRP==1 && IsConv==0) {
+	  h_S_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsConv==1) {
+	  h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsConv==0) {
+	  h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	}
+	if(IsRP==0 && IsHF==1) {
+	  h_HF_prefilterCut->Fill(mass);
+	}
+	if(IsRP==1 && IsConv==1) {
+	  h_RPConv_prefilterCut->Fill(mass);
+	}
       }
     }
     

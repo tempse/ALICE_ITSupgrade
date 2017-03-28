@@ -95,12 +95,11 @@ void PlotMass() {
   
   TH1F *h_CombiWithoutConvLeg =
     new TH1F("h_CombiWithoughConvLeg","",nBins,min,max);
-
-
   
   TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
   
   TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
+
   
   TH1F *h_SB_MVAcut = new TH1F("h_SB_MVAcut","",nBins,min,max);
   
