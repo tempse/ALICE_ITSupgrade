@@ -4,6 +4,7 @@
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TStopwatch.h>
 
 
 // stores all relevant information of a particle pair:
@@ -78,12 +79,13 @@ void mergeProcessedMVAoutputs(TString branchfilename,
 
   
   const Long64_t nentries = tree_updatefile->GetEntries();
-  
+
   std::cout << "Tagging pairs based on MVA output...";
+  
   for(Long64_t j=0; j<nentries; j++) {
     tree_updatefile->GetEntry(j);
     tree_branchfile->GetEntry(j);
-
+    
     particlePair currentPair;
     currentPair.EventID = EventID;
     currentPair.TrackID1 = TrackID1;
@@ -125,31 +127,26 @@ void mergeProcessedMVAoutputs(TString branchfilename,
   std::cout << std::endl;
 
 
-  // std::vector<Long64_t> newEventsStartPos;
-  // Long64_t EventID_temp = -1;
-  // for(Long64_t i=0; i<tracksTaggedAccepted.size(); i++) {
-  //   if(EventID_temp != tracksTaggedAccepted[i].EventID) {
-  //     newEventsStartPos.push_back(i);
-  //     EventID_temp = tracksTaggedAccepted[i].EventID;
-  //   }
-  // }
-
-  // std::cout << "DEBUGINFO: newEventsStartPos.size() = " << newEventsStartPos.size() << std::endl;
-
+  std::cout << "Propagate tag information to other pairs..." << std::endl;
+  
   TStopwatch *watch = new TStopwatch();
   watch->Start();
 
-  std::cout << "Propagate tag information to other pairs..." << std::endl;
+  // marks the beginning of a new event in tracksTaggedAccepted:
+  Long64_t j_nextEvent = 0;
+  
   for(Long64_t i=0; i<nentries; i++) {
     if((i%1000)==0) {
       std::cout << "\r  Processing event " << i << " of " << nentries
 		<< " (" << i/((Float_t)nentries)*100 << " %)...";
     }
 
-    for(Long64_t j=0; j<tracksTaggedAccepted.size(); j++) {
-      if( (allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
-	   allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) &&
-	  allPairs[i].EventID==tracksTaggedAccepted[j].EventID ) {
+    for(Long64_t j=j_nextEvent; j<tracksTaggedAccepted.size(); j++) {
+      if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
+	j_nextEvent = j;
+	break;
+      }else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
+	       allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
 	allPairs[i].IsTaggedAccepted = 1.;
       }
     }
@@ -167,46 +164,6 @@ void mergeProcessedMVAoutputs(TString branchfilename,
   }
   std::cout << " DONE" << std::endl << std::endl;
 
-
-  // for(Long64_t j=0; j<tracksTaggedAccepted.size(); j++) {
-  //   for(Long64_t i=0; i<nentries; i++) {
-  //     if( allPairs[i].TrackID1==tracksTaggedAccepted[j] ||
-  // 	  allPairs[i].TrackID2==tracksTaggedAccepted[j] ) {
-  // 	allPairs[i].IsTaggedAccepted = 1.;
-  //     }
-  //   }
-  // }
-  // std::cout << " DONE" << std::endl << std::endl;
-
-
-  
-  // std::cout << "Fill new branch...";
-  // for(Long64_t i=0; i<nentries; i++) {
-  //   isAccepted = allPairs[i].IsTaggedAccepted;
-  //   newBranch->Fill();
-  // }
-  // std::cout << " DONE" << std::endl << std::endl;
-  
-  
-  /*
-    for(Long64_t i=0; i<nentries; i++) {
-    tree_branchfile->GetEntry(i);
-    if(signalRegion == "+") {
-    if(var > MVAcut) isAccepted = 1.;
-    else isAccepted = 0.;
-    }else if(signalRegion == "-") {
-    if(var < MVAcut) isAccepted = 1.;
-    else isAccepted = 0.;
-    }else {
-    std::cout << "  ERROR: 'signalRegion' definition is wrong or not provided. "
-    << "(It should be either '+' (default) or '-'.)" << std::endl;
-    std::cout << "  Abort." << std::endl << std::endl;
-    gApplication->Terminate();
-    }
-    
-    newBranch->Fill();
-    }
-  */
   
   updatefile->cd();
   tree_updatefile->Write("", TObject::kOverwrite);
