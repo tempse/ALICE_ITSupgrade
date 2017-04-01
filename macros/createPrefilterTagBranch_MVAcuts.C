@@ -13,12 +13,20 @@ struct particlePair {
   Int_t TrackID1;
   Int_t TrackID2;
   Int_t IsTaggedAccepted;
+
+  bool operator < (const particlePair &rhs) const {
+    return (EventID < rhs.EventID);
+  }
 };
 
 // store all relevant information of a particle track:
 struct particleTrack {
   Int_t EventID;
   Int_t TrackID;
+
+  bool operator < (const particleTrack &rhs) const {
+    return (EventID < rhs.EventID);
+  }
 };
 
 
@@ -127,23 +135,37 @@ void createPrefilterTagBranch_MVAcuts(TString branchfilename,
   std::cout << std::endl;
 
 
+  // sort pairs and tracks by event ID:
+  std::sort(allPairs.begin(), allPairs.end());
+  std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end());
+
+  // store start positions of new events:
+  std::map<Long64_t, Long64_t> eventID_startPos;
+  Long64_t EventID_prev = -1;
+  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
+    if(tracksTaggedAccepted[i].EventID != EventID_prev) {
+      eventID_startPos[tracksTaggedAccepted[i].EventID] = i;
+    }
+    EventID_prev = tracksTaggedAccepted[i].EventID;
+  }
+  
+
+
   std::cout << "Propagate tag information to other pairs..." << std::endl;
   
   TStopwatch *watch = new TStopwatch();
   watch->Start();
 
-  // marks the beginning of a new event in tracksTaggedAccepted:
-  Long64_t j_nextEvent = 0;
-  
   for(Long64_t i=0; i<nentries; i++) {
     if((i%1000)==0) {
       std::cout << "\r  Processing event " << i << " of " << nentries
 		<< " (" << i/((Float_t)nentries)*100 << " %)...";
     }
-
-    for(Long64_t j=j_nextEvent; j<tracksTaggedAccepted.size(); j++) {
+    
+    for(Long64_t j=eventID_startPos[allPairs[i].EventID];
+	j<(Long64_t)tracksTaggedAccepted.size();
+	j++) {
       if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
-	j_nextEvent = j;
 	break;
       }else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
 	       allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
