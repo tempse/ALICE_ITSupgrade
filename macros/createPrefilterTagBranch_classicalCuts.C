@@ -5,6 +5,8 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TStopwatch.h>
+#include <TH1F.h>
+#include <TCanvas.h>
 
 
 // stores all relevant information of a particle pair:
@@ -13,6 +15,7 @@ struct particlePair {
   Int_t TrackID1;
   Int_t TrackID2;
   Int_t IsTaggedAccepted;
+  Int_t num_associatedPairs;
 
   bool operator < (const particlePair &rhs) const {
     return (EventID < rhs.EventID);
@@ -77,6 +80,7 @@ void createPrefilterTagBranch_classicalCuts(TString updatefilename,
     currentPair.EventID = EventID;
     currentPair.TrackID1 = TrackID1;
     currentPair.TrackID2 = TrackID2;
+    currentPair.num_associatedPairs = 0;
     
     if(signalRegion == "+") {
       if(var == 1) {
@@ -135,7 +139,7 @@ void createPrefilterTagBranch_classicalCuts(TString updatefilename,
   watch->Start();
 
   for(Long64_t i=0; i<nentries; i++) {
-    if((i%1000)==0) {
+    if((i%2500)==0) {
       std::cout << "\r  Processing event " << i << " of " << nentries
 		<< " (" << i/((Float_t)nentries)*100 << " %)...";
     }
@@ -148,6 +152,7 @@ void createPrefilterTagBranch_classicalCuts(TString updatefilename,
       }else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
 	       allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
 	allPairs[i].IsTaggedAccepted = 1.;
+	allPairs[i].num_associatedPairs = allPairs[i].num_associatedPairs + 1;
       }
     }
   }
@@ -155,9 +160,28 @@ void createPrefilterTagBranch_classicalCuts(TString updatefilename,
 	    << " (100 %)... DONE.";
   std::cout << " Time elapsed: " << watch->RealTime() << " seconds."
 	    << std::endl << std::endl;
-  
-  
 
+
+  // create histogram with the distribution of the associated track number:
+  TH1F *hist_associatedPairs_temp = new TH1F("","",nentries,0,nentries);
+  for(Long64_t i=0; i<nentries; i++) {
+    if(allPairs[i].IsTaggedAccepted == 1) {
+      hist_associatedPairs_temp->SetBinContent(i, allPairs[i].num_associatedPairs);
+    }
+  }
+  TH1F *hist_associatedPairs = new TH1F("","",100,0,hist_associatedPairs_temp->GetMaximum());
+  for(Long64_t i=0; i<nentries; i++) {
+    hist_associatedPairs->Fill(hist_associatedPairs_temp->GetBinContent(i));
+  }  
+  hist_associatedPairs->SetXTitle("number of associated pairs");
+  hist_associatedPairs->SetYTitle("counts");
+  hist_associatedPairs->GetYaxis()->SetTitleOffset(1.2);
+  TCanvas *c = new TCanvas();
+  c->SetLogy();
+  hist_associatedPairs->Draw();
+  c->SaveAs("temp_hist_numberOfAssociatedPairs.root");
+
+  
   std::cout << "Fill new branch with appropriate tags...";
   for(Long64_t i=0; i<nentries; i++) {
     isAccepted = allPairs[i].IsTaggedAccepted;
