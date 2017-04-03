@@ -34,11 +34,11 @@ struct particleTrack {
 
 
 
-void createPrefilterTagBranch_classicalCuts(TString updatefilename,
-					    TString treename_updatefile,
-					    TString branchname_read,
-					    TString branchname_add,
-					    TString signalRegion = "+") {
+void addPrefilterTagBranch_classicalCuts(TString updatefilename,
+					 TString treename_updatefile,
+					 TString branchname_read,
+					 TString branchname_add,
+					 TString signalRegion = "+") {
   
   Int_t var;
   Int_t isAccepted;

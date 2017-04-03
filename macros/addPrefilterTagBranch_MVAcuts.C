@@ -31,14 +31,14 @@ struct particleTrack {
 
 
 
-void createPrefilterTagBranch_MVAcuts(TString branchfilename,
-				      TString treename_branchfile,
-				      TString branchname_branchfile,
-				      TString updatefilename,
-				      TString treename_updatefile,
-				      TString branchname_updatefile,
-				      Float_t MVAcut,
-				      TString signalRegion = "+") {
+void addPrefilterTagBranch_MVAcuts(TString branchfilename,
+				   TString treename_branchfile,
+				   TString branchname_branchfile,
+				   TString updatefilename,
+				   TString treename_updatefile,
+				   TString branchname_updatefile,
+				   Float_t MVAcut,
+				   TString signalRegion = "+") {
 
   Float_t var;
   Int_t isAccepted;
