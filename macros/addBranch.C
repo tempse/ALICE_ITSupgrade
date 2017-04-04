@@ -52,7 +52,7 @@ void addBranch(TString updatefile_filename,
   }
 
 
-  if(updatefile_tree->GetListOfBranches()->FindObject(newBranch_name) == NULL) {
+  if(updatefile_tree->GetListOfBranches()->FindObject(newBranch_name) != NULL) {
     std::cout << "  ERROR: A branch called " << newBranch_name << " already exists in file "
 	      << updatefile_filename << std::endl;
     gApplication->Terminate();
