@@ -18,10 +18,10 @@
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-100-split.root";
+  TString fileName_testData = "../fullAnalysis_v2/applicationPhase_final/pairedTrackTree/temp.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput_CombConvRejection = "../TMVA/TMVAClassification_pairTree_notrand_massCut/TMVApp_MLP_BDT.root";
+  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v2/applicationPhase_final/pairedTrackTree/TMVApp_pairTracks_CombConvRej_0.1mass_prefilter-RPConvRej-MVAcuts.root";
   
   TString h_text = "Combinatorial BDT";
 
@@ -49,7 +49,7 @@ void PlotMass() {
   //// optimal MVA cuts for "signal = physical signal":
   // highest significance for
   // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  float MVAcut = -.25;
+  float MVAcut = -.152;
   //
   // highest significance for
   // pairtree_us_MLP_classifier-S
@@ -95,11 +95,12 @@ void PlotMass() {
   
   TH1F *h_CombiWithoutConvLeg =
     new TH1F("h_CombiWithoughConvLeg","",nBins,min,max);
+
+
   
   TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
   
   TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
-
   
   TH1F *h_SB_MVAcut = new TH1F("h_SB_MVAcut","",nBins,min,max);
   
@@ -199,7 +200,7 @@ void PlotMass() {
       
       // Skip irrelevant events (tagged with MVAoutput = -999 by the TMVA reader
       // or with MVAoutput = 999 by prior analyses):
-      if(TMath::Abs(MVAoutput) == 999) continue;
+      if(MVAoutput < 0 || MVAoutput > 1) continue;
 
       
       // "<=" instead of ">=" in case the network

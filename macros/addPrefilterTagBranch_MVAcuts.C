@@ -88,9 +88,15 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   
   const Long64_t nentries = tree_updatefile->GetEntries();
 
-  std::cout << "Tagging pairs based on MVA output...";
+  std::cout << "Tagging pairs based on MVA output..." << std::endl;
   
   for(Long64_t j=0; j<nentries; j++) {
+    if((j%1000)==0) {
+      std::cout << "\r  Processing event " << j << " of " << nentries
+		<< " (" << j/((Float_t)nentries)*100 << " %)...";
+    }
+
+
     tree_updatefile->GetEntry(j);
     tree_branchfile->GetEntry(j);
     
@@ -100,25 +106,27 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     currentPair.TrackID2 = TrackID2;
     
     if(signalRegion == "+") {
-      if(var > MVAcut) {
+      if(var < -1 || var > 1) { // check if previously tagged as non-accepted
+	currentPair.IsTaggedAccepted = -999;
+      }else if(var > MVAcut) {
 	currentPair.IsTaggedAccepted = 1.;
 
 	particleTrack currentTrack1 = {EventID, TrackID1};
 	particleTrack currentTrack2 = {EventID, TrackID2};
 	tracksTaggedAccepted.push_back(currentTrack1);
 	tracksTaggedAccepted.push_back(currentTrack2);
-      }
-      else currentPair.IsTaggedAccepted = 0.;
+      }else currentPair.IsTaggedAccepted = 0.;
     }else if(signalRegion == "-") {
-      if(var < MVAcut) {
+      if(var < -1 || var > 1) { // check if previously tagged as non-accepted
+	currentPair.IsTaggedAccepted = -999;
+      }else if(var < MVAcut) {
 	currentPair.IsTaggedAccepted = 1.;
 
 	particleTrack currentTrack1 = {EventID, TrackID1};
 	particleTrack currentTrack2 = {EventID, TrackID2};
 	tracksTaggedAccepted.push_back(currentTrack1);
 	tracksTaggedAccepted.push_back(currentTrack2);
-      }
-      else currentPair.IsTaggedAccepted = 0.;
+      }else currentPair.IsTaggedAccepted = 0.;
     }else {
       std::cout << "  ERROR: 'signalRegion' definition is wrong. "
 		<< "(It should be either '+' (default) or '-'.)" << std::endl;
@@ -161,6 +169,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
       std::cout << "\r  Processing event " << i << " of " << nentries
 		<< " (" << i/((Float_t)nentries)*100 << " %)...";
     }
+    
+    if( allPairs[i].IsTaggedAccepted == -999 ) continue; // skip irrelevant entries
     
     for(Long64_t j=eventID_startPos[allPairs[i].EventID];
 	j<(Long64_t)tracksTaggedAccepted.size();
