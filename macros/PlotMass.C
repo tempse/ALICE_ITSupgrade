@@ -2,6 +2,7 @@
 #include <cstdlib>
 
 #include <TROOT.h>
+#include "TApplication.h"
 #include <TStyle.h>
 #include <TString.h>
 #include <TFile.h>
@@ -18,12 +19,17 @@
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../fullAnalysis_v2/applicationPhase_final/pairedTrackTree/temp.root";
+  TString fileName_testData = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part3_1-1-8-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v2/applicationPhase_final/pairedTrackTree/TMVApp_pairTracks_CombConvRej_0.1mass_prefilter-RPConvRej-MVAcuts.root";
-  
-  TString h_text = "Combinatorial BDT";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-singleConvTrackRej_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejMVAcuts_part3_1-1-8-split.root";  
+  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombSingleConvTrackRej_part3_1-1-8-split.root";
+
+  TString h_text = "CombSingleConvTrackRej BDT";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
@@ -36,29 +42,8 @@ void PlotMass() {
   }
   
 
-  //// optimal MVA cuts for "signal = CombWithConvLegs":
-  //
-  // highest significance for
-  // pairtree_us_MLP_classifier-CombWithConvLegs:
-  // float MVAcut = .42;
-  //
-  // highest significance for
-  // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass:
-  // float MVAcut = .40;
-  //
-  //// optimal MVA cuts for "signal = physical signal":
-  // highest significance for
-  // pairtree_us_MLP_classifier-CombWithConvLegs-0.1mass
-  float MVAcut = -.152;
-  //
-  // highest significance for
-  // pairtree_us_MLP_classifier-S
-  // float MVAcut = .40;
-  //
-  // highest significance for
-  // pairtree_us_MLP_classifier-S-0.1mass
-  // float MVAcut = .28;
-
+  // set MVA cut value:
+  float MVAcut = -.1884;
   
   const float stepSize = .2;
   const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
@@ -136,7 +121,9 @@ void PlotMass() {
 
   TH1F *h_signalOverBackground =
     new TH1F("h_signalOverBackground","",nBins,min,max);
-  
+
+  TH1F *h_significance =
+    new TH1F("h_significance","",nBins,min,max);
   
 
   
@@ -170,7 +157,7 @@ void PlotMass() {
   }
   
   
-  Long64_t nEv = TestTree->GetEntries()/5;
+  Long64_t nEv = TestTree->GetEntries();
 
   Float_t passed_seconds_prev = 0.;
   
@@ -198,13 +185,11 @@ void PlotMass() {
       if(isBDT) MVAoutput = (MVAoutput+1)/2.;
 
       
-      // Skip irrelevant events (tagged with MVAoutput = -999 by the TMVA reader
-      // or with MVAoutput = 999 by prior analyses):
+      // Skip irrelevant events (tagged with MVAoutputs greater or smaller than
+      // 0 or 1 (after BDT output transformation)):
       if(MVAoutput < 0 || MVAoutput > 1) continue;
 
       
-      // "<=" instead of ">=" in case the network
-      // is trained on the (physical) background:
       if(MVAoutput >= stepSize*i) {
 	h_SB_currentMVAcut->Fill(mass);
 	if(IsRP==1 && IsConv==0) {
@@ -244,8 +229,7 @@ void PlotMass() {
 	  h_RPConv->Fill(mass);
 	}
 	
-	// "<=" instead of ">=" in case the network
-	// is trained on the (physical) background:
+
 	if(MVAoutput >= MVAcut) {
 	  h_SB_MVAcut->Fill(mass);
 	  if(IsRP==1 && IsConv==0) {
@@ -304,6 +288,7 @@ void PlotMass() {
       
       if(stepSize*(i-1)<MVAcut && MVAcut<=stepSize*i) {
 	h_signalOverBackground->SetBinContent(j, signalOverBackground);
+	h_significance->SetBinContent(j, significance);
       }
     }
     
@@ -483,7 +468,7 @@ void PlotMass() {
   h_CombiWithConvLeg->SetLineColor(kRed);
   h_CombiWithoutConvLeg->SetLineColor(kBlue);
   h_HF->SetLineColor(kOrange);
-  h_RPConv->SetLineColor(13);
+  h_RPConv->SetLineColor(kMagenta);
 
   h_SB_MVAcut->SetLineColor(kBlack);
   h_SB_MVAcut->SetMarkerColor(kBlack);
@@ -495,8 +480,8 @@ void PlotMass() {
   h_CombiWithoutConvLeg_MVAcut->SetMarkerColor(kBlue);
   h_HF_MVAcut->SetLineColor(kOrange);
   h_HF_MVAcut->SetMarkerColor(kOrange);
-  h_RPConv_MVAcut->SetLineColor(13);
-  h_RPConv_MVAcut->SetMarkerColor(13);
+  h_RPConv_MVAcut->SetLineColor(kMagenta);
+  h_RPConv_MVAcut->SetMarkerColor(kMagenta);
   
   h_SB_MVAcut->SetMarkerStyle(7);
   h_S_MVAcut->SetMarkerStyle(7);
@@ -516,7 +501,7 @@ void PlotMass() {
   h_CombiWithConvLeg_eff->SetLineColor(kRed);
   h_CombiWithoutConvLeg_eff->SetLineColor(kBlue);
   h_HF_eff->SetLineColor(kOrange);
-  h_RPConv_eff->SetLineColor(13);
+  h_RPConv_eff->SetLineColor(kMagenta);
 
   h_SB_eff->SetMarkerStyle(7);
   h_S_eff->SetMarkerStyle(7);
@@ -530,9 +515,10 @@ void PlotMass() {
   h_CombiWithConvLeg_eff->SetMarkerColor(kRed);
   h_CombiWithoutConvLeg_eff->SetMarkerColor(kBlue);
   h_HF_eff->SetMarkerColor(kOrange);
-  h_RPConv_eff->SetMarkerColor(13);
+  h_RPConv_eff->SetMarkerColor(kMagenta);
 
   h_signalOverBackground->SetMarkerStyle(7);
+  h_significance->SetMarkerStyle(7);
 
   
 
@@ -598,13 +584,29 @@ void PlotMass() {
   h_signalOverBackground->SetYTitle("Signal over background");
   h_signalOverBackground->GetXaxis()->SetTitleOffset(1.2);
   h_signalOverBackground->GetYaxis()->SetTitleOffset(1.3);
-  h_signalOverBackground->GetYaxis()->SetTitleOffset(1.3);
   h_signalOverBackground->GetYaxis()->SetRangeUser(1e-6,1.1);
   h_signalOverBackground->Draw("e1 x0");
 
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.pdf");
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.root");
+
+
+  TCanvas *c_significance =
+    new TCanvas("c_significance","",800,600);
+  // c_significance->SetLogy();
+  c_significance->SetGridy();
+  h_significance->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_significance->SetYTitle("Significance");
+  h_significance->GetXaxis()->SetTitleOffset(1.2);
+  h_significance->GetYaxis()->SetTitleOffset(1.3);
+  // h_significance->GetYaxis()->SetRangeUser(1e-6,1.1);
+  h_significance->Draw("e1 x0");
+
+  c_significance->SaveAs("temp_output/mass_significance.pdf");
+  c_significance->SaveAs("temp_output/mass_significance.root");
+
   
+  gApplication->Terminate();
 }
 
 

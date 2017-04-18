@@ -19,22 +19,22 @@
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/trainingPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_preFilterVars_pairtree_us_part2_1-1-8-split.root";
+  TString fileName_testData = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part3_1-1-8-split.root";
+  
+  TString h_text = "RP conv. rej. via MVA cuts";
 
   // two tags are combined via
   // (tag1 == wantedPrefilterTagValue1 && tag2 == wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoTags = kTRUE;
+  Bool_t useTwoTags = kFALSE;
 
-  TString prefilterTagName1 = "IsTaggedConvTrack1";
+  TString prefilterTagName1 = "IsTaggedRPConv_MVAcuts_prefilter";
   TString prefilterTagName2 = "IsTaggedConvTrack2";
 
   // After prefiltering, use events with this tag value only:
   const Int_t wantedPrefilterTagValue1 = 0.;
   const Int_t wantedPrefilterTagValue2 = 0.;
   
-  TString h_text = "Combinatorial BDT";
-
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
@@ -251,7 +251,7 @@ void PlotMass_prefilterCuts() {
   h_CombiWithConvLeg->SetLineColor(kRed);
   h_CombiWithoutConvLeg->SetLineColor(kBlue);
   h_HF->SetLineColor(kOrange);
-  h_RPConv->SetLineColor(13);
+  h_RPConv->SetLineColor(kMagenta);
 
   h_SB_prefilterCut->SetLineColor(kBlack);
   h_SB_prefilterCut->SetMarkerColor(kBlack);
@@ -263,8 +263,8 @@ void PlotMass_prefilterCuts() {
   h_CombiWithoutConvLeg_prefilterCut->SetMarkerColor(kBlue);
   h_HF_prefilterCut->SetLineColor(kOrange);
   h_HF_prefilterCut->SetMarkerColor(kOrange);
-  h_RPConv_prefilterCut->SetLineColor(13);
-  h_RPConv_prefilterCut->SetMarkerColor(13);
+  h_RPConv_prefilterCut->SetLineColor(kMagenta);
+  h_RPConv_prefilterCut->SetMarkerColor(kMagenta);
   
   h_SB_prefilterCut->SetMarkerStyle(7);
   h_S_prefilterCut->SetMarkerStyle(7);
@@ -284,7 +284,7 @@ void PlotMass_prefilterCuts() {
   h_CombiWithConvLeg_eff->SetLineColor(kRed);
   h_CombiWithoutConvLeg_eff->SetLineColor(kBlue);
   h_HF_eff->SetLineColor(kOrange);
-  h_RPConv_eff->SetLineColor(13);
+  h_RPConv_eff->SetLineColor(kMagenta);
 
   h_SB_eff->SetMarkerStyle(7);
   h_S_eff->SetMarkerStyle(7);
@@ -298,7 +298,7 @@ void PlotMass_prefilterCuts() {
   h_CombiWithConvLeg_eff->SetMarkerColor(kRed);
   h_CombiWithoutConvLeg_eff->SetMarkerColor(kBlue);
   h_HF_eff->SetMarkerColor(kOrange);
-  h_RPConv_eff->SetMarkerColor(13);
+  h_RPConv_eff->SetMarkerColor(kMagenta);
 
 
   TCanvas *c = new TCanvas("c","",800,600);
