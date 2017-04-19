@@ -1,0 +1,49 @@
+TP2_ST:
+	Signal (pdgMother!=22): 	764985
+	Background (pdgMother==2):	587165
+	--> MVA cut: -0.4407
+
+TP2_PT:
+	Signal (!(IsRP==1 && IsConv==1) && mass<.05): 	322083
+	Background (IsRP==1 && IsConv==1 && mass<.05):	78520
+	--> MVA cut: -0.2170
+
+AP2_ST:
+	Signal (pdgMother!=22):		6113878
+	Background (pdgMother==2):	4703331
+	--> MVA cut: -0.4407
+
+AP2_PT (RPConvRej, no prefilters):
+	Signal (!(IsRP==1 && IsConv==1) && mass>.05):	2576598
+	Background (IsRP==1 && IsConv==1 && mass>.05):	627777
+	--> MVA cut: -0.2170
+
+AP2_PT (CombConvRej, prefilters: none):
+       Signal (!(IsRP==0 && IsConv==1) && mass>.1):	28258531
+       Background (IsRP==0 && IsConv==1 && mass>.1):	60261964
+       --> MVA cut: -0.3221
+
+AP2_PT (CombConvRej, prefilters: singleConvTrackRej):
+       Signal (!(IsRP==0 && IsConv==1) && mass>.1 && IsTaggedConvTrack1==0 && IsTaggedConvTrack2==0):		27784706
+       Background ((IsRP==0 && IsConv==1) && mass>.1 && IsTaggedConvTrack1==0 && IsTaggedConvTrack2==0):	42962318
+       --> MVA cut: -.7904
+
+AP2_PT (CombConvRej, prefilters: RPConvRej-classicalCuts):
+       Signal (!(IsRP==0 && IsConv==0) && mass>.1 && IsTaggedRPConv_classicalCuts_prefilter==0):	13080722
+       Background ((IsRP==0 && IsConv==0) && mass>.1 && IsTaggedRPConv_classicalCuts_prefilter==0):	27908283
+       --> MVA cut: -0.1891
+
+AP2_PT (CombConvRej, prefilter: RPConvRej-MVAcuts):
+       Signal (!(IsRP==0 && IsConv==1) && mass>.1 && IsTaggedRPConv_MVAcuts_prefilter==0):	20831059
+       Background ((IsRP==0 && IsConv==1) && mass>.1 && IsTaggedRPConv_MVAcuts_prefilter==0):	44428464
+       --> MVA cut: -0.2411
+
+AP2_PT (CombSingleConvTrackRej):
+	Signal (!(IsRP==0 && (IsTaggedConvTrack1==1 || IsTaggedConvTrack2==1)) && mass>.1):	70747799
+	Background (IsRP==0 && (IsTaggedConvTrack1==1 || IsTaggedConvTrack2==1) && mass>.1):	17772696
+	--> MVA cut: -0.1884
+
+AP2_PT (CombSingleConvTrackRej, no mass cuts):
+	Signal (!(IsRP==0 && (IsTaggedConvTrack1==1 || IsTaggedConvTrack2==1))):	77641661
+	Background (IsRP==0 && (IsTaggedConvTrack1==1 || IsTaggedConvTrack2==1)):	18985533
+	--> MVA cut: -0.1836
