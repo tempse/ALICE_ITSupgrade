@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <cstdlib>
 
@@ -7,8 +8,8 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TH1F.h>
-#include <TH2F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TCanvas.h>
@@ -23,13 +24,13 @@ void PlotMass() {
 
   // File containing the corresponding MVA output values:
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
+   TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-singleConvTrackRej_part3_1-1-8-split.root";
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejMVAcuts_part3_1-1-8-split.root";  
-  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombSingleConvTrackRej_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombSingleConvTrackRej_noMassCuts_part3_1-1-8-split.root";
 
-  TString h_text = "CombSingleConvTrackRej BDT";
+  TString h_text = "CombConvRej BDT (no prefilters)";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
@@ -43,7 +44,7 @@ void PlotMass() {
   
 
   // set MVA cut value:
-  float MVAcut = -.1884;
+  float MVAcut = -.217;
   
   const float stepSize = .2;
   const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
@@ -72,67 +73,67 @@ void PlotMass() {
   const unsigned int min=0, max=5, nBins=50;
   
   
-  TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
+  TH1D *h_SB = new TH1D("h_SB","",nBins,min,max);
   
-  TH1F *h_S = new TH1F("h_S","",nBins,min,max);
+  TH1D *h_S = new TH1D("h_S","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg = new TH1F("h_CombiWithConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg =
-    new TH1F("h_CombiWithoughConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg =
+    new TH1D("h_CombiWithoughConvLeg","",nBins,min,max);
 
 
   
-  TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
+  TH1D *h_HF = new TH1D("h_HF","",nBins,min,max);
   
-  TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
+  TH1D *h_RPConv = new TH1D("h_RPConv","",nBins,min,max);
   
-  TH1F *h_SB_MVAcut = new TH1F("h_SB_MVAcut","",nBins,min,max);
+  TH1D *h_SB_MVAcut = new TH1D("h_SB_MVAcut","",nBins,min,max);
   
-  TH1F *h_S_MVAcut = new TH1F("h_S_MVAcut","",nBins,min,max);
+  TH1D *h_S_MVAcut = new TH1D("h_S_MVAcut","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg_MVAcut =
-    new TH1F("h_CombiWithConvLeg_MVAcut","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg_MVAcut =
+    new TH1D("h_CombiWithConvLeg_MVAcut","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg_MVAcut =
-    new TH1F("h_CombiWithoutConvLeg_MVAcut","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg_MVAcut =
+    new TH1D("h_CombiWithoutConvLeg_MVAcut","",nBins,min,max);
   
-  TH1F *h_HF_MVAcut = new TH1F("h_HF_MVAcut","",nBins,min,max);
+  TH1D *h_HF_MVAcut = new TH1D("h_HF_MVAcut","",nBins,min,max);
   
-  TH1F *h_RPConv_MVAcut = new TH1F("h_RPConv_MVAcut","",nBins,min,max);
+  TH1D *h_RPConv_MVAcut = new TH1D("h_RPConv_MVAcut","",nBins,min,max);
 
 
   
-  TH1F *h_S_currentMVAcut = new TH1F("h_S_currentMVAcut","",nBins,min,max);
+  TH1D *h_S_currentMVAcut = new TH1D("h_S_currentMVAcut","",nBins,min,max);
   
-  TH1F *h_SB_currentMVAcut = new TH1F("h_SB_currentMVAcut","",nBins,min,max);
+  TH1D *h_SB_currentMVAcut = new TH1D("h_SB_currentMVAcut","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg_currentMVAcut =
-    new TH1F("h_CombiWithConvLeg_currentMVAcut","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg_currentMVAcut =
+    new TH1D("h_CombiWithConvLeg_currentMVAcut","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg_currentMVAcut =
-    new TH1F("h_CombiWithoutConvLeg_currentMVAcut","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg_currentMVAcut =
+    new TH1D("h_CombiWithoutConvLeg_currentMVAcut","",nBins,min,max);
   
-  TH1F *h_HF_currentMVAcut = new TH1F("h_HF_currentMVAcut","",nBins,min,max);
+  TH1D *h_HF_currentMVAcut = new TH1D("h_HF_currentMVAcut","",nBins,min,max);
   
-  TH1F *h_RPConv_currentMVAcut =
-    new TH1F("h_RPConv_currentMVAcut","",nBins,min,max);
+  TH1D *h_RPConv_currentMVAcut =
+    new TH1D("h_RPConv_currentMVAcut","",nBins,min,max);
 
 
-  TH1F *h_signalOverBackground =
-    new TH1F("h_signalOverBackground","",nBins,min,max);
+  TH1D *h_signalOverBackground =
+    new TH1D("h_signalOverBackground","",nBins,min,max);
 
-  TH1F *h_significance =
-    new TH1F("h_significance","",nBins,min,max);
+  TH1D *h_significance =
+    new TH1D("h_significance","",nBins,min,max);
   
 
   
   
-  TH2F *h_significance_MVAcutScan =
-    new TH2F("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
+  TH2D *h_significance_MVAcutScan =
+    new TH2D("h_significance_MVAcutScan","",nBins,min,max,nSteps,0,1);
   
-  TH2F *h_signalOverBackground_MVAcutScan =
-    new TH2F("h_signalOverBackground_MVAcutScan","",nBins,min,max,nSteps,0,1);
+  TH2D *h_signalOverBackground_MVAcutScan =
+    new TH2D("h_signalOverBackground_MVAcutScan","",nBins,min,max,nSteps,0,1);
   
   float binContents_significance_MVAcutScan[nBins][nSteps];
 
@@ -435,12 +436,12 @@ void PlotMass() {
   h_signalOverBackground_MVAcutScan->SaveAs("temp_output/mass_signalOverBackground_MVAscan_3D.root");
 
   
-  TH1F *h_SB_eff = (TH1F*)h_SB_MVAcut->Clone();
-  TH1F *h_S_eff = (TH1F*)h_S_MVAcut->Clone();
-  TH1F *h_CombiWithConvLeg_eff = (TH1F*)h_CombiWithConvLeg_MVAcut->Clone();
-  TH1F *h_CombiWithoutConvLeg_eff = (TH1F*)h_CombiWithoutConvLeg_MVAcut->Clone();
-  TH1F *h_HF_eff = (TH1F*)h_HF_MVAcut->Clone();
-  TH1F *h_RPConv_eff = (TH1F*)h_RPConv_MVAcut->Clone();
+  TH1D *h_SB_eff = (TH1D*)h_SB_MVAcut->Clone();
+  TH1D *h_S_eff = (TH1D*)h_S_MVAcut->Clone();
+  TH1D *h_CombiWithConvLeg_eff = (TH1D*)h_CombiWithConvLeg_MVAcut->Clone();
+  TH1D *h_CombiWithoutConvLeg_eff = (TH1D*)h_CombiWithoutConvLeg_MVAcut->Clone();
+  TH1D *h_HF_eff = (TH1D*)h_HF_MVAcut->Clone();
+  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_MVAcut->Clone();
   h_SB_eff->Sumw2();
   h_SB->Sumw2();
   h_SB_eff->Divide(h_SB);

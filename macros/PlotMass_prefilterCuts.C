@@ -7,8 +7,7 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TH1F.h>
-#include <TH2F.h>
+#include <TH1D.h>
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TCanvas.h>
@@ -89,34 +88,34 @@ void PlotMass_prefilterCuts() {
   const unsigned int min=0, max=5, nBins=50;
 
   
-  TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
+  TH1D *h_SB = new TH1D("h_SB","",nBins,min,max);
   
-  TH1F *h_S = new TH1F("h_S","",nBins,min,max);
+  TH1D *h_S = new TH1D("h_S","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg = new TH1F("h_CombiWithConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg =
-    new TH1F("h_CombiWithoughConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg =
+    new TH1D("h_CombiWithoughConvLeg","",nBins,min,max);
   
-  TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
+  TH1D *h_HF = new TH1D("h_HF","",nBins,min,max);
   
-  TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
+  TH1D *h_RPConv = new TH1D("h_RPConv","",nBins,min,max);
   
 
-  TH1F *h_S_prefilterCut = new TH1F("h_S_prefilterCut","",nBins,min,max);
+  TH1D *h_S_prefilterCut = new TH1D("h_S_prefilterCut","",nBins,min,max);
   
-  TH1F *h_SB_prefilterCut = new TH1F("h_SB_prefilterCut","",nBins,min,max);
+  TH1D *h_SB_prefilterCut = new TH1D("h_SB_prefilterCut","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg_prefilterCut =
-    new TH1F("h_CombiWithConvLeg_prefilterCut","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg_prefilterCut =
+    new TH1D("h_CombiWithConvLeg_prefilterCut","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg_prefilterCut =
-    new TH1F("h_CombiWithoutConvLeg_prefilterCut","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg_prefilterCut =
+    new TH1D("h_CombiWithoutConvLeg_prefilterCut","",nBins,min,max);
   
-  TH1F *h_HF_prefilterCut = new TH1F("h_HF_prefilterCut","",nBins,min,max);
+  TH1D *h_HF_prefilterCut = new TH1D("h_HF_prefilterCut","",nBins,min,max);
   
-  TH1F *h_RPConv_prefilterCut =
-    new TH1F("h_RPConv_prefilterCut","",nBins,min,max);
+  TH1D *h_RPConv_prefilterCut =
+    new TH1D("h_RPConv_prefilterCut","",nBins,min,max);
 
 
 
@@ -220,12 +219,12 @@ void PlotMass_prefilterCuts() {
   
   gStyle->SetOptStat(0);
 
-  TH1F *h_SB_eff = (TH1F*)h_SB_prefilterCut->Clone();
-  TH1F *h_S_eff = (TH1F*)h_S_prefilterCut->Clone();
-  TH1F *h_CombiWithConvLeg_eff = (TH1F*)h_CombiWithConvLeg_prefilterCut->Clone();
-  TH1F *h_CombiWithoutConvLeg_eff = (TH1F*)h_CombiWithoutConvLeg_prefilterCut->Clone();
-  TH1F *h_HF_eff = (TH1F*)h_HF_prefilterCut->Clone();
-  TH1F *h_RPConv_eff = (TH1F*)h_RPConv_prefilterCut->Clone();
+  TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone();
+  TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone();
+  TH1D *h_CombiWithConvLeg_eff = (TH1D*)h_CombiWithConvLeg_prefilterCut->Clone();
+  TH1D *h_CombiWithoutConvLeg_eff = (TH1D*)h_CombiWithoutConvLeg_prefilterCut->Clone();
+  TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone();
+  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone();
   h_SB_eff->Sumw2();
   h_SB->Sumw2();
   h_SB_eff->Divide(h_SB);

@@ -6,22 +6,22 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TLatex.h>
 #include <TStopwatch.h>
 
 void PlotMvaOutput() {
-  TString fileName = "../pairTrees/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_test_1-10-split.root";
+  TString fileName = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/applicationPhase_final/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_prefilterVars_pairtree_us_part3_1-1-8-split.root";
   
-  TString fileName_MVAoutput = "../TMVA/TMVAClassification_pairTree_CombConvRejection/TMVApp.root";
+  TString fileName_MVAoutput = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/applicationPhase_final/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-singleConvTrackRejMVAcuts-RPConvRejMVAcuts_part3_1-1-8-split.root";
 
   TString outfileName_root = "temp_output/MVAoutput.root";
   TString outfileName_pdf = "temp_output/MVAoutput.pdf";
 
   // text on canvas:
-  TString h_text = "Combinatorial BDT";// (M_{ee} > 0.1 GeV/c^{2})";
+  TString h_text = "CombConvRej BDT (prefilters: singleConvTrackRej-MVAcuts, RPConvRej-MVAcuts)";// (M_{ee} > 0.1 GeV/c^{2})";
 
   // set the used MVA method:
   Bool_t isMLP = kFALSE;
@@ -74,18 +74,18 @@ void PlotMvaOutput() {
 
   
   
-  TH1F *h_SB = new TH1F("h_SB","",nBins,min,max);
+  TH1D *h_SB = new TH1D("h_SB","",nBins,min,max);
   
-  TH1F *h_S = new TH1F("h_S","",nBins,min,max);
+  TH1D *h_S = new TH1D("h_S","",nBins,min,max);
   
-  TH1F *h_CombiWithConvLeg = new TH1F("h_CombiWithConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
-  TH1F *h_CombiWithoutConvLeg =
-    new TH1F("h_CombiWithoutConvLeg","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg =
+    new TH1D("h_CombiWithoutConvLeg","",nBins,min,max);
   
-  TH1F *h_RPConv = new TH1F("h_RPConv","",nBins,min,max);
+  TH1D *h_RPConv = new TH1D("h_RPConv","",nBins,min,max);
 
-  TH1F *h_HF = new TH1F("h_HF","",nBins,min,max);
+  TH1D *h_HF = new TH1D("h_HF","",nBins,min,max);
 
 
   TStopwatch *watch = new TStopwatch();
