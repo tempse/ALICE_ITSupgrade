@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <TROOT.h>
+#include <TMath.h> //debug
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -14,6 +15,8 @@ struct particlePair {
   Int_t EventID;
   Int_t TrackID1;
   Int_t TrackID2;
+  Int_t IsRP, IsConv; //debug
+  Float_t phiv, mass; //debug
   Int_t IsTaggedAccepted;
   Int_t num_associatedPairs;
 
@@ -26,6 +29,7 @@ struct particlePair {
 struct particleTrack {
   Int_t EventID;
   Int_t TrackID;
+  Int_t IsConvLeg; //debug
 
   bool operator < (const particleTrack &rhs) const {
     return (EventID < rhs.EventID);
@@ -47,9 +51,17 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   TFile *updatefile = new TFile(updatefilename, "UPDATE");
   TTree *tree_updatefile = (TTree*)updatefile->Get(treename_updatefile);
   Int_t EventID, TrackID1, TrackID2;
+  Int_t IsRP, IsConv, motherPdg1, motherPdg2; //debug
+  Float_t phiv, mass; //debug
   tree_updatefile->SetBranchAddress("EventID1", &EventID);
   tree_updatefile->SetBranchAddress("TrackID1", &TrackID1);
   tree_updatefile->SetBranchAddress("TrackID2", &TrackID2);
+  tree_updatefile->SetBranchAddress("IsRP", &IsRP); //debug
+  tree_updatefile->SetBranchAddress("IsConv", &IsConv); //debug
+  tree_updatefile->SetBranchAddress("motherPdg1", &motherPdg1); //debug
+  tree_updatefile->SetBranchAddress("motherPdg2", &motherPdg2); //debug
+  tree_updatefile->SetBranchAddress("phiv", &phiv); //debug
+  tree_updatefile->SetBranchAddress("mass", &mass); //debug
   tree_updatefile->SetBranchAddress(branchname_read, &var);
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_add) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_add
@@ -69,25 +81,29 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::vector<particleTrack> tracksTaggedAccepted;
 
   
-  const Long64_t nentries = tree_updatefile->GetEntries();
+  const Long64_t nentries = 500; // /*debug*/ tree_updatefile->GetEntries();
 
   std::cout << "Tagging real pairs based on cut values...";
   
-  for(Long64_t j=0; j<nentries; j++) {
+  for(Long64_t j=0 /*debug, should be 0*/; j<nentries/*debug*/; j++) {
     tree_updatefile->GetEntry(j);
     
     particlePair currentPair;
     currentPair.EventID = EventID;
     currentPair.TrackID1 = TrackID1;
     currentPair.TrackID2 = TrackID2;
+    currentPair.IsRP = IsRP; //debug
+    currentPair.IsConv = IsConv; //debug
+    currentPair.phiv = phiv; //debug
+    currentPair.mass = mass; //debug
     currentPair.num_associatedPairs = 0;
     
     if(signalRegion == "+") {
       if(var == 1) {
 	currentPair.IsTaggedAccepted = 1.;
 
-	particleTrack currentTrack1 = {EventID, TrackID1};
-	particleTrack currentTrack2 = {EventID, TrackID2};
+	particleTrack currentTrack1 = {EventID, TrackID1, (TMath::Abs(motherPdg1)==22) ? 1 : 0 /* debug */};
+	particleTrack currentTrack2 = {EventID, TrackID2, (TMath::Abs(motherPdg2)==22) ? 1 : 0 /* debug */};
 	tracksTaggedAccepted.push_back(currentTrack1);
 	tracksTaggedAccepted.push_back(currentTrack2);
       }
@@ -96,8 +112,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
       if(var == 0) {
 	currentPair.IsTaggedAccepted = 1.;
 
-	particleTrack currentTrack1 = {EventID, TrackID1};
-	particleTrack currentTrack2 = {EventID, TrackID2};
+	particleTrack currentTrack1 = {EventID, TrackID1, (TMath::Abs(motherPdg1)==22) ? 1 : 0 /* debug */};
+	particleTrack currentTrack2 = {EventID, TrackID2, (TMath::Abs(motherPdg1)==22) ? 1 : 0 /* debug */};
 	tracksTaggedAccepted.push_back(currentTrack1);
 	tracksTaggedAccepted.push_back(currentTrack2);
       }
@@ -122,6 +138,35 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::sort(allPairs.begin(), allPairs.end());
   std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end());
 
+  //debug:
+  Int_t cnt_allPairs = 0, cnt_allPairs_prefiltered = 0;
+  std::cout << std::endl;
+  std::cout << "########## DEBUG OUTPUT: allPairs ##########" << std::endl << std::endl;
+  for(Long64_t i=0; i<nentries; i++) {
+    std::cout << "EventID = " << allPairs[i].EventID
+	      << ", TrackID1 = " << allPairs[i].TrackID1
+	      << ", TrackID2 = " << allPairs[i].TrackID2
+	      << ", IsRP = " << allPairs[i].IsRP
+	      << ", IsConv = " << allPairs[i].IsConv
+	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
+	      << ", phiv = " << allPairs[i].phiv
+	      << ", mass = " << allPairs[i].mass
+	      << std::endl;
+    if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs++;
+  }
+  std::cout << "#IsTaggedAccepted: " << cnt_allPairs << std::endl;
+
+  //debug:
+  std::cout << std::endl;
+  std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted ##########" << std::endl << std::endl;
+  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
+    std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
+	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
+	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
+	      << std::endl;
+  }
+  std::cout << std::endl;
+  
   // store start positions of new events:
   std::map<Long64_t, Long64_t> eventID_startPos;
   Long64_t EventID_prev = -1;
@@ -161,6 +206,34 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::cout << " Time elapsed: " << watch->RealTime() << " seconds."
 	    << std::endl << std::endl;
 
+
+  //debug:
+  std::cout << std::endl << "########## DEBUG OUTPUT: allPairs (prefiltered) ##########" << std::endl << std::endl;
+  for(Long64_t i=0; i<nentries; i++) {
+    std::cout << "EventID = " << allPairs[i].EventID
+	      << ", TrackID1 = " << allPairs[i].TrackID1
+	      << ", TrackID2 = " << allPairs[i].TrackID2
+	      << ", IsRP = " << allPairs[i].IsRP
+	      << ", IsConv = " << allPairs[i].IsConv
+	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
+	      << ", phiv = " << allPairs[i].phiv
+	      << ", mass = " << allPairs[i].mass
+	      << std::endl;
+    if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs_prefiltered++;
+  }
+  std::cout << "#IsTaggedAccepted: " << cnt_allPairs_prefiltered << std::endl;
+
+  //debug:
+  std::cout << std::endl;
+  std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted (prefiltered) ##########" << std::endl << std::endl;
+  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
+    std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
+	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
+	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
+	      << std::endl;
+  }
+  std::cout << std::endl;
+  
 
   // create histogram with the distribution of the associated track number:
   TH1F *hist_associatedPairs_temp = new TH1F("","",nentries,0,nentries);
