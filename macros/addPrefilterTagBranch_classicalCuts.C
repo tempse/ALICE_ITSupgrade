@@ -19,11 +19,17 @@ struct particlePair {
   Float_t phiv, mass; //debug
   Int_t IsTaggedAccepted;
   Int_t num_associatedPairs;
+  Long64_t originalPosition; //debug
 
   bool operator < (const particlePair &rhs) const {
     return (EventID < rhs.EventID);
   }
 };
+
+//debug:
+bool sortByOriginalPosition(const particlePair &lhs, const particlePair &rhs) {
+  return lhs.originalPosition < rhs.originalPosition;
+}
 
 // store all relevant information of a particle track:
 struct particleTrack {
@@ -81,11 +87,11 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::vector<particleTrack> tracksTaggedAccepted;
 
   
-  const Long64_t nentries = 500; // /*debug*/ tree_updatefile->GetEntries();
+  const Long64_t nentries = tree_updatefile->GetEntries();
 
   std::cout << "Tagging real pairs based on cut values...";
   
-  for(Long64_t j=0 /*debug, should be 0*/; j<nentries/*debug*/; j++) {
+  for(Long64_t j=0; j<nentries; j++) {
     tree_updatefile->GetEntry(j);
     
     particlePair currentPair;
@@ -96,6 +102,7 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
     currentPair.IsConv = IsConv; //debug
     currentPair.phiv = phiv; //debug
     currentPair.mass = mass; //debug
+    currentPair.originalPosition = j; //debug
     currentPair.num_associatedPairs = 0;
     
     if(signalRegion == "+") {
@@ -138,34 +145,34 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::sort(allPairs.begin(), allPairs.end());
   std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end());
 
-  //debug:
-  Int_t cnt_allPairs = 0, cnt_allPairs_prefiltered = 0;
-  std::cout << std::endl;
-  std::cout << "########## DEBUG OUTPUT: allPairs ##########" << std::endl << std::endl;
-  for(Long64_t i=0; i<nentries; i++) {
-    std::cout << "EventID = " << allPairs[i].EventID
-	      << ", TrackID1 = " << allPairs[i].TrackID1
-	      << ", TrackID2 = " << allPairs[i].TrackID2
-	      << ", IsRP = " << allPairs[i].IsRP
-	      << ", IsConv = " << allPairs[i].IsConv
-	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
-	      << ", phiv = " << allPairs[i].phiv
-	      << ", mass = " << allPairs[i].mass
-	      << std::endl;
-    if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs++;
-  }
-  std::cout << "#IsTaggedAccepted: " << cnt_allPairs << std::endl;
+  // //debug:
+  // Int_t cnt_allPairs = 0, cnt_allPairs_prefiltered = 0;
+  // std::cout << std::endl;
+  // std::cout << "########## DEBUG OUTPUT: allPairs ##########" << std::endl << std::endl;
+  // for(Long64_t i=0; i<nentries; i++) {
+  //   std::cout << "EventID = " << allPairs[i].EventID
+  // 	      << ", TrackID1 = " << allPairs[i].TrackID1
+  // 	      << ", TrackID2 = " << allPairs[i].TrackID2
+  // 	      << ", IsRP = " << allPairs[i].IsRP
+  // 	      << ", IsConv = " << allPairs[i].IsConv
+  // 	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
+  // 	      << ", phiv = " << allPairs[i].phiv
+  // 	      << ", mass = " << allPairs[i].mass
+  // 	      << std::endl;
+  //   if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs++;
+  // }
+  // std::cout << "#IsTaggedAccepted: " << cnt_allPairs << std::endl;
 
-  //debug:
-  std::cout << std::endl;
-  std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted ##########" << std::endl << std::endl;
-  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-    std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
-	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
-	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
-	      << std::endl;
-  }
-  std::cout << std::endl;
+  // //debug:
+  // std::cout << std::endl;
+  // std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted ##########" << std::endl << std::endl;
+  // for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
+  //   std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
+  // 	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
+  // 	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
+  // 	      << std::endl;
+  // }
+  // std::cout << std::endl;
   
   // store start positions of new events:
   std::map<Long64_t, Long64_t> eventID_startPos;
@@ -207,32 +214,32 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 	    << std::endl << std::endl;
 
 
-  //debug:
-  std::cout << std::endl << "########## DEBUG OUTPUT: allPairs (prefiltered) ##########" << std::endl << std::endl;
-  for(Long64_t i=0; i<nentries; i++) {
-    std::cout << "EventID = " << allPairs[i].EventID
-	      << ", TrackID1 = " << allPairs[i].TrackID1
-	      << ", TrackID2 = " << allPairs[i].TrackID2
-	      << ", IsRP = " << allPairs[i].IsRP
-	      << ", IsConv = " << allPairs[i].IsConv
-	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
-	      << ", phiv = " << allPairs[i].phiv
-	      << ", mass = " << allPairs[i].mass
-	      << std::endl;
-    if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs_prefiltered++;
-  }
-  std::cout << "#IsTaggedAccepted: " << cnt_allPairs_prefiltered << std::endl;
+  // //debug:
+  // std::cout << std::endl << "########## DEBUG OUTPUT: allPairs (prefiltered) ##########" << std::endl << std::endl;
+  // for(Long64_t i=0; i<nentries; i++) {
+  //   std::cout << "EventID = " << allPairs[i].EventID
+  // 	      << ", TrackID1 = " << allPairs[i].TrackID1
+  // 	      << ", TrackID2 = " << allPairs[i].TrackID2
+  // 	      << ", IsRP = " << allPairs[i].IsRP
+  // 	      << ", IsConv = " << allPairs[i].IsConv
+  // 	      << ", IsTaggedAcepted = " << allPairs[i].IsTaggedAccepted
+  // 	      << ", phiv = " << allPairs[i].phiv
+  // 	      << ", mass = " << allPairs[i].mass
+  // 	      << std::endl;
+  //   if(allPairs[i].IsTaggedAccepted==1) cnt_allPairs_prefiltered++;
+  // }
+  // std::cout << "#IsTaggedAccepted: " << cnt_allPairs_prefiltered << std::endl;
 
-  //debug:
-  std::cout << std::endl;
-  std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted (prefiltered) ##########" << std::endl << std::endl;
-  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-    std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
-	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
-	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
-	      << std::endl;
-  }
-  std::cout << std::endl;
+  // //debug:
+  // std::cout << std::endl;
+  // std::cout << "########## DEBUG OUTPUT: tracksTaggedAccepted (prefiltered) ##########" << std::endl << std::endl;
+  // for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
+  //   std::cout << "EventID = " << tracksTaggedAccepted[i].EventID
+  // 	      << ", TrackID = " << tracksTaggedAccepted[i].TrackID
+  // 	      << ", IsConvLeg = " << tracksTaggedAccepted[i].IsConvLeg
+  // 	      << std::endl;
+  // }
+  // std::cout << std::endl;
   
 
   // create histogram with the distribution of the associated track number:
@@ -254,6 +261,10 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   hist_associatedPairs->Draw();
   c->SaveAs("temp_hist_numberOfAssociatedPairs.root");
 
+
+
+  //debug:
+  std::sort(allPairs.begin(), allPairs.end(), sortByOriginalPosition);
   
   std::cout << "Fill new branch with appropriate tags...";
   for(Long64_t i=0; i<nentries; i++) {
