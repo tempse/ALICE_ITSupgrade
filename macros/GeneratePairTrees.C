@@ -34,7 +34,7 @@ void calculateHF();
 
 // MVA cut value (for identifying conversion tracks):
 const Bool_t doConsiderMVAinfo_convTrack = kTRUE;
-const Float_t MVAcut_convTrack = -0.4062; // MVA output<MVAcut_convTrack <-> conversion track
+const Float_t MVAcut_convTrack = -0.4407; // MVA output<MVAcut_convTrack <-> conversion track
 
 // MVA cut value (For identifying real pair conversions):
 const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
@@ -108,7 +108,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/trainingPhase2/singleTrackTree/FT2_AnalysisResults_Upgrade_addFeat_part2_1-1-8-split.root","READ");
+  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root","READ");
   TTree *singleTree = (TTree*)infile->Get("tracks");
 
   std::cout << std::endl;
@@ -120,7 +120,7 @@ void GeneratePairTrees() {
   }
 
   
-  TString infile_MVAoutputs_name = "../fullAnalysis_addFeat_singleTracks_pairedTracks_prefilterVars/applicationPhase1/TMVApp_ConvRej_singleTracks_part2_1-1-8-split.root";
+  TString infile_MVAoutputs_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_singleConvTrackRejMVAcuts_part2_1-9-split.root";
   
   TChain *singleTree_MVAoutputs = new TChain("tracks_MVAoutput");
   if(doConsiderMVAinfo_convTrack) {
@@ -655,7 +655,7 @@ void GeneratePairTrees() {
 	}
 
 	// prefilter cuts - tagging RP conversions:
-	if(phiv<TMath::PiOver2() && mass<.05) {
+	if(phiv>TMath::PiOver2() && mass<.05) {
 	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
@@ -699,7 +699,7 @@ void GeneratePairTrees() {
 
 	
 	// prefilter cuts - tagging RP conversions:
-	if(phiv<TMath::PiOver2() && mass<.05) {
+	if(phiv>TMath::PiOver2() && mass<.05) {
 	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
@@ -736,10 +736,10 @@ void GeneratePairTrees() {
 
   infile->Close();
   
-  if(isPairTree_rp) pairTree_rp->Write();
-  if(isPairTree_us) pairTree_us->Write();
-  if(isPairTree_ls) pairTree_ls->Write();
-  if(isPairTree_us_ls) pairTree_us_ls->Write();
+  if(isPairTree_rp) pairTree_rp->Write(0, TObject::kOverwrite);
+  if(isPairTree_us) pairTree_us->Write(0, TObject::kOverwrite);
+  if(isPairTree_ls) pairTree_ls->Write(0, TObject::kOverwrite);
+  if(isPairTree_us_ls) pairTree_us_ls->Write(0, TObject::kOverwrite);
 
   outfile->Close();
 
@@ -807,7 +807,87 @@ void calculatePhiv() {
     std::cout << "Error in 'calculatePhiv()': Variable pv1 and/or pv2 empty." << std::endl;
     return;
   }
+
   
+  // adapted AliPhysics implementation:
+
+  if(pdg1 < 0) {
+    temp = pv1;
+    pv1 = pv2;
+    pv2 = temp;
+  }
+  
+  /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
+  /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle 
+  /// always end up as pair in "cowboy" configuration. The function as defined here then 
+  /// returns values close to pi.
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up 
+  /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework. 
+  /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
+
+  // // Adapt variables for AliPhysics:
+  Double_t px1 = pv1.x();
+  Double_t px2 = pv2.x();
+  Double_t py1 = pv1.y();
+  Double_t py2 = pv2.y();
+  Double_t pz1 = pv1.z();
+  Double_t pz2 = pv2.z();
+  
+  Double_t px = px1+px2;
+  Double_t py = py1+py2;
+  Double_t pz = pz1+pz2;
+  Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
+
+    //unit vector of (pep+pem) 
+  Double_t pl = dppair;
+  Double_t ux = px/pl;
+  Double_t uy = py/pl;
+  Double_t uz = pz/pl;
+  Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
+  Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy); 
+  
+  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
+  //Double_t ptep = iep->Px()*ax + iep->Py()*ay; 
+  //Double_t ptem = iem->Px()*ax + iem->Py()*ay; 
+  
+  Double_t pxep = px1;
+  Double_t pyep = py1;
+  Double_t pzep = pz1;
+  Double_t pxem = px2;
+  Double_t pyem = py2;
+  Double_t pzem = pz2;
+  
+  //vector product of pep X pem 
+  Double_t vpx = pyep*pzem - pzep*pyem; 
+  Double_t vpy = pzep*pxem - pxep*pzem; 
+  Double_t vpz = pxep*pyem - pyep*pxem; 
+  Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz); 
+  //Double_t thev = acos(vpz/vp); 
+  
+  //unit vector of pep X pem 
+  Double_t vx = vpx/vp; 
+  Double_t vy = vpy/vp; 
+  Double_t vz = vpz/vp; 
+
+  //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz) 
+  Double_t wx = uy*vz - uz*vy; 
+  Double_t wy = uz*vx - ux*vz; 
+  //Double_t wz = ux*vy - uy*vx; 
+  //Double_t wl = sqrt(wx*wx+wy*wy+wz*wz); 
+  // by construction, (wx,wy,wz) must be a unit vector. 
+  // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them 
+  // should be small if the pair is conversion 
+  // this function then returns values close to pi!
+  Double_t cosPhiV = wx*ax + wy*ay; 
+  phiv = TMath::ACos(cosPhiV);
+  
+  
+  
+  
+  /*
+  // my implementation:
   if(pdg1 < 0) {
     temp = pv1;
     pv1 = pv2;
@@ -818,7 +898,6 @@ void calculatePhiv() {
   u = u.Unit();
 
   v = pv1.Cross(pv2);
-  // if(doSwapCurrentPair) v -= v;
 
   w = u.Cross(v);
 
@@ -826,12 +905,13 @@ void calculatePhiv() {
   ua = ua.Unit();
 
   phiv = w.Angle(ua);
-  if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2
-     && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
-    // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2
-    // (then the B field was wrong):
-    phiv = TMath::Pi() - phiv;
-  }
+  // if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2
+  //    && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
+  //   // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2
+  //   // (then the B field was wrong):
+  //   phiv = TMath::Pi() - phiv;
+  // }
+  */
 }
 
 
