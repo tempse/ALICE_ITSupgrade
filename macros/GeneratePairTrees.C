@@ -108,7 +108,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root","READ");
+  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_addFeat_part1_1-9-split.root","READ");
   TTree *singleTree = (TTree*)infile->Get("tracks");
 
   std::cout << std::endl;
@@ -808,7 +808,7 @@ void calculatePhiv() {
     return;
   }
 
-  
+  /*
   // adapted AliPhysics implementation:
 
   if(pdg1 < 0) {
@@ -882,12 +882,13 @@ void calculatePhiv() {
   // this function then returns values close to pi!
   Double_t cosPhiV = wx*ax + wy*ay; 
   phiv = TMath::ACos(cosPhiV);
+  */
   
   
   
   
-  /*
-  // my implementation:
+  // phiv implementation following the PHENIX approach
+  // (PHYSICAL REVIEW C 81, 034911 (2010)):
   if(pdg1 < 0) {
     temp = pv1;
     pv1 = pv2;
@@ -905,13 +906,6 @@ void calculatePhiv() {
   ua = ua.Unit();
 
   phiv = w.Angle(ua);
-  // if(motherPdg1==22 && motherPdg2==22 && motherLabel1==motherLabel2
-  //    && abs(pdg1)==11 && abs(pdg2)==11 && phiv>TMath::PiOver2()) {
-  //   // For RP conversion, make phiv<pi/2 if phiv is much larger than pi/2
-  //   // (then the B field was wrong):
-  //   phiv = TMath::Pi() - phiv;
-  // }
-  */
 }
 
 
