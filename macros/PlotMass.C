@@ -24,18 +24,21 @@ void PlotMass() {
 
   // File containing the corresponding MVA output values:
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
-   TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
+  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-singleConvTrackRej_part3_1-1-8-split.root";
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejMVAcuts_part3_1-1-8-split.root";  
+  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejMVAcuts_part3_1-1-8-split.root";  
   // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombSingleConvTrackRej_noMassCuts_part3_1-1-8-split.root";
 
-  TString h_text = "CombConvRej BDT (no prefilters)";
+  TString h_text = "CombConvRej BDT (prefilter: RPConvRej-MVAcuts)";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
 
+
+  // ROOT file name containing all created histograms:
+  TString outfileName = "temp_output/mass_histos.root";
   
   if(isMLP & isBDT) {
     std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
@@ -44,7 +47,7 @@ void PlotMass() {
   
 
   // set MVA cut value:
-  float MVAcut = -.217;
+  float MVAcut = -.2411;
   
   const float stepSize = .2;
   const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
@@ -606,12 +609,42 @@ void PlotMass() {
   c_significance->SaveAs("temp_output/mass_significance.pdf");
   c_significance->SaveAs("temp_output/mass_significance.root");
 
+
+  
+  // store all created histograms in a ROOT file:
+  TFile *outfile = new TFile(outfileName, "RECREATE");
+
+  h_SB->Write(0, TObject::kOverwrite);
+  h_S->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg->Write(0, TObject::kOverwrite);
+  h_HF->Write(0, TObject::kOverwrite);
+  h_RPConv->Write(0, TObject::kOverwrite);
+
+  h_SB_MVAcut->Write(0, TObject::kOverwrite);
+  h_S_MVAcut->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg_MVAcut->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg_MVAcut->Write(0, TObject::kOverwrite);
+  h_HF_MVAcut->Write(0, TObject::kOverwrite);
+  h_RPConv_MVAcut->Write(0, TObject::kOverwrite);
+
+  h_SB_eff->Write(0, TObject::kOverwrite);
+  h_S_eff->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg_eff->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg_eff->Write(0, TObject::kOverwrite);
+  h_HF_eff->Write(0, TObject::kOverwrite);
+  h_RPConv_eff->Write(0, TObject::kOverwrite);
+  
+  outfile->Close();
+
+
+
   
   gApplication->Terminate();
 }
 
 
-int main() {
-  PlotMass();
-  return 0;
-}
+// int main() {
+//   PlotMass();
+//   return 0;
+// }

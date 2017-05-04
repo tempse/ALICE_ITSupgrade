@@ -18,9 +18,9 @@
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part3_1-1-8-split.root";
+  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
   
-  TString h_text = "RP conv. rej. via MVA cuts";
+  TString h_text = "prefilter: RP conv. rej. via MVA cuts";
 
   // two tags are combined via
   // (tag1 == wantedPrefilterTagValue1 && tag2 == wantedPrefilterTagValue2)
@@ -38,6 +38,9 @@ void PlotMass_prefilterCuts() {
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
 
+  
+  // ROOT file name containing all created histograms:
+  TString outfileName = "temp_output/mass_histos_prefilterCuts.root";
 
   
   /////////////////////////////////////////////////////////////////////////
@@ -83,7 +86,6 @@ void PlotMass_prefilterCuts() {
     }
   }
 
-
   
   const unsigned int min=0, max=5, nBins=50;
 
@@ -95,7 +97,7 @@ void PlotMass_prefilterCuts() {
   TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
   TH1D *h_CombiWithoutConvLeg =
-    new TH1D("h_CombiWithoughConvLeg","",nBins,min,max);
+    new TH1D("h_CombiWithouthConvLeg","",nBins,min,max);
   
   TH1D *h_HF = new TH1D("h_HF","",nBins,min,max);
   
@@ -334,6 +336,7 @@ void PlotMass_prefilterCuts() {
 
   c->SaveAs("temp_output/mass_prefilterCuts.pdf");
   c->SaveAs("temp_output/mass_prefilterCuts.root");
+  c->SaveAs("temp_output/mass_prefilterCuts.png");
 
 
 
@@ -355,7 +358,35 @@ void PlotMass_prefilterCuts() {
 
   c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.pdf");
   c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.root");
+  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.png");
 
 
+
+  // store all created histograms in a ROOT file:
+  TFile *outfile = new TFile(outfileName, "RECREATE");
+
+  h_SB->Write(0, TObject::kOverwrite);
+  h_S->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg->Write(0, TObject::kOverwrite);
+  h_HF->Write(0, TObject::kOverwrite);
+  h_RPConv->Write(0, TObject::kOverwrite);
+
+  h_SB_prefilterCut->Write(0, TObject::kOverwrite);
+  h_S_prefilterCut->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg_prefilterCut->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg_prefilterCut->Write(0, TObject::kOverwrite);
+  h_HF_prefilterCut->Write(0, TObject::kOverwrite);
+  h_RPConv_prefilterCut->Write(0, TObject::kOverwrite);
+
+  h_SB_eff->Write(0, TObject::kOverwrite);
+  h_S_eff->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg_eff->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg_eff->Write(0, TObject::kOverwrite);
+  h_HF_eff->Write(0, TObject::kOverwrite);
+  h_RPConv_eff->Write(0, TObject::kOverwrite);
+  
+  outfile->Close();
+  
   // gApplication->Terminate();
 }

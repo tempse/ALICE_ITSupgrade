@@ -19,12 +19,12 @@ void PlotMass_comparisons() {
 
   // optimized MVA cut
   TFile *infile1 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB");
-  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S");
-  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg");
-  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoughConvLeg");
-  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF");
-  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv");
+  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_prefilterCut");
+  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoughConvLeg_prefilterCut");
+  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_prefilterCut");
 
   // h_SB_1->SetName("h_SB_1");
   // h_S_1->SetName("h_S_1");
@@ -36,12 +36,12 @@ void PlotMass_comparisons() {
   
   // MVA cut +10%
   TFile *infile2 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_plus10percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB");
-  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S");
-  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg");
-  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoughConvLeg");
-  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF");
-  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv");
+  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_prefilterCut");
+  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoughConvLeg_prefilterCut");
+  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_prefilterCut");
 
   // h_SB_2->SetName("h_SB_2");
   // h_S_2->SetName("h_S_2");
@@ -53,12 +53,12 @@ void PlotMass_comparisons() {
 
   // MVA cut -10%
   TFile *infile3 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_minus10percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB");
-  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S");
-  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg");
-  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoughConvLeg");
-  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF");
-  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv");
+  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_prefilterCut");
+  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoughConvLeg_prefilterCut");
+  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_prefilterCut");
 
   // h_SB_3->SetName("h_SB_3");
   // h_S_3->SetName("h_S_3");
@@ -70,12 +70,12 @@ void PlotMass_comparisons() {
 
   // MVA cut +5%
   TFile *infile4 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_plus5percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_4                  = (TH1D*)infile4->Get("h_SB");
-  TH1D *h_S_4                   = (TH1D*)infile4->Get("h_S");
-  TH1D *h_CombiWithConvLeg_4    = (TH1D*)infile4->Get("h_CombiWithConvLeg");
-  TH1D *h_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoughConvLeg");
-  TH1D *h_HF_4                  = (TH1D*)infile4->Get("h_HF");
-  TH1D *h_RPConv_4              = (TH1D*)infile4->Get("h_RPConv");
+  TH1D *h_SB_4                  = (TH1D*)infile4->Get("h_SB_prefilterCut");
+  TH1D *h_S_4                   = (TH1D*)infile4->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_4    = (TH1D*)infile4->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoughConvLeg_prefilterCut");
+  TH1D *h_HF_4                  = (TH1D*)infile4->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_4              = (TH1D*)infile4->Get("h_RPConv_prefilterCut");
   
   // h_SB_4->SetName("h_SB_4");
   // h_S_4->SetName("h_S_4");
@@ -87,12 +87,12 @@ void PlotMass_comparisons() {
 
   // MVA cut -5%
   TFile *infile5 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_minus5percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_5                  = (TH1D*)infile5->Get("h_SB");
-  TH1D *h_S_5                   = (TH1D*)infile5->Get("h_S");
-  TH1D *h_CombiWithConvLeg_5    = (TH1D*)infile5->Get("h_CombiWithConvLeg");
-  TH1D *h_CombiWithoutConvLeg_5 = (TH1D*)infile5->Get("h_CombiWithoughConvLeg");
-  TH1D *h_HF_5                  = (TH1D*)infile5->Get("h_HF");
-  TH1D *h_RPConv_5              = (TH1D*)infile5->Get("h_RPConv");
+  TH1D *h_SB_5                  = (TH1D*)infile5->Get("h_SB_prefilterCut");
+  TH1D *h_S_5                   = (TH1D*)infile5->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_5    = (TH1D*)infile5->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_5 = (TH1D*)infile5->Get("h_CombiWithoughConvLeg_prefilterCut");
+  TH1D *h_HF_5                  = (TH1D*)infile5->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_5              = (TH1D*)infile5->Get("h_RPConv_prefilterCut");
 
   // h_SB_5->SetName("h_SB_5");
   // h_S_5->SetName("h_S_5");
@@ -147,52 +147,52 @@ void PlotMass_comparisons() {
 
 
   TH1D *h_significance_S_1 = new TH1D();
-  h_significance_S_1 = (TH1D*)h_S_1->Clone();
+  h_significance_S_1 = (TH1D*)h_S_1->Clone("h_significance_S_1");
   h_significance_S_1->Add(h_CombiWithoutConvLeg_1);
   h_significance_S_1->Add(h_HF_1);
     
   TH1D *h_significance_B_1 = new TH1D();
-  h_significance_B_1 = (TH1D*)h_RPConv_1->Clone();
+  h_significance_B_1 = (TH1D*)h_RPConv_1->Clone("h_significance_B_1");
   h_significance_B_1->Add(h_CombiWithConvLeg_1);
 
   
   TH1D *h_significance_S_2 = new TH1D();
-  h_significance_S_2 = (TH1D*)h_S_2->Clone();
+  h_significance_S_2 = (TH1D*)h_S_2->Clone("h_significance_S_2");
   h_significance_S_2->Add(h_CombiWithoutConvLeg_2);
   h_significance_S_2->Add(h_HF_2);
     
   TH1D *h_significance_B_2 = new TH1D();
-  h_significance_B_2 = (TH1D*)h_RPConv_2->Clone();
+  h_significance_B_2 = (TH1D*)h_RPConv_2->Clone("h_significance_B_2");
   h_significance_B_2->Add(h_CombiWithConvLeg_2);
 
   
   TH1D *h_significance_S_3 = new TH1D();
-  h_significance_S_3 = (TH1D*)h_S_3->Clone();
+  h_significance_S_3 = (TH1D*)h_S_3->Clone("h_significance_S_3");
   h_significance_S_3->Add(h_CombiWithoutConvLeg_3);
   h_significance_S_3->Add(h_HF_3);
     
   TH1D *h_significance_B_3 = new TH1D();
-  h_significance_B_3 = (TH1D*)h_RPConv_3->Clone();
+  h_significance_B_3 = (TH1D*)h_RPConv_3->Clone("h_significance_B_3");
   h_significance_B_3->Add(h_CombiWithConvLeg_3);
 
 
   TH1D *h_significance_S_4 = new TH1D();
-  h_significance_S_4 = (TH1D*)h_S_4->Clone();
+  h_significance_S_4 = (TH1D*)h_S_4->Clone("h_significance_S_4");
   h_significance_S_4->Add(h_CombiWithoutConvLeg_4);
   h_significance_S_4->Add(h_HF_4);
     
   TH1D *h_significance_B_4 = new TH1D();
-  h_significance_B_4 = (TH1D*)h_RPConv_4->Clone();
+  h_significance_B_4 = (TH1D*)h_RPConv_4->Clone("h_significance_B_4");
   h_significance_B_4->Add(h_CombiWithConvLeg_4);
 
 
   TH1D *h_significance_S_5 = new TH1D();
-  h_significance_S_5 = (TH1D*)h_S_5->Clone();
+  h_significance_S_5 = (TH1D*)h_S_5->Clone("h_significance_S_5");
   h_significance_S_5->Add(h_CombiWithoutConvLeg_5);
   h_significance_S_5->Add(h_HF_5);
     
   TH1D *h_significance_B_5 = new TH1D();
-  h_significance_B_5 = (TH1D*)h_RPConv_5->Clone();
+  h_significance_B_5 = (TH1D*)h_RPConv_5->Clone("h_significance_B_5");
   h_significance_B_5->Add(h_CombiWithConvLeg_5);
   
 
