@@ -36,8 +36,8 @@ void calculateHF();
 const Bool_t doConsiderMVAinfo_convTrack = kTRUE;
 const Float_t MVAcut_convTrack = -0.4407; // MVA output<MVAcut_convTrack <-> conversion track
 
-// MVA cut value (For identifying real pair conversions):
-const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
+// // MVA cut value (For identifying real pair conversions):
+// const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
 
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
@@ -64,6 +64,8 @@ Int_t IsTaggedRPConv_classicalCuts; // tagged as real pair conversion event: 1, 
 //Int_t IsTaggedRPConv_MVAcuts;       // tagged as real pair conversion event: 1, otherwise: 0
 Int_t IsTaggedConvTrack1;           // tagged as conversion track (by preceding...
 Int_t IsTaggedConvTrack2;           // ...MVA classification): 1, otherwise: 0
+Float_t MVAoutput_convTrack1;       // MVA output values of preceding application of...
+Float_t MVAoutput_convTrack2;       // ...the trained classifier (if available)
 Float_t opang;
 Float_t diffz;
 Float_t mass;
@@ -108,7 +110,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_addFeat_part1_1-9-split.root","READ");
+  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root","READ");
   TTree *singleTree = (TTree*)infile->Get("tracks");
 
   std::cout << std::endl;
@@ -222,6 +224,10 @@ void GeneratePairTrees() {
       pairTree_rp->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
       pairTree_rp->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_rp->Branch("MVAoutput_convTrack1", &MVAoutput_convTrack1);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_rp->Branch("MVAoutput_convTrack2", &MVAoutput_convTrack2);
     pairTree_rp->Branch("ChargeSign",&ChargeSign);
     pairTree_rp->Branch("opang",&opang);
     pairTree_rp->Branch("diffz",&diffz);
@@ -283,6 +289,10 @@ void GeneratePairTrees() {
       pairTree_us->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_us->Branch("MVAoutput_convTrack1", &MVAoutput_convTrack1);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_us->Branch("MVAoutput_convTrack2", &MVAoutput_convTrack2);
     pairTree_us->Branch("ChargeSign",&ChargeSign);
     pairTree_us->Branch("opang",&opang);
     pairTree_us->Branch("diffz",&diffz);
@@ -344,6 +354,10 @@ void GeneratePairTrees() {
       pairTree_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
       pairTree_ls->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_ls->Branch("MVAoutput_convTrack1", &MVAoutput_convTrack1);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_ls->Branch("MVAoutput_convTrack2", &MVAoutput_convTrack2);
     pairTree_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_ls->Branch("opang",&opang);
     pairTree_ls->Branch("diffz",&diffz);
@@ -405,6 +419,10 @@ void GeneratePairTrees() {
       pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us_ls->Branch("IsTaggedConvTrack2",&IsTaggedConvTrack2);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_us_ls->Branch("MVAoutput_convTrack1", &MVAoutput_convTrack1);
+    if(doConsiderMVAinfo_convTrack)
+      pairTree_us_ls->Branch("MVAoutput_convTrack2", &MVAoutput_convTrack2);
     pairTree_us_ls->Branch("ChargeSign",&ChargeSign);
     pairTree_us_ls->Branch("opang",&opang);
     pairTree_us_ls->Branch("diffz",&diffz);
@@ -512,6 +530,7 @@ void GeneratePairTrees() {
     if(!doSwapCurrentPair) {
       EventID1 = ST_event;
       TrackID1 = tr1;
+      MVAoutput_convTrack1 = MVAoutput_convTrack;
       mcPx1 = ST_particle->Px();
       mcPy1 = ST_particle->Py();
       mcPz1 = ST_particle->Pz();
@@ -535,6 +554,7 @@ void GeneratePairTrees() {
     }else {
       EventID2 = ST_event;
       TrackID2 = tr1;
+      MVAoutput_convTrack2 = MVAoutput_convTrack;
       mcPx2 = ST_particle->Px();
       mcPy2 = ST_particle->Py();
       mcPz2 = ST_particle->Pz();
@@ -588,6 +608,7 @@ void GeneratePairTrees() {
       if(!doSwapCurrentPair) {
 	EventID2 = ST_event;
 	TrackID2 = tr2;
+	MVAoutput_convTrack2 = MVAoutput_convTrack;
 	mcPx2 = ST_particle->Px();
 	mcPy2 = ST_particle->Py();
 	mcPz2 = ST_particle->Pz();
@@ -611,6 +632,7 @@ void GeneratePairTrees() {
       }else {
 	EventID1 = ST_event;
 	TrackID1 = tr2;
+	MVAoutput_convTrack1 = MVAoutput_convTrack;
 	mcPx1 = ST_particle->Px();
 	mcPy1 = ST_particle->Py();
 	mcPz1 = ST_particle->Pz();
