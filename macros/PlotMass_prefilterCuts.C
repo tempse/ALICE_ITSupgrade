@@ -221,12 +221,14 @@ void PlotMass_prefilterCuts() {
   
   gStyle->SetOptStat(0);
 
-  TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone();
-  TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone();
-  TH1D *h_CombiWithConvLeg_eff = (TH1D*)h_CombiWithConvLeg_prefilterCut->Clone();
-  TH1D *h_CombiWithoutConvLeg_eff = (TH1D*)h_CombiWithoutConvLeg_prefilterCut->Clone();
-  TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone();
-  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone();
+  TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone("h_SB_eff");
+  TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone("h_S_eff");
+  TH1D *h_CombiWithConvLeg_eff =
+    (TH1D*)h_CombiWithConvLeg_prefilterCut->Clone("h_CombiWithConvLeg_eff");
+  TH1D *h_CombiWithoutConvLeg_eff =
+    (TH1D*)h_CombiWithoutConvLeg_prefilterCut->Clone("h_CombiWithoutConvLeg_eff");
+  TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone("h_HF_eff");
+  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone("h_RPConv_eff");
   h_SB_eff->Sumw2();
   h_SB->Sumw2();
   h_SB_eff->Divide(h_SB);

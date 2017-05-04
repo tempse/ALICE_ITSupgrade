@@ -439,12 +439,12 @@ void PlotMass() {
   h_signalOverBackground_MVAcutScan->SaveAs("temp_output/mass_signalOverBackground_MVAscan_3D.root");
 
   
-  TH1D *h_SB_eff = (TH1D*)h_SB_MVAcut->Clone();
-  TH1D *h_S_eff = (TH1D*)h_S_MVAcut->Clone();
-  TH1D *h_CombiWithConvLeg_eff = (TH1D*)h_CombiWithConvLeg_MVAcut->Clone();
-  TH1D *h_CombiWithoutConvLeg_eff = (TH1D*)h_CombiWithoutConvLeg_MVAcut->Clone();
-  TH1D *h_HF_eff = (TH1D*)h_HF_MVAcut->Clone();
-  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_MVAcut->Clone();
+  TH1D *h_SB_eff = (TH1D*)h_SB_MVAcut->Clone("h_SB_eff");
+  TH1D *h_S_eff = (TH1D*)h_S_MVAcut->Clone("h_S_eff");
+  TH1D *h_CombiWithConvLeg_eff = (TH1D*)h_CombiWithConvLeg_MVAcut->Clone("h_CombiWithConvLeg_eff");
+  TH1D *h_CombiWithoutConvLeg_eff = (TH1D*)h_CombiWithoutConvLeg_MVAcut->Clone("h_CombiWithoutConvLeg_eff");
+  TH1D *h_HF_eff = (TH1D*)h_HF_MVAcut->Clone("h_HF_eff");
+  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_MVAcut->Clone("h_RPConv_eff");
   h_SB_eff->Sumw2();
   h_SB->Sumw2();
   h_SB_eff->Divide(h_SB);
