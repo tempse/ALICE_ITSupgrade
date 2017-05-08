@@ -82,6 +82,11 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::cout << "Tagging real pairs based on cut values...";
   
   for(Long64_t j=0; j<nentries; j++) {
+    if((j%1000)==0) {
+      std::cout << "\r Processing event " << j << " of " << nentries
+		<< " (" << j/((Float_t)nentries)*100 << " %)...";
+    }
+    
     tree_updatefile->GetEntry(j);
     
     particlePair currentPair;
@@ -120,7 +125,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 
     allPairs.push_back(currentPair);
   }
-  std::cout << " DONE" << std::endl;
+  std::cout << "\r Processing event " << nentries << " of " << nentries
+	    << " (100 %)... DONE" << std::endl;
 
   std::cout << "Number of pairs: " << allPairs.size() << std::endl;
   std::cout << "Number of accepted pairs: " << tracksTaggedAccepted.size()/2 << std::endl;
