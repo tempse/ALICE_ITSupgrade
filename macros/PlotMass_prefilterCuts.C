@@ -20,7 +20,7 @@ void PlotMass_prefilterCuts() {
   // File containing the input pairtree (test) data:
   TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
   
-  TString h_text = "prefilter: RP conv. rej. via MVA cuts";
+  TString h_text = "RP Conv. Rej. via MVA cuts";
 
   // two tags are combined via
   // (tag1 == wantedPrefilterTagValue1 && tag2 == wantedPrefilterTagValue2)
@@ -28,7 +28,7 @@ void PlotMass_prefilterCuts() {
   Bool_t useTwoTags = kFALSE;
 
   TString prefilterTagName1 = "IsTaggedRPConv_MVAcuts_prefilter";
-  TString prefilterTagName2 = "IsTaggedConvTrack2";
+  TString prefilterTagName2 = "IsTaggedConvTrack2_MVAcutMinus10Percent";
 
   // After prefiltering, use events with this tag value only:
   const Int_t wantedPrefilterTagValue1 = 0.;

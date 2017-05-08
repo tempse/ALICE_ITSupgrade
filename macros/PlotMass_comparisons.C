@@ -17,8 +17,17 @@
 
 void PlotMass_comparisons() {
 
+  TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts_prefilter/mass_histos_prefilterCuts.root";
+  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-cutVariations_prefilter/RPConvRejMVAcuts_plus10percent_prefilter/mass_histos_prefilterCuts.root";
+  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-cutVariations_prefilter/RPConvRejMVAcuts_minus10percent_prefilter/mass_histos_prefilterCuts.root";
+  
+  TString infile1_eff_filename = infile1_filename;
+  TString infile2_eff_filename = infile2_filename;
+  TString infile3_eff_filename = infile3_filename;
+  
+  
   // optimized MVA cut
-  TFile *infile1 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts/mass_histos_prefilterCuts.root", "READ");
+  TFile *infile1 = new TFile(infile1_filename, "READ");
   TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_prefilterCut");
   TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_prefilterCut");
   TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_prefilterCut");
@@ -34,7 +43,7 @@ void PlotMass_comparisons() {
   h_RPConv_1->SetName("h_RPConv_1");
   
   // MVA cut +10%
-  TFile *infile2 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts-cutVariations/MVAcutPlus10Percent/mass_histos_prefilterCuts.root", "READ");
+  TFile *infile2 = new TFile(infile2_filename, "READ");
   TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_prefilterCut");
   TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_prefilterCut");
   TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_prefilterCut");
@@ -51,7 +60,7 @@ void PlotMass_comparisons() {
   
 
   // MVA cut -10%
-  TFile *infile3 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts-cutVariations/MVAcutMinus10Percent/mass_histos_prefilterCuts.root", "READ");
+  TFile *infile3 = new TFile(infile3_filename, "READ");
   TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_prefilterCut");
   TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_prefilterCut");
   TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_prefilterCut");
@@ -68,14 +77,18 @@ void PlotMass_comparisons() {
   
   /*
   // MVA cut +5%
-  TFile *infile4 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_plus5percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_4                  = (TH1D*)infile4->Get("h_SB_prefilterCut");
-  TH1D *h_S_4                   = (TH1D*)infile4->Get("h_S_prefilterCut");
-  TH1D *h_CombiWithConvLeg_4    = (TH1D*)infile4->Get("h_CombiWithConvLeg_prefilterCut");
-  TH1D *h_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoughConvLeg_prefilterCut");
-  TH1D *h_HF_4                  = (TH1D*)infile4->Get("h_HF_prefilterCut");
-  TH1D *h_RPConv_4              = (TH1D*)infile4->Get("h_RPConv_prefilterCut");
+  TFile *infile4 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_plus5percent_prefilter/mass_histos_MVAcuts.root", "READ");
+  TH1D *h_SB_4                  = (TH1D*)infile4->Get("h_SB_MVAcut");
+  TH1D *h_S_4                   = (TH1D*)infile4->Get("h_S_MVAcut");
+  TH1D *h_CombiWithConvLeg_4    = (TH1D*)infile4->Get("h_CombiWithConvLeg_MVAcut");
+  TH1D *h_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoughConvLeg_MVAcut");
+  TH1D *h_HF_4                  = (TH1D*)infile4->Get("h_HF_MVAcut");
+  TH1D *h_RPConv_4              = (TH1D*)infile4->Get("h_RPConv_MVAcut");
   */
+
+
+  std::cout << "All files read succesfully..." << std::endl;
+  
   
   // h_SB_4->SetName("h_SB_4");
   // h_S_4->SetName("h_S_4");
@@ -86,13 +99,13 @@ void PlotMass_comparisons() {
   
   /*
   // MVA cut -5%
-  TFile *infile5 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_minus5percent_prefilter/mass_histos_prefilterCuts.root", "READ");
-  TH1D *h_SB_5                  = (TH1D*)infile5->Get("h_SB_prefilterCut");
-  TH1D *h_S_5                   = (TH1D*)infile5->Get("h_S_prefilterCut");
-  TH1D *h_CombiWithConvLeg_5    = (TH1D*)infile5->Get("h_CombiWithConvLeg_prefilterCut");
-  TH1D *h_CombiWithoutConvLeg_5 = (TH1D*)infile5->Get("h_CombiWithoughConvLeg_prefilterCut");
-  TH1D *h_HF_5                  = (TH1D*)infile5->Get("h_HF_prefilterCut");
-  TH1D *h_RPConv_5              = (TH1D*)infile5->Get("h_RPConv_prefilterCut");
+  TFile *infile5 = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-varied_prefilter/RPConvRejMVAcuts_minus5percent_prefilter/mass_histos_MVAcuts.root", "READ");
+  TH1D *h_SB_5                  = (TH1D*)infile5->Get("h_SB_MVAcut");
+  TH1D *h_S_5                   = (TH1D*)infile5->Get("h_S_MVAcut");
+  TH1D *h_CombiWithConvLeg_5    = (TH1D*)infile5->Get("h_CombiWithConvLeg_MVAcut");
+  TH1D *h_CombiWithoutConvLeg_5 = (TH1D*)infile5->Get("h_CombiWithoughConvLeg_MVAcut");
+  TH1D *h_HF_5                  = (TH1D*)infile5->Get("h_HF_MVAcut");
+  TH1D *h_RPConv_5              = (TH1D*)infile5->Get("h_RPConv_MVAcut");
   */
   
   // h_SB_5->SetName("h_SB_5");
@@ -151,8 +164,10 @@ void PlotMass_comparisons() {
   h_significance_S_1 = (TH1D*)h_S_1->Clone("h_significance_S_1");
   h_significance_S_1->Add(h_CombiWithoutConvLeg_1);
   h_significance_S_1->Add(h_HF_1);
+  // h_significance_S_1->Add(h_RPConv_1);
     
   TH1D *h_significance_B_1 = new TH1D();
+  // h_significance_B_1 = (TH1D*)h_CombiWithConvLeg_1->Clonse("h_significance_B_1");
   h_significance_B_1 = (TH1D*)h_RPConv_1->Clone("h_significance_B_1");
   h_significance_B_1->Add(h_CombiWithConvLeg_1);
 
@@ -161,8 +176,10 @@ void PlotMass_comparisons() {
   h_significance_S_2 = (TH1D*)h_S_2->Clone("h_significance_S_2");
   h_significance_S_2->Add(h_CombiWithoutConvLeg_2);
   h_significance_S_2->Add(h_HF_2);
+  // h_significance_S_2->Add(h_RPConv_2);
     
   TH1D *h_significance_B_2 = new TH1D();
+  // h_significance_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_significance_B_2");
   h_significance_B_2 = (TH1D*)h_RPConv_2->Clone("h_significance_B_2");
   h_significance_B_2->Add(h_CombiWithConvLeg_2);
 
@@ -171,8 +188,10 @@ void PlotMass_comparisons() {
   h_significance_S_3 = (TH1D*)h_S_3->Clone("h_significance_S_3");
   h_significance_S_3->Add(h_CombiWithoutConvLeg_3);
   h_significance_S_3->Add(h_HF_3);
+  // h_significance_S_3->Add(h_RPConv_3);
     
   TH1D *h_significance_B_3 = new TH1D();
+  // h_significance_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_significance_B_3");
   h_significance_B_3 = (TH1D*)h_RPConv_3->Clone("h_significance_B_3");
   h_significance_B_3->Add(h_CombiWithConvLeg_3);
 
@@ -356,11 +375,14 @@ void PlotMass_comparisons() {
 
 
 
+
+
+  
   
   //////////////////////////////////////// EFFICIENCIES:
 
-    // optimized MVA cut
-  TFile *infile1_eff = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts/mass_histos_prefilterCuts.root", "READ");
+  // optimized MVA cut
+  TFile *infile1_eff = new TFile(infile1_eff_filename, "READ");
   TH1D *h_SB_eff_1                  = (TH1D*)infile1_eff->Get("h_SB_eff");
   TH1D *h_S_eff_1                   = (TH1D*)infile1_eff->Get("h_S_eff");
   TH1D *h_CombiWithConvLeg_eff_1    = (TH1D*)infile1_eff->Get("h_CombiWithConvLeg_eff");
@@ -377,7 +399,7 @@ void PlotMass_comparisons() {
   
   
   // MVA cut +10%
-  TFile *infile2_eff = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts-cutVariations/MVAcutPlus10Percent/mass_histos_prefilterCuts.root", "READ");
+  TFile *infile2_eff = new TFile(infile2_eff_filename, "READ");
   TH1D *h_SB_eff_2                  = (TH1D*)infile2_eff->Get("h_SB_eff");
   TH1D *h_S_eff_2                   = (TH1D*)infile2_eff->Get("h_S_eff");
   TH1D *h_CombiWithConvLeg_eff_2    = (TH1D*)infile2_eff->Get("h_CombiWithConvLeg_eff");
@@ -395,7 +417,7 @@ void PlotMass_comparisons() {
 
 
   // MVA cut -10%
-  TFile *infile3_eff = new TFile("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts-cutVariations/MVAcutMinus10Percent/mass_histos_prefilterCuts.root", "READ");
+  TFile *infile3_eff = new TFile(infile3_eff_filename, "READ");
   TH1D *h_SB_eff_3                  = (TH1D*)infile3_eff->Get("h_SB_eff");
   TH1D *h_S_eff_3                   = (TH1D*)infile3_eff->Get("h_S_eff");
   TH1D *h_CombiWithConvLeg_eff_3    = (TH1D*)infile3_eff->Get("h_CombiWithConvLeg_eff");

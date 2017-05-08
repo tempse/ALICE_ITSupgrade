@@ -20,24 +20,19 @@
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part3_1-1-8-split.root";
+  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
 
   // File containing the corresponding MVA output values:
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-none_part3_1-1-8-split.root";
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-singleConvTrackRej_part3_1-1-8-split.root";
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejClassicalCuts_part3_1-1-8-split.root";
-  TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombConvRej_prefilters-RPConvRejMVAcuts_part3_1-1-8-split.root";  
-  // TString fileName_MVAoutput_CombConvRejection = "../fullAnalysis_v3/applicationPhase2/pairedTrackTree/TMVApp_pairTracks_CombSingleConvTrackRej_noMassCuts_part3_1-1-8-split.root";
+  TString fileName_MVAoutput_CombConvRejection = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_RPConvRejMVAcuts_part2_1-9-split.root";  
 
-  TString h_text = "CombConvRej BDT (prefilter: RPConvRej-MVAcuts)";
+  TString h_text = "RP conv. rej. via MVA cuts (cut var.: +10%)";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
 
 
-  // ROOT file name containing all created histograms:
+  // Output ROOT file name containing all created histograms:
   TString outfileName = "temp_output/mass_histos.root";
   
   if(isMLP & isBDT) {
@@ -47,10 +42,10 @@ void PlotMass() {
   
 
   // set MVA cut value:
-  float MVAcut = -.2411;
+  float MVAcut = -.3527;
   
-  const float stepSize = .2;
-  const int nSteps = 5; // NB: 1/(nSteps)==stepSize must apply
+  const float stepSize = 1;
+  const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
 
   
   TFile *f = new TFile(fileName_testData,"READ");
@@ -390,7 +385,7 @@ void PlotMass() {
   
   gStyle->SetOptStat(0);
   
-  TCanvas *c_significance_scan = new TCanvas("c_significance_scan","",800,600);
+  TCanvas *c_significance_scan = new TCanvas("c_significance_scan","",1024,768);
   c_significance_scan->SetGridy();
   // c_significance_scan->SetLogz();
   h_significance_MVAcutScan->SetXTitle("M_{ee} / (GeV/c^{2})");
@@ -406,14 +401,15 @@ void PlotMass() {
   l_AUC_significance_max.DrawLatex(.05,.95,text_AUC_significance_max);
   c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.pdf");
   c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.root");
+  c_significance_scan->SaveAs("temp_output/mass_significance_MVAscan.png");
   TCanvas *c_significance_scan_3D =
-    new TCanvas("c_significance_scan_3D","",800,600);
+    new TCanvas("c_significance_scan_3D","",1024,768);
   // c_significance_scan_3D->SetLogz();
   h_significance_MVAcutScan->Draw("lego2");
   h_significance_MVAcutScan->SaveAs("temp_output/mass_significance_MVAscan_3D.root");
 
   TCanvas *c_signalOverBackground_scan =
-    new TCanvas("c_signalOverBackground_scan","",800,600);
+    new TCanvas("c_signalOverBackground_scan","",1024,768);
   c_signalOverBackground_scan->SetGridy();
   c_signalOverBackground_scan->SetLogz();
   // h_signalOverBackground_MVAcutScan->SetMinimum(1e-6);
@@ -432,8 +428,9 @@ void PlotMass() {
 					   text_AUC_signalOverBackground_max);
   c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.pdf");
   c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.root");
+  c_signalOverBackground_scan->SaveAs("temp_output/mass_signalOverBackground_MVAscan.png");
   TCanvas *c_signalOverBackground_scan_3D =
-    new TCanvas("c_signalOverBackground_scan_3D","",800,600);
+    new TCanvas("c_signalOverBackground_scan_3D","",1024,768);
   c_signalOverBackground_scan_3D->SetLogz();
   h_signalOverBackground_MVAcutScan->Draw("lego2");
   h_signalOverBackground_MVAcutScan->SaveAs("temp_output/mass_signalOverBackground_MVAscan_3D.root");
@@ -526,7 +523,7 @@ void PlotMass() {
 
   
 
-  TCanvas *c = new TCanvas("c","",800,600);
+  TCanvas *c = new TCanvas("c","",1024,768);
   c->SetLogy();
   c->SetGridy();
   h_SB->Draw("hist e x0");
@@ -559,8 +556,9 @@ void PlotMass() {
 
   c->SaveAs("temp_output/mass.pdf");
   c->SaveAs("temp_output/mass.root");
+  c->SaveAs("temp_output/mass.png");
 
-  TCanvas *c_eff = new TCanvas("c_eff","",800,600);
+  TCanvas *c_eff = new TCanvas("c_eff","",1024,768);
   c_eff->SetGridy();
   h_SB_eff->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SB_eff->SetYTitle("Efficiency");
@@ -578,10 +576,11 @@ void PlotMass() {
 
   c_eff->SaveAs("temp_output/mass_eff.pdf");
   c_eff->SaveAs("temp_output/mass_eff.root");
+  c_eff->SaveAs("temp_output/mass_eff.png");
 
 
   TCanvas *c_signalOverBackground =
-    new TCanvas("c_signalOverBackground","",800,600);
+    new TCanvas("c_signalOverBackground","",1024,768);
   c_signalOverBackground->SetLogy();
   c_signalOverBackground->SetGridy();
   h_signalOverBackground->SetXTitle("M_{ee} / (GeV/c^{2})");
@@ -593,10 +592,11 @@ void PlotMass() {
 
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.pdf");
   c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.root");
+  c_signalOverBackground->SaveAs("temp_output/mass_signalOverBackground.png");
 
 
   TCanvas *c_significance =
-    new TCanvas("c_significance","",800,600);
+    new TCanvas("c_significance","",1024,768);
   // c_significance->SetLogy();
   c_significance->SetGridy();
   h_significance->SetXTitle("M_{ee} / (GeV/c^{2})");
@@ -608,6 +608,7 @@ void PlotMass() {
 
   c_significance->SaveAs("temp_output/mass_significance.pdf");
   c_significance->SaveAs("temp_output/mass_significance.root");
+  c_significance->SaveAs("temp_output/mass_significance.png");
 
 
   
