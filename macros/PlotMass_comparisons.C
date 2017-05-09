@@ -17,25 +17,52 @@
 
 void PlotMass_comparisons() {
 
-  TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts_prefilter/mass_histos_prefilterCuts.root";
-  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-cutVariations_prefilter/RPConvRejMVAcuts_plus10percent_prefilter/mass_histos_prefilterCuts.root";
-  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-cutVariations_prefilter/RPConvRejMVAcuts_minus10percent_prefilter/mass_histos_prefilterCuts.root";
+  //////////////////////////////////////////////////////////////////////////////
+
+  // core labels for plot legends:
+  TString leg_baselabel_1 = "TMVA-optimized MVA cut";
+  TString leg_baselabel_2 = "MVA cut: +0.1";
+  TString leg_baselabel_3 = "MVA cut: -0.1";
+
+  TString leg_baselabel_exp_1 = leg_baselabel_1;
+  TString leg_baselabel_exp_2 = leg_baselabel_2;
+  TString leg_baselabel_exp_3 = leg_baselabel_3;
+
+  TString leg_baselabel_eff_2 = leg_baselabel_2;
+  TString leg_baselabel_eff_3 = leg_baselabel_3;
+
+  TString leg_baselabel_SoverB_1 = leg_baselabel_1;
+  TString leg_baselabel_SoverB_2 = leg_baselabel_2;
+  TString leg_baselabel_SoverB_3 = leg_baselabel_3;
+
+  TString leg_baselabel_SoverB_exp_1 = leg_baselabel_1;
+  TString leg_baselabel_SoverB_exp_2 = leg_baselabel_2;
+  TString leg_baselabel_SoverB_exp_3 = leg_baselabel_3;
+
+  // !!! Don't forget to change the below signal/background definitions accordingly !!!
+    
+  TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts/mass_histos.root";
+  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcut0.1/mass_histos.root";
+  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcut-0.1/mass_histos.root";
   
   TString infile1_eff_filename = infile1_filename;
   TString infile2_eff_filename = infile2_filename;
   TString infile3_eff_filename = infile3_filename;
 
   TString outfile_filename = "temp_output/mass_histos_comparison.root";
+
+  //////////////////////////////////////////////////////////////////////////////
+  
   
   
   // optimized MVA cut
   TFile *infile1 = new TFile(infile1_filename, "READ");
-  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_prefilterCut");
-  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_prefilterCut");
-  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_prefilterCut");
-  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_prefilterCut");
-  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_prefilterCut");
-  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_prefilterCut");
+  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_MVAcut");
+  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_MVAcut");
+  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_MVAcut");
+  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_MVAcut");
+  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_MVAcut");
+  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_MVAcut");
 
   h_SB_1->SetName("h_SB_1");
   h_S_1->SetName("h_S_1");
@@ -46,12 +73,12 @@ void PlotMass_comparisons() {
   
   // MVA cut +10%
   TFile *infile2 = new TFile(infile2_filename, "READ");
-  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_prefilterCut");
-  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_prefilterCut");
-  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_prefilterCut");
-  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_prefilterCut");
-  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_prefilterCut");
-  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_prefilterCut");
+  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_MVAcut");
+  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_MVAcut");
+  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_MVAcut");
+  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_MVAcut");
+  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_MVAcut");
+  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_MVAcut");
 
   h_SB_2->SetName("h_SB_2");
   h_S_2->SetName("h_S_2");
@@ -63,12 +90,12 @@ void PlotMass_comparisons() {
 
   // MVA cut -10%
   TFile *infile3 = new TFile(infile3_filename, "READ");
-  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_prefilterCut");
-  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_prefilterCut");
-  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_prefilterCut");
-  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_prefilterCut");
-  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_prefilterCut");
-  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_prefilterCut");
+  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_MVAcut");
+  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_MVAcut");
+  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_MVAcut");
+  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_MVAcut");
+  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_MVAcut");
+  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_MVAcut");
 
   h_SB_3->SetName("h_SB_3");
   h_S_3->SetName("h_S_3");
@@ -78,7 +105,7 @@ void PlotMass_comparisons() {
   h_RPConv_3->SetName("h_RPConv_3");
 
 
-  std::cout << "All files read succesfully..." << std::endl;
+  std::cout << "All files read successfully..." << std::endl;
   
 
 
@@ -91,42 +118,65 @@ void PlotMass_comparisons() {
   h_plot_S_1 = (TH1D*)h_S_1->Clone("h_plot_S_1");
   h_plot_S_1->Add(h_CombiWithoutConvLeg_1);
   h_plot_S_1->Add(h_HF_1);
-  // h_plot_S_1->Add(h_RPConv_1);
+  h_plot_S_1->Add(h_RPConv_1);
   h_plot_S_1->Sumw2();
     
   TH1D *h_plot_B_1 = new TH1D();
-  // h_plot_B_1 = (TH1D*)h_CombiWithConvLeg_1->Clonse("h_plot_B_1");
-  h_plot_B_1 = (TH1D*)h_RPConv_1->Clone("h_plot_B_1");
-  h_plot_B_1->Add(h_CombiWithConvLeg_1);
+  h_plot_B_1 = (TH1D*)h_CombiWithConvLeg_1->Clone("h_plot_B_1");
+  // h_plot_B_1->Add(h_RPConv_1);
   h_plot_B_1->Sumw2();
 
-  
   TH1D *h_plot_S_2 = new TH1D();
   h_plot_S_2 = (TH1D*)h_S_2->Clone("h_plot_S_2");
   h_plot_S_2->Add(h_CombiWithoutConvLeg_2);
   h_plot_S_2->Add(h_HF_2);
-  // h_plot_S_2->Add(h_RPConv_2);
+  h_plot_S_2->Add(h_RPConv_2);
   h_plot_S_2->Sumw2();
     
   TH1D *h_plot_B_2 = new TH1D();
-  // h_plot_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_plot_B_2");
-  h_plot_B_2 = (TH1D*)h_RPConv_2->Clone("h_plot_B_2");
-  h_plot_B_2->Add(h_CombiWithConvLeg_2);
+  h_plot_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_plot_B_2");
+  // h_plot_B_2->Add(h_RPConv_2);
   h_plot_B_2->Sumw2();
 
-  
   TH1D *h_plot_S_3 = new TH1D();
   h_plot_S_3 = (TH1D*)h_S_3->Clone("h_plot_S_3");
   h_plot_S_3->Add(h_CombiWithoutConvLeg_3);
   h_plot_S_3->Add(h_HF_3);
-  // h_plot_S_3->Add(h_RPConv_3);
+  h_plot_S_3->Add(h_RPConv_3);
   h_plot_S_3->Sumw2();
     
   TH1D *h_plot_B_3 = new TH1D();
-  // h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
-  h_plot_B_3 = (TH1D*)h_RPConv_3->Clone("h_plot_B_3");
-  h_plot_B_3->Add(h_CombiWithConvLeg_3);
+  h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
+  // h_plot_B_3->Add(h_RPConv_3);
   h_plot_B_3->Sumw2();
+
+  
+  // TH1D *h_plot_S_2 = new TH1D();
+  // h_plot_S_2 = (TH1D*)h_S_2->Clone("h_plot_S_2");
+  // h_plot_S_2->Add(h_CombiWithoutConvLeg_2);
+  // h_plot_S_2->Add(h_HF_2);
+  // // h_plot_S_2->Add(h_RPConv_2);
+  // h_plot_S_2->Sumw2();
+    
+  // TH1D *h_plot_B_2 = new TH1D();
+  // // h_plot_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_plot_B_2");
+  // h_plot_B_2 = (TH1D*)h_RPConv_2->Clone("h_plot_B_2");
+  // h_plot_B_2->Add(h_CombiWithConvLeg_2);
+  // h_plot_B_2->Sumw2();
+
+  
+  // TH1D *h_plot_S_3 = new TH1D();
+  // h_plot_S_3 = (TH1D*)h_S_3->Clone("h_plot_S_3");
+  // h_plot_S_3->Add(h_CombiWithoutConvLeg_3);
+  // h_plot_S_3->Add(h_HF_3);
+  // // h_plot_S_3->Add(h_RPConv_3);
+  // h_plot_S_3->Sumw2();
+    
+  // TH1D *h_plot_B_3 = new TH1D();
+  // // h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
+  // h_plot_B_3 = (TH1D*)h_RPConv_3->Clone("h_plot_B_3");
+  // h_plot_B_3->Add(h_CombiWithConvLeg_3);
+  // h_plot_B_3->Sumw2();
 
 
 
@@ -384,23 +434,23 @@ void PlotMass_comparisons() {
 
   
   h_significance_1->SetXTitle("Mass bins");
-  h_significance_1->SetYTitle("S/#sqrt{S+B}");
+  h_significance_1->SetYTitle("S_{class} / #sqrt{S_{class}+B_{class}}");
   h_significance_1->GetXaxis()->SetTitleOffset(1.2);
   h_significance_1->GetYaxis()->SetTitleOffset(1.5);
 
   h_significance_exp_1->SetXTitle("Mass bins");
-  h_significance_exp_1->SetYTitle("S_{exp}/#sqrt{S_{exp}+B_{exp}}");
+  h_significance_exp_1->SetYTitle("S_{exp} / #sqrt{S_{exp}+B_{exp}}");
   h_significance_exp_1->GetXaxis()->SetTitleOffset(1.2);
   h_significance_exp_1->GetYaxis()->SetTitleOffset(1.5);
 
 
   h_SoverB_1->SetXTitle("Mass bins");
-  h_SoverB_1->SetYTitle("S/B");
+  h_SoverB_1->SetYTitle("S_{class} / B_{class}");
   h_SoverB_1->GetXaxis()->SetTitleOffset(1.2);
   h_SoverB_1->GetYaxis()->SetTitleOffset(1.5);
 
   h_SoverB_exp_1->SetXTitle("Mass bins");
-  h_SoverB_exp_1->SetYTitle("S_{exp}/B_{exp}");
+  h_SoverB_exp_1->SetYTitle("S_{exp} / B_{exp}");
   h_SoverB_exp_1->GetXaxis()->SetTitleOffset(1.2);
   h_SoverB_exp_1->GetYaxis()->SetTitleOffset(1.5);
 
@@ -415,15 +465,18 @@ void PlotMass_comparisons() {
   h_significance_3->Draw("p0 same");
 
 
-  TString leg_label_1 = "TMVA-optimized MVA cut (sign. int. = ";
+  TString leg_label_1 = leg_baselabel_1;
+  leg_label_1 += " (sign. int. = ";
   leg_label_1 += significance_int_1;
   leg_label_1 += ")";
 
-  TString leg_label_2 = "MVA cut: +10% (sign. int. = ";
+  TString leg_label_2 = leg_baselabel_2;
+  leg_label_2 += " (sign. int. = ";
   leg_label_2 += significance_int_2;
   leg_label_2 += ")";
   
-  TString leg_label_3 = "MVA cut: -10% (sign. int. = ";
+  TString leg_label_3 = leg_baselabel_3;
+  leg_label_3 += " (sign. int. = ";
   leg_label_3 += significance_int_3;
   leg_label_3 += ")";
 
@@ -451,15 +504,18 @@ void PlotMass_comparisons() {
   h_significance_exp_3->Draw("p0 same");
 
 
-  TString leg_label_exp_1 = "TMVA-optimized MVA cut (sign. int. = ";
+  TString leg_label_exp_1 = leg_baselabel_exp_1;
+  leg_label_exp_1 += " (sign. int. = ";
   leg_label_exp_1 += significance_exp_int_1;
   leg_label_exp_1 += ")";
 
-  TString leg_label_exp_2 = "MVA cut: +10% (sign. int. = ";
+  TString leg_label_exp_2 = leg_baselabel_exp_2;
+  leg_label_exp_2 += " (sign. int. = ";
   leg_label_exp_2 += significance_exp_int_2;
   leg_label_exp_2 += ")";
   
-  TString leg_label_exp_3 = "MVA cut: -10% (sign. int. = ";
+  TString leg_label_exp_3 = leg_baselabel_exp_3;
+  leg_label_exp_3 += " (sign. int. = ";
   leg_label_exp_3 += significance_exp_int_3;
   leg_label_exp_3 += ")";
 
@@ -472,9 +528,9 @@ void PlotMass_comparisons() {
   leg_significance_exp->Draw();
 
 
-  c_significance_exp->SaveAs("temp_output/mass_significance_exp_Comparison.pdf");
-  c_significance_exp->SaveAs("temp_output/mass_significance_exp_Comparison.root");
-  c_significance_exp->SaveAs("temp_output/mass_significance_exp_Comparison.png");
+  c_significance_exp->SaveAs("temp_output/mass_significance_exp_comparison.pdf");
+  c_significance_exp->SaveAs("temp_output/mass_significance_exp_comparison.root");
+  c_significance_exp->SaveAs("temp_output/mass_significance_exp_comparison.png");
   
 
 
@@ -487,10 +543,15 @@ void PlotMass_comparisons() {
   h_SoverB_2->Draw("p0 same");
   h_SoverB_3->Draw("p0 same");
 
+
+  TString leg_label_SoverB_1 = leg_baselabel_SoverB_1;
+  TString leg_label_SoverB_2 = leg_baselabel_SoverB_2;
+  TString leg_label_SoverB_3 = leg_baselabel_SoverB_3;
+  
   TLegend *leg_SoverB = new TLegend(.6,.75,.95,.95);
-  leg_SoverB->AddEntry(h_SoverB_1, "TMVA-optimized MVA cut", "p");
-  leg_SoverB->AddEntry(h_SoverB_2, "MVA cut: +10%", "p");
-  leg_SoverB->AddEntry(h_SoverB_3, "MVA cut: -10%", "p");
+  leg_SoverB->AddEntry(h_SoverB_1, leg_label_SoverB_1, "p");
+  leg_SoverB->AddEntry(h_SoverB_2, leg_label_SoverB_2, "p");
+  leg_SoverB->AddEntry(h_SoverB_3, leg_label_SoverB_3, "p");
   leg_SoverB->Draw();
 
   
@@ -507,10 +568,15 @@ void PlotMass_comparisons() {
   h_SoverB_exp_2->Draw("p0 same");
   h_SoverB_exp_3->Draw("p0 same");
 
+
+  TString leg_label_SoverB_exp_1 = leg_baselabel_SoverB_exp_1;
+  TString leg_label_SoverB_exp_2 = leg_baselabel_SoverB_exp_2;
+  TString leg_label_SoverB_exp_3 = leg_baselabel_SoverB_exp_3;
+  
   TLegend *leg_SoverB_exp = new TLegend(.6,.75,.95,.95);
-  leg_SoverB_exp->AddEntry(h_SoverB_exp_1, "TMVA-optimized MVA cut", "p");
-  leg_SoverB_exp->AddEntry(h_SoverB_exp_2, "MVA cut: +10%", "p");
-  leg_SoverB_exp->AddEntry(h_SoverB_exp_3, "MVA cut: -10%", "p");
+  leg_SoverB_exp->AddEntry(h_SoverB_exp_1, leg_label_SoverB_exp_1, "p");
+  leg_SoverB_exp->AddEntry(h_SoverB_exp_2, leg_label_SoverB_exp_2, "p");
+  leg_SoverB_exp->AddEntry(h_SoverB_exp_3, leg_label_SoverB_exp_3, "p");
   leg_SoverB_exp->Draw();
 
   
@@ -669,13 +735,20 @@ void PlotMass_comparisons() {
   h_CombiWithoutConvLeg_eff_3->Draw(h_drawOptions_same);
 
 
+  TString leg_label_eff_2 = "   ";
+  leg_label_eff_2 += leg_baselabel_2;
+
+  TString leg_label_eff_3 = "   ";
+  leg_label_eff_3 += leg_baselabel_3;
+
+  
   TLegend *leg2 = new TLegend(.6,.8,.95,.95);
   leg2->AddEntry(h_CombiWithConvLeg_eff_1, "Comb. w. conv. leg", "p");
-  leg2->AddEntry(h_CombiWithConvLeg_eff_2, "   MVA cut var.: +10%", "p");
-  leg2->AddEntry(h_CombiWithConvLeg_eff_3, "   MVA cut var.: -10%", "p");
+  leg2->AddEntry(h_CombiWithConvLeg_eff_2, leg_label_eff_2, "p");
+  leg2->AddEntry(h_CombiWithConvLeg_eff_3, leg_label_eff_3, "p");
   leg2->AddEntry(h_CombiWithoutConvLeg_eff_1, "Comb. w/o conv. leg", "p");
-  leg2->AddEntry(h_CombiWithoutConvLeg_eff_2, "   MVA cut var.: +10%", "p");
-  leg2->AddEntry(h_CombiWithoutConvLeg_eff_3, "   MVA cut var.: -10%", "p");
+  leg2->AddEntry(h_CombiWithoutConvLeg_eff_2, leg_label_eff_2, "p");
+  leg2->AddEntry(h_CombiWithoutConvLeg_eff_3, leg_label_eff_3, "p");
   leg2->Draw();
 
 

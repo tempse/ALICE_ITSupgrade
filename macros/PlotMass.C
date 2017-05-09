@@ -23,9 +23,9 @@ void PlotMass() {
   TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput_CombConvRejection = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_RPConvRejMVAcuts_part2_1-9-split.root";  
+  TString fileName_MVAoutput = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_CombConvRejMVAcuts_part2_1-9-split.root";  
 
-  TString h_text = "RP conv. rej. via MVA cuts (cut var.: +10%)";
+  TString h_text = "Comb. conv. rej. via MVA cuts (cut at -0.1)";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
@@ -42,7 +42,7 @@ void PlotMass() {
   
 
   // set MVA cut value:
-  float MVAcut = -.3527;
+  float MVAcut = .1;
   
   const float stepSize = 1;
   const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
@@ -61,7 +61,7 @@ void PlotMass() {
 
   
   // input MVA output information from file:
-  TFile *f_MVAoutput = new TFile(fileName_MVAoutput_CombConvRejection,"READ");
+  TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
   Float_t MVAoutput;
   if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MVAoutput);
@@ -78,7 +78,7 @@ void PlotMass() {
   TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
   TH1D *h_CombiWithoutConvLeg =
-    new TH1D("h_CombiWithoughConvLeg","",nBins,min,max);
+    new TH1D("h_CombiWithoutConvLeg","",nBins,min,max);
 
 
   
@@ -150,7 +150,7 @@ void PlotMass() {
 	      << std::endl;
     std::cout << "   Size of tree in file " << fileName_testData << ": "
 	      << TestTree->GetEntries() << std::endl;
-    std::cout << "   Size of tree in file " << fileName_MVAoutput_CombConvRejection << ": "
+    std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
 	      << MVAoutputTree->GetEntries() << std::endl;
     return;
   }
@@ -546,7 +546,7 @@ void PlotMass() {
   leg->AddEntry(h_S,"S","l");
   leg->AddEntry(h_CombiWithConvLeg,"Comb. w. conv. leg","l");
   leg->AddEntry(h_CombiWithoutConvLeg,"Comb. w/o conv. leg","l");
-  leg->AddEntry(h_HF,"Comb. HF","l");
+  leg->AddEntry(h_HF,"Corr. HF","l");
   leg->AddEntry(h_RPConv,"RP conv.","l");
   leg->Draw();
 
