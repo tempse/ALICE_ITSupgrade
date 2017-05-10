@@ -18,19 +18,26 @@
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_partialTagging_manualMVAcut_pairtree_us_part2_1-9-split.root";
+  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
   
-  TString h_text = "RP Conv. Rej. via MVA cuts (manual cut value)";
+  TString h_text = "Conv. track rej. via single-track MVA cuts";
 
-  // two tags are combined via
-  // (tag1 == wantedPrefilterTagValue1 && tag2 == wantedPrefilterTagValue2)
+  // two variables are combined, e.g., via
+  // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoTags = kFALSE;
+  Bool_t useTwoVars = kTRUE;
 
-  TString prefilterTagName1 = "MVA0.6";
-  TString prefilterTagName2 = "IsTaggedConvTrack2_MVAcutMinus10Percent";
+  Bool_t useTags = kTRUE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
+  Int_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
+  
+  Float_t MVAcut = 0.;
+  
+  TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
+  
+  TString variableName1 = "IsTaggedConvTrack1";
+  TString variableName2 = "IsTaggedConvTrack2";
 
-  // After prefiltering, use events with this tag value only:
+  // After prefiltering, use events with this tag value only (if useTags==kTRUE):
   const Int_t wantedPrefilterTagValue1 = 0.;
   const Int_t wantedPrefilterTagValue2 = 0.;
   
@@ -64,23 +71,22 @@ void PlotMass_prefilterCuts() {
 
   Float_t mass;
   Int_t IsRP, IsConv, IsHF;
-  Int_t IsTag1, IsTag2; // generic variables whose values depend on the particular analysis
   TestTree->SetBranchAddress("mass", &mass);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsHF", &IsHF);
-  if(TestTree->GetListOfBranches()->FindObject(prefilterTagName1) != NULL) {
-    TestTree->SetBranchAddress(prefilterTagName1, &IsTag1);
+  if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
+    TestTree->SetBranchAddress(variableName1, &variable1);
   }else {
-    std::cout << "  ERROR: The branch " << prefilterTagName1
+    std::cout << "  ERROR: The branch " << variableName1
 	      << " does not exist in the file " << f->GetName() << std::endl;
     gApplication->Terminate();
   }
-  if(useTwoTags) {
-    if(TestTree->GetListOfBranches()->FindObject(prefilterTagName2) != NULL) {
-      TestTree->SetBranchAddress(prefilterTagName2, &IsTag2);
+  if(useTwoVars) {
+    if(TestTree->GetListOfBranches()->FindObject(variableName2) != NULL) {
+      TestTree->SetBranchAddress(variableName2, &variable2);
     }else {
-      std::cout << "  ERROR: The branch " << prefilterTagName2
+      std::cout << "  ERROR: The branch " << variableName2
 		<< " does not exist in the file " << f->GetName() << std::endl;
       gApplication->Terminate();
     }
@@ -97,7 +103,7 @@ void PlotMass_prefilterCuts() {
   TH1D *h_CombiWithConvLeg = new TH1D("h_CombiWithConvLeg","",nBins,min,max);
   
   TH1D *h_CombiWithoutConvLeg =
-    new TH1D("h_CombiWithouthConvLeg","",nBins,min,max);
+    new TH1D("h_CombiWithoutConvLeg","",nBins,min,max);
   
   TH1D *h_HF = new TH1D("h_HF","",nBins,min,max);
   
@@ -135,9 +141,10 @@ void PlotMass_prefilterCuts() {
 
     if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
 				<< nEv << " (" << ev*100/nEv << "%)...";
-      
-    TestTree->GetEvent(ev);
     
+    TestTree->GetEvent(ev);
+
+    // Process all entries:
     h_SB->Fill(mass);
     if(IsRP==1 && IsConv==0) {
       h_S->Fill(mass);
@@ -156,51 +163,132 @@ void PlotMass_prefilterCuts() {
     }
 
 
-    
-    // (IsTag == 0) if "unwanted tag" corresponds to 1
-    // in the input file, (IsTag == 1) otherwise:
-
-    if(!useTwoTags) {
-      if(IsTag1 == wantedPrefilterTagValue1) {
-	h_SB_prefilterCut->Fill(mass);
-	if(IsRP==1 && IsConv==0) {
-	  h_S_prefilterCut->Fill(mass);
+    // Process selected entries only:
+    if(useTags) {
+      
+      if(!useTwoVars) {
+	if(variable1 == wantedPrefilterTagValue1) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
 	}
-	if(IsRP==0 && IsConv==1) {
-	  h_CombiWithConvLeg_prefilterCut->Fill(mass);
-	}
-	if(IsRP==0 && IsConv==0) {
-	  h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
-	}
-	if(IsRP==0 && IsHF==1) {
-	  h_HF_prefilterCut->Fill(mass);
-	}
-	if(IsRP==1 && IsConv==1) {
-	  h_RPConv_prefilterCut->Fill(mass);
-	}
-      }
-    }
-    
-    if(useTwoTags) {
-      if(IsTag1 == wantedPrefilterTagValue1 &&
-	 IsTag2 == wantedPrefilterTagValue2) {
-	h_SB_prefilterCut->Fill(mass);
-	if(IsRP==1 && IsConv==0) {
-	  h_S_prefilterCut->Fill(mass);
-	}
-	if(IsRP==0 && IsConv==1) {
-	  h_CombiWithConvLeg_prefilterCut->Fill(mass);
-	}
-	if(IsRP==0 && IsConv==0) {
-	  h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
-	}
-	if(IsRP==0 && IsHF==1) {
-	  h_HF_prefilterCut->Fill(mass);
-	}
-	if(IsRP==1 && IsConv==1) {
-	  h_RPConv_prefilterCut->Fill(mass);
+      }else { // if(useTwoVars)
+	if(variable1 == wantedPrefilterTagValue1 &&
+	   variable2 == wantedPrefilterTagValue2) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
 	}
       }
+      
+    }else { // if(!useTags)
+      
+      if(!useTwoVars) {
+	if(signalRegion == "+" && variable1 >= MVAcut) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
+	}
+	if(signalRegion == "-" && variable1 <= MVAcut) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
+	}
+      }else { // if(useTwoVars)
+	if(signalRegion == "+" &&
+	   variable1 >= MVAcut &&
+	   variable2 >= MVAcut) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
+	}
+	if(signalRegion == "-" &&
+	   variable1 <= MVAcut &&
+	   variable2 <= MVAcut) {
+	  h_SB_prefilterCut->Fill(mass);
+	  if(IsRP==1 && IsConv==0) {
+	    h_S_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==1) {
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsConv==0) {
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==0 && IsHF==1) {
+	    h_HF_prefilterCut->Fill(mass);
+	  }
+	  if(IsRP==1 && IsConv==1) {
+	    h_RPConv_prefilterCut->Fill(mass);
+	  }
+	}
+      }
+      
     }
     
   } // end ev loop
