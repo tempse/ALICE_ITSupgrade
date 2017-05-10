@@ -15,14 +15,14 @@
 #include <TLatex.h>
 
 
-void PlotMass_comparisons() {
+void PlotMass_cutVarComparison() {
 
   //////////////////////////////////////////////////////////////////////////////
 
   // core labels for plot legends:
   TString leg_baselabel_1 = "TMVA-optimized MVA cut";
-  TString leg_baselabel_2 = "MVA cut: +0.1";
-  TString leg_baselabel_3 = "MVA cut: -0.1";
+  TString leg_baselabel_2 = "MVA cut: +10%";
+  TString leg_baselabel_3 = "MVA cut: -10%";
 
   TString leg_baselabel_exp_1 = leg_baselabel_1;
   TString leg_baselabel_exp_2 = leg_baselabel_2;
@@ -42,8 +42,8 @@ void PlotMass_comparisons() {
   // !!! Don't forget to change the below signal/background definitions accordingly !!!
     
   TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts/mass_histos.root";
-  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcut0.1/mass_histos.root";
-  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcut-0.1/mass_histos.root";
+  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcutPlus10Percent/mass_histos.root";
+  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcutMinus10Percent/mass_histos.root";
   
   TString infile1_eff_filename = infile1_filename;
   TString infile2_eff_filename = infile2_filename;
@@ -149,34 +149,7 @@ void PlotMass_comparisons() {
   h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
   // h_plot_B_3->Add(h_RPConv_3);
   h_plot_B_3->Sumw2();
-
   
-  // TH1D *h_plot_S_2 = new TH1D();
-  // h_plot_S_2 = (TH1D*)h_S_2->Clone("h_plot_S_2");
-  // h_plot_S_2->Add(h_CombiWithoutConvLeg_2);
-  // h_plot_S_2->Add(h_HF_2);
-  // // h_plot_S_2->Add(h_RPConv_2);
-  // h_plot_S_2->Sumw2();
-    
-  // TH1D *h_plot_B_2 = new TH1D();
-  // // h_plot_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_plot_B_2");
-  // h_plot_B_2 = (TH1D*)h_RPConv_2->Clone("h_plot_B_2");
-  // h_plot_B_2->Add(h_CombiWithConvLeg_2);
-  // h_plot_B_2->Sumw2();
-
-  
-  // TH1D *h_plot_S_3 = new TH1D();
-  // h_plot_S_3 = (TH1D*)h_S_3->Clone("h_plot_S_3");
-  // h_plot_S_3->Add(h_CombiWithoutConvLeg_3);
-  // h_plot_S_3->Add(h_HF_3);
-  // // h_plot_S_3->Add(h_RPConv_3);
-  // h_plot_S_3->Sumw2();
-    
-  // TH1D *h_plot_B_3 = new TH1D();
-  // // h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
-  // h_plot_B_3 = (TH1D*)h_RPConv_3->Clone("h_plot_B_3");
-  // h_plot_B_3->Add(h_CombiWithConvLeg_3);
-  // h_plot_B_3->Sumw2();
 
 
 
