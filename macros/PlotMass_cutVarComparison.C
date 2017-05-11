@@ -689,6 +689,7 @@ void PlotMass_cutVarComparison() {
   h_CombiWithConvLeg_eff_1->SetYTitle("Efficiency");
   h_CombiWithConvLeg_eff_1->GetXaxis()->SetTitleOffset(1.2);
   h_CombiWithConvLeg_eff_1->GetYaxis()->SetTitleOffset(1.3);
+  h_CombiWithConvLeg_eff_1->GetYaxis()->SetRangeUser(0, 1.2);
 
   
   TCanvas *c_eff = new TCanvas("c_eff","",1024,768);

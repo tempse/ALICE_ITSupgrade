@@ -325,27 +325,32 @@ void PlotMass_analysisComparison() {
   h_eff_S_1->SetYTitle("Efficiency (S)");
   h_eff_S_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_S_1->GetYaxis()->SetTitleOffset(1.4);
+  h_eff_S_1->GetYaxis()->SetRangeUser(0, 1.2);
 
 
   h_eff_CombiWithConvLeg_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_eff_CombiWithConvLeg_1->SetYTitle("Efficiency (Comb. w. conv. leg)");
   h_eff_CombiWithConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_CombiWithConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
+  h_eff_CombiWithConvLeg_1->GetYaxis()->SetRangeUser(0, 1.2);
 
   h_eff_CombiWithoutConvLeg_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_eff_CombiWithoutConvLeg_1->SetYTitle("Efficiency (Comb. w/o conv. leg)");
   h_eff_CombiWithoutConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_CombiWithoutConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
+  h_eff_CombiWithoutConvLeg_1->GetYaxis()->SetRangeUser(0, 1.2);
 
   h_eff_HF_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_eff_HF_1->SetYTitle("Efficiency (corr. HF)");
   h_eff_HF_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_HF_1->GetYaxis()->SetTitleOffset(1.4);
+  h_eff_HF_1->GetYaxis()->SetRangeUser(0, 1.2);
 
   h_eff_RPConv_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_eff_RPConv_1->SetYTitle("Efficiency (RP conv.)");
   h_eff_RPConv_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_RPConv_1->GetYaxis()->SetTitleOffset(1.4);
+  h_eff_RPConv_1->GetYaxis()->SetRangeUser(0, 1.2);
 
 
   
