@@ -33,7 +33,7 @@ void calculateHF();
 
 
 // MVA cut value (for identifying conversion tracks):
-const Bool_t doConsiderMVAinfo_convTrack = kTRUE;
+const Bool_t doConsiderMVAinfo_convTrack = kFALSE;
 const Float_t MVAcut_convTrack = -0.4407; // MVA output<MVAcut_convTrack <-> conversion track
 
 // // MVA cut value (For identifying real pair conversions):
@@ -84,8 +84,9 @@ Int_t motherLabel1, motherLabel2;
 Int_t firstMotherLabel1, firstMotherLabel2;
 Int_t firstMotherLabel1_min, firstMotherLabel2_min;
 Int_t firstMotherLabel1_max, firstMotherLabel2_max;
-Float_t DCAxy1, DCAxy2;
-Float_t DCAz1, DCAz2;
+Float_t DCAxy1_norm, DCAxy2_norm;
+Float_t DCAz1_norm, DCAz2_norm;
+Float_t DCAx1, DCAx2, DCAy1, DCAy2, DCAz1, DCAz2;
 Int_t nITS1, nITS2;
 Float_t nITSshared1, nITSshared2;
 Int_t nTPC1, nTPC2;
@@ -159,8 +160,9 @@ void GeneratePairTrees() {
   Double_t ST_eta;
   Double_t ST_phi;
   Double_t ST_pt;
-  Double_t ST_dcaR;
-  Double_t ST_dcaZ;
+  Double_t ST_dcaR_norm;
+  Double_t ST_dcaZ_norm;
+  Double_t ST_dcaX, ST_dcaY, ST_dcaZ;
   Int_t ST_label;
   Int_t ST_labelFirstMother;
   Int_t ST_labelMinFirstMother;
@@ -187,8 +189,11 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("eta",&ST_eta);
   singleTree->SetBranchAddress("phi",&ST_phi);
   singleTree->SetBranchAddress("pt",&ST_pt);
-  singleTree->SetBranchAddress("dcaR",&ST_dcaR);
-  singleTree->SetBranchAddress("dcaZ",&ST_dcaZ);
+  singleTree->SetBranchAddress("dcaR_norm",&ST_dcaR_norm);
+  singleTree->SetBranchAddress("dcaZ_norm",&ST_dcaZ_norm);
+  singleTree->SetBranchAddress("dcaX", &ST_dcaX);
+  singleTree->SetBranchAddress("dcaY", &ST_dcaY);
+  singleTree->SetBranchAddress("dcaZ", &ST_dcaZ);
   singleTree->SetBranchAddress("label",&ST_label);
   singleTree->SetBranchAddress("particle.",&ST_particle);
   singleTree->SetBranchAddress("labelFirstMother",&ST_labelFirstMother);
@@ -250,10 +255,16 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("motherPdg2",&motherPdg2);
     pairTree_rp->Branch("pdg1",&pdg1);
     pairTree_rp->Branch("pdg2",&pdg2);
-    pairTree_rp->Branch("DCAxy1",&DCAxy1);
-    pairTree_rp->Branch("DCAxy2",&DCAxy2);
-    pairTree_rp->Branch("DCAz1",&DCAz1);
-    pairTree_rp->Branch("DCAz2",&DCAz2);
+    pairTree_rp->Branch("DCAxy1_norm",&DCAxy1_norm);
+    pairTree_rp->Branch("DCAxy2_norm",&DCAxy2_norm);
+    pairTree_rp->Branch("DCAz1_norm",&DCAz1_norm);
+    pairTree_rp->Branch("DCAz2_norm",&DCAz2_norm);
+    pairTree_rp->Branch("DCAx1", &DCAx1);
+    pairTree_rp->Branch("DCAx2", &DCAx2);
+    pairTree_rp->Branch("DCAy1", &DCAy1);
+    pairTree_rp->Branch("DCAy2", &DCAy2);
+    pairTree_rp->Branch("DCAz1", &DCAz1);
+    pairTree_rp->Branch("DCAz2", &DCAz2);
     pairTree_rp->Branch("nITS1",&nITS1);
     pairTree_rp->Branch("nITS2",&nITS2);
     pairTree_rp->Branch("nITSshared1",&nITSshared1);
@@ -315,10 +326,16 @@ void GeneratePairTrees() {
     pairTree_us->Branch("motherPdg2",&motherPdg2);
     pairTree_us->Branch("pdg1",&pdg1);
     pairTree_us->Branch("pdg2",&pdg2);
-    pairTree_us->Branch("DCAxy1",&DCAxy1);
-    pairTree_us->Branch("DCAxy2",&DCAxy2);
-    pairTree_us->Branch("DCAz1",&DCAz1);
-    pairTree_us->Branch("DCAz2",&DCAz2);
+    pairTree_us->Branch("DCAxy1_norm",&DCAxy1_norm);
+    pairTree_us->Branch("DCAxy2_norm",&DCAxy2_norm);
+    pairTree_us->Branch("DCAz1_norm",&DCAz1_norm);
+    pairTree_us->Branch("DCAz2_norm",&DCAz2_norm);
+    pairTree_us->Branch("DCAx1", &DCAx1);
+    pairTree_us->Branch("DCAx2", &DCAx2);
+    pairTree_us->Branch("DCAy1", &DCAy1);
+    pairTree_us->Branch("DCAy2", &DCAy2);
+    pairTree_us->Branch("DCAz1", &DCAz1);
+    pairTree_us->Branch("DCAz2", &DCAz2);
     pairTree_us->Branch("nITS1",&nITS1);
     pairTree_us->Branch("nITS2",&nITS2);
     pairTree_us->Branch("nITSshared1",&nITSshared1);
@@ -380,10 +397,16 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_ls->Branch("pdg1",&pdg1);
     pairTree_ls->Branch("pdg2",&pdg2);
-    pairTree_ls->Branch("DCAxy1",&DCAxy1);
-    pairTree_ls->Branch("DCAxy2",&DCAxy2);
-    pairTree_ls->Branch("DCAz1",&DCAz1);
-    pairTree_ls->Branch("DCAz2",&DCAz2);
+    pairTree_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
+    pairTree_ls->Branch("DCAxy2_norm",&DCAxy2_norm);
+    pairTree_ls->Branch("DCAz1_norm",&DCAz1_norm);
+    pairTree_ls->Branch("DCAz2_norm",&DCAz2_norm);
+    pairTree_ls->Branch("DCAx1", &DCAx1);
+    pairTree_ls->Branch("DCAx2", &DCAx2);
+    pairTree_ls->Branch("DCAy1", &DCAy1);
+    pairTree_ls->Branch("DCAy2", &DCAy2);
+    pairTree_ls->Branch("DCAz1", &DCAz1);
+    pairTree_ls->Branch("DCAz2", &DCAz2);
     pairTree_ls->Branch("nITS1",&nITS1);
     pairTree_ls->Branch("nITS2",&nITS2);
     pairTree_ls->Branch("nITSshared1",&nITSshared1);
@@ -445,10 +468,16 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_us_ls->Branch("pdg1",&pdg1);
     pairTree_us_ls->Branch("pdg2",&pdg2);
-    pairTree_us_ls->Branch("DCAxy1",&DCAxy1);
-    pairTree_us_ls->Branch("DCAxy2",&DCAxy2);
-    pairTree_us_ls->Branch("DCAz1",&DCAz1);
-    pairTree_us_ls->Branch("DCAz2",&DCAz2);
+    pairTree_us_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
+    pairTree_us_ls->Branch("DCAxy2_norm",&DCAxy2_norm);
+    pairTree_us_ls->Branch("DCAz1_norm",&DCAz1_norm);
+    pairTree_us_ls->Branch("DCAz2_norm",&DCAz2_norm);
+    pairTree_us_ls->Branch("DCAx1", &DCAx1);
+    pairTree_us_ls->Branch("DCAx2", &DCAx2);
+    pairTree_us_ls->Branch("DCAy1", &DCAy1);
+    pairTree_us_ls->Branch("DCAy2", &DCAy2);
+    pairTree_us_ls->Branch("DCAz1", &DCAz1);
+    pairTree_us_ls->Branch("DCAz2", &DCAz2);
     pairTree_us_ls->Branch("nITS1",&nITS1);
     pairTree_us_ls->Branch("nITS2",&nITS2);
     pairTree_us_ls->Branch("nITSshared1",&nITSshared1);
@@ -541,7 +570,10 @@ void GeneratePairTrees() {
       firstMotherLabel1 = ST_labelFirstMother;
       firstMotherLabel1_min = ST_labelMinFirstMother;
       firstMotherLabel1_max = ST_labelMaxFirstMother;
-      DCAxy1 = ST_dcaR;
+      DCAxy1_norm = ST_dcaR_norm;
+      DCAz1_norm = ST_dcaZ_norm;
+      DCAx1 = ST_dcaX;
+      DCAy1 = ST_dcaY;
       DCAz1 = ST_dcaZ;
       nITS1 = ST_nITS;
       nITSshared1 = ST_nITSshared;
@@ -565,7 +597,10 @@ void GeneratePairTrees() {
       firstMotherLabel2 = ST_labelFirstMother;
       firstMotherLabel2_min = ST_labelMinFirstMother;
       firstMotherLabel2_max = ST_labelMaxFirstMother;
-      DCAxy2 = ST_dcaR;
+      DCAxy2_norm = ST_dcaR_norm;
+      DCAz2_norm = ST_dcaZ_norm;
+      DCAx2 = ST_dcaX;
+      DCAy2 = ST_dcaY;
       DCAz2 = ST_dcaZ;
       nITS2 = ST_nITS;
       nITSshared2 = ST_nITSshared;
@@ -619,7 +654,10 @@ void GeneratePairTrees() {
 	firstMotherLabel2 = ST_labelFirstMother;
 	firstMotherLabel2_min = ST_labelMinFirstMother;
 	firstMotherLabel2_max = ST_labelMaxFirstMother;
-	DCAxy2 = ST_dcaR;
+	DCAxy2_norm = ST_dcaR_norm;
+	DCAz2_norm = ST_dcaZ_norm;
+	DCAx2 = ST_dcaX;
+	DCAy2 = ST_dcaY;
 	DCAz2 = ST_dcaZ;
 	nITS2 = ST_nITS;
 	nITSshared2 = ST_nITSshared;
@@ -643,7 +681,10 @@ void GeneratePairTrees() {
 	firstMotherLabel1 = ST_labelFirstMother;
 	firstMotherLabel1_min = ST_labelMinFirstMother;
 	firstMotherLabel1_max = ST_labelMaxFirstMother;
-	DCAxy1 = ST_dcaR;
+	DCAxy1_norm = ST_dcaR_norm;
+	DCAz1_norm = ST_dcaZ_norm;
+	DCAx1 = ST_dcaX;
+	DCAy1 = ST_dcaY;
 	DCAz1 = ST_dcaZ;
 	nITS1 = ST_nITS;
 	nITSshared1 = ST_nITSshared;
@@ -721,7 +762,7 @@ void GeneratePairTrees() {
 
 	
 	// prefilter cuts - tagging RP conversions:
-	if(phiv>TMath::PiOver2() && mass<.05) {
+        if(phiv>TMath::PiOver2() && mass<.05) {
 	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
