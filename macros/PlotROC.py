@@ -54,7 +54,7 @@ plt.plot(.230, .373, 'o', color=color_RPConvRejClass,
          label='$\phi_V>2$, $mass<0.04$', markersize=4)
 plt.plot(.132, .374, 'o', color=color_RPConvRejClass,
          label='$\phi_V>2.4$, $mass<0.01$', markersize=6)
-plt.plot(.936, .987, 'o', color=color_RPConvRejClass,
+plt.plot(.089, .336, 'o', color=color_RPConvRejClass,
          label='$\phi_V>2.9$, $mass<0.0035$', markersize=8)
 
 plt.plot(.223,.77, marker=marker_opt, color=color_RPConvRejMVA,
