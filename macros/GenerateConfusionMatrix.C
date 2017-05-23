@@ -1,3 +1,12 @@
+#include <iostream>
+
+#include <TROOT.h>
+#include <TApplication.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TTree.h>
+
+
 void GenerateConfusionMatrix() {
   TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
 
@@ -25,15 +34,18 @@ void GenerateConfusionMatrix() {
 			      << " %)...";
     tree->GetEntry(i);
 
-    if(signalRegion == "-") {
-      isTaggedSignal = -isTaggedSignal;
-      isSignal = -isSignal;
-    }
 
-    if(isTaggedSignal && isSignal) TP += 1;
-    if(!isTaggedSignal && isSignal) FN += 1;
-    if(isTaggedSignal && !isSignal) FP += 1;
-    if(!isTaggedSignal && !isSignal) TN += 1;
+    if(signalRegion == "+") {
+      if(isTaggedSignal && isSignal) TP += 1;
+      if(!isTaggedSignal && isSignal) FN += 1;
+      if(isTaggedSignal && !isSignal) FP += 1;
+      if(!isTaggedSignal && !isSignal) TN += 1;
+    }else if(signalRegion == "-") {
+      if(!isTaggedSignal && !isSignal) TP += 1;
+      if(isTaggedSignal && !isSignal) FN += 1;
+      if(!isTaggedSignal && isSignal) FP += 1;
+      if(isTaggedSignal && isSignal) TN += 1;
+    }
   }
   std::cout << "\rProcessing entry " << nentries << " of " << nentries
 	    << " (100 %)... DONE" << std::endl;
@@ -42,6 +54,15 @@ void GenerateConfusionMatrix() {
   std::cout << "Confusion matrix:" << std::endl;
   std::cout << "  [[TP\tFN]\n   [FP\tTN]] =\n"
 	    << "= [[" << TP << "\t" << FN << "]\n   ["
-	    << FP << "\t" << TN << "]]" << std::endl;
+	    << FP << "\t" << TN << "]]" << std::endl << std::endl;
+
+  std::cout << "TPR = TP/(TP+FN) = " << TP/((Float_t)(TP+FN)) << std::endl;
+  std::cout << "FPR = FP/(FP+TN) = " << FP/((Float_t)(FP+TN)) << std::endl;
   
+  std::cout << std::endl;
+  std::cout << "TP + FN = " << TP+FN << std::endl
+	    << "FP + TN = " << FP+TN << std::endl
+	    << "     sum: " << TP+FN+FP+TN << std::endl;
+
+  gApplication->Terminate();
 }
