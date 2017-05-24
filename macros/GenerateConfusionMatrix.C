@@ -22,6 +22,9 @@ void GenerateConfusionMatrix() {
 			 &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
 
+  Float_t mass;
+  tree->SetBranchAddress("mass", &mass);
+
 
   // true positives, false positives, true negatives, false negatives
   Long64_t TP = 0, FP = 0, TN = 0, FN = 0;
@@ -29,12 +32,13 @@ void GenerateConfusionMatrix() {
   Long64_t nentries = tree->GetEntries();
   
   for(Long64_t i=0; i<nentries; i++) {
-    if((i%1000)==0) std::cout << "\rProcessing entry " << i << " of "
+    if((i%5000)==0) std::cout << "\rProcessing entry " << i << " of "
 			      << nentries << " (" << i*100/((Float_t)nentries)
 			      << " %)...";
     tree->GetEntry(i);
 
-
+    if(mass<.05) continue;
+    
     if(signalRegion == "+") {
       if(isTaggedSignal && isSignal) TP += 1;
       if(!isTaggedSignal && isSignal) FN += 1;
