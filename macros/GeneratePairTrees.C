@@ -13,6 +13,7 @@
 #include <TFile.h>
 #include <TChain.h>
 #include <TTree.h>
+#include <TH1D.h>
 #include <TParticle.h>
 #include <TMath.h>
 #include <TRandom.h>
@@ -20,6 +21,8 @@
 
 Bool_t isCharm(Int_t );
 Bool_t isBottom(Int_t );
+
+Float_t getPIDefficiency(TH1D&, Float_t);
 
 // The following functions use the globally defined output tree variables. Make
 // sure that these variables have the correct values when calling them!
@@ -77,6 +80,7 @@ Float_t pz1, pz2;
 Float_t mcPx1, mcPx2;       // }
 Float_t mcPy1, mcPy2;       // } momenta calculated from MC data
 Float_t mcPz1, mcPz2;       // }
+Float_t PIDeff1, PIDeff2;
 Int_t pdg1, pdg2;
 Int_t motherPdg1, motherPdg2;
 Int_t firstMotherPdg1, firstMotherPdg2;
@@ -111,8 +115,8 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root","READ");
-  TTree *singleTree = (TTree*)infile->Get("tracks");
+  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo19.root","READ");
+  TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
   std::cout << std::endl;
   if(infile->IsOpen()) {
@@ -129,6 +133,13 @@ void GeneratePairTrees() {
   if(doConsiderMVAinfo_convTrack) {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
   }
+
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
+  TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
+  h_PIDeff->GetXaxis()->SetRangeUser(0,5);
+  
+    
   
   TFile *outfile = TFile::Open("temp_output/output_pairtrees.root","RECREATE");
   TTree *pairTree_rp = new TTree("pairTree_rp","pairTree_rp");
@@ -255,6 +266,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("motherPdg2",&motherPdg2);
     pairTree_rp->Branch("pdg1",&pdg1);
     pairTree_rp->Branch("pdg2",&pdg2);
+    pairTree_rp->Branch("PIDeff1",&PIDeff1);
+    pairTree_rp->Branch("PIDeff2",&PIDeff2);
     pairTree_rp->Branch("DCAxy1_norm",&DCAxy1_norm);
     pairTree_rp->Branch("DCAxy2_norm",&DCAxy2_norm);
     pairTree_rp->Branch("DCAz1_norm",&DCAz1_norm);
@@ -326,6 +339,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("motherPdg2",&motherPdg2);
     pairTree_us->Branch("pdg1",&pdg1);
     pairTree_us->Branch("pdg2",&pdg2);
+    pairTree_us->Branch("PIDeff1",&PIDeff1);
+    pairTree_us->Branch("PIDeff2",&PIDeff2);
     pairTree_us->Branch("DCAxy1_norm",&DCAxy1_norm);
     pairTree_us->Branch("DCAxy2_norm",&DCAxy2_norm);
     pairTree_us->Branch("DCAz1_norm",&DCAz1_norm);
@@ -397,6 +412,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_ls->Branch("pdg1",&pdg1);
     pairTree_ls->Branch("pdg2",&pdg2);
+    pairTree_ls->Branch("PIDeff1",&PIDeff1);
+    pairTree_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
     pairTree_ls->Branch("DCAxy2_norm",&DCAxy2_norm);
     pairTree_ls->Branch("DCAz1_norm",&DCAz1_norm);
@@ -468,6 +485,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_us_ls->Branch("pdg1",&pdg1);
     pairTree_us_ls->Branch("pdg2",&pdg2);
+    pairTree_us_ls->Branch("PIDeff1",&PIDeff1);
+    pairTree_us_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_us_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
     pairTree_us_ls->Branch("DCAxy2_norm",&DCAxy2_norm);
     pairTree_us_ls->Branch("DCAz1_norm",&DCAz1_norm);
@@ -583,6 +602,7 @@ void GeneratePairTrees() {
       phi1 = ST_phi;
       eta1 = ST_eta;
       pt1 = ST_pt;
+      PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
     }else {
       EventID2 = ST_event;
       TrackID2 = tr1;
@@ -610,6 +630,7 @@ void GeneratePairTrees() {
       phi2 = ST_phi;
       eta2 = ST_eta;
       pt2 = ST_pt;
+      PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
     }
 
     
@@ -667,6 +688,7 @@ void GeneratePairTrees() {
 	phi2 = ST_phi;
 	eta2 = ST_eta;
 	pt2 = ST_pt;
+	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
       }else {
 	EventID1 = ST_event;
 	TrackID1 = tr2;
@@ -694,6 +716,7 @@ void GeneratePairTrees() {
 	phi1 = ST_phi;
 	eta1 = ST_eta;
 	pt1 = ST_pt;
+	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
       }
 
       IsRP = 0; // default value
@@ -1020,26 +1043,28 @@ void calculateHF() {
   // check heavy flavor of first mothers:
   if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1))
      && (isCharm(firstMotherPdg2)||isBottom(firstMotherPdg2))) {
+
+    // // NB: IGNORE LABEL CHECKS FOR IGEO19
     
-    // check whether they are in the same first mother range (i.e., have the same origin):
+    // // check whether they are in the same first mother range (i.e., have the same origin):
     if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
       
       if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
-	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
+    	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
       }
       
       // check heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
-	
+	  
 	if(isCharm(firstMotherPdg1) && isCharm(firstMotherPdg2)) {
 	  IsCorrCharm = 1;
 	}else if(isBottom(firstMotherPdg1) && isBottom(firstMotherPdg2)) {
 	  IsCorrBottom = 1;
-	  
+	    
 	  if(isCharm(motherPdg1)||isCharm(motherPdg2)) {
 	    IsCorrCharmFromBottom = 1;
 	  }
-	  
+	    
 	}
 	
       }
@@ -1052,4 +1077,19 @@ void calculateHF() {
     IsHF = 1;
   }
   
+}
+
+
+Float_t getPIDefficiency(TH1D &h_effs, Float_t pT) {
+  Int_t maxbin = h_effs.GetMaximumBin();
+
+  return h_effs.GetBinContent(h_effs.FindBin(pT));
+  
+  for(Int_t i=0; i<maxbin; i++) {
+    if(pT>=h_effs.GetBinLowEdge(i) && pT<h_effs.GetBinLowEdge(i+1)) {
+      return h_effs.GetBinContent(i);
+    }else if(pT>=h_effs.GetBinLowEdge(maxbin)) {
+      return h_effs.GetBinContent(i);
+    }
+  }
 }
