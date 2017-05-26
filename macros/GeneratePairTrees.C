@@ -115,7 +115,7 @@ bool isPairTree_us_ls = false;   // }
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo19.root","READ");
+  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo20.root","READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
   std::cout << std::endl;
@@ -1081,15 +1081,6 @@ void calculateHF() {
 
 
 Float_t getPIDefficiency(TH1D &h_effs, Float_t pT) {
-  Int_t maxbin = h_effs.GetMaximumBin();
-
-  return h_effs.GetBinContent(h_effs.FindBin(pT));
-  
-  for(Int_t i=0; i<maxbin; i++) {
-    if(pT>=h_effs.GetBinLowEdge(i) && pT<h_effs.GetBinLowEdge(i+1)) {
-      return h_effs.GetBinContent(i);
-    }else if(pT>=h_effs.GetBinLowEdge(maxbin)) {
-      return h_effs.GetBinContent(i);
-    }
-  }
+  return pT>=h_effs.GetBinLowEdge(h_effs.GetMaximumBin()) ?
+    h_effs.GetBinContent(h_effs.GetMaximumBin()-1) : h_effs.GetBinContent(h_effs.FindBin(pT));
 }
