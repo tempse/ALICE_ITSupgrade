@@ -23,6 +23,10 @@ color_CombConvRej = 'green'
 color_combined = '#edbd00'
 color_combined_highlighted = '#a38200'
 
+fig_width = 6.83
+fig_height = 5.12
+fig_dpi = 150
+
 data_orig = pd.DataFrame(root_numpy.root2array(filename,
                                                branches=branches,
                                                start=0,
@@ -36,15 +40,87 @@ fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA, thresholds_singleConvTrack
 roc_auc_singleConvTrackRejMVA = auc(fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA)
 
 
-plt.figure()
+plt.figure(figsize=(fig_width,fig_height), dpi=fig_dpi)
 plt.plot(fpr_CombConvRejMVA, tpr_CombConvRejMVA,
          label='Comb. conv. rej. via MVA cuts (area = %.3f)' % roc_auc_CombConvRejMVA,
          color=color_CombConvRej)
+
+plt.plot(.7435, .9865,
+         color=color_CombConvRej,
+         marker='o',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.7218, .9733,
+         color=color_CombConvRej,
+         marker='^',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.7530, .9935,
+         color=color_CombConvRej,
+         marker='v',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.3465, .6178,
+         color=color_CombConvRej,
+         marker='x',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+
 plt.plot(fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA,
          label='Single conv. track rej. via MVA cuts (area = %.3f)' % roc_auc_singleConvTrackRejMVA,
          color=color_singleConvTrackRej)
+
+# dummy points
+plt.plot(-99,-99,
+         label='RP conv. rej. via MVA cuts + prefiltering',
+         color=color_RPConvRejMVA,
+         marker=r'$\bigotimes$',
+         markersize=11,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='TMVA-optimized cuts',
+         color='#333333',
+         marker='o',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='cut var.: +10%',
+         color='#333333',
+         marker='^',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='cut var.: -10%',
+         color='#333333',
+         marker='v',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='manual cut (for signal eff. at ~0.6)',
+         color='#333333',
+         marker='x',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+
+
 plt.plot(.712, .903,
-         label='RP conv. rej. via MVA cuts + prefiltering: TMVA-optimized cut',
+         #label='RP conv. rej. via MVA cuts + prefiltering: TMVA-optimized cut',
          color=color_RPConvRejMVA,
          marker='o',
          markersize=8,
@@ -52,7 +128,7 @@ plt.plot(.712, .903,
          mew=2,
          linestyle='none')
 plt.plot(.663, .845,
-         label='     cut var.: +10%',
+         #label='     cut var.: +10%',
          color=color_RPConvRejMVA,
          marker='^',
          markersize=8,
@@ -60,7 +136,7 @@ plt.plot(.663, .845,
          mew=2,
          linestyle='none')
 plt.plot(.799, .956,
-         label='     cut var.: -10%',
+         #label='     cut var.: -10%',
          color=color_RPConvRejMVA,
          marker='v',
          markersize=8,
@@ -68,7 +144,7 @@ plt.plot(.799, .956,
          mew=2,
          linestyle='none')
 plt.plot(.531, .599,
-         label='     manual cut (for signal eff. at ~0.6)',
+         #label='     manual cut (for signal eff. at ~0.6)',
          color=color_RPConvRejMVA,
          marker='x',
          markersize=8,
@@ -85,7 +161,7 @@ plt.plot(.737, .916, 'o', color=color_RPConvRejClass,
 plt.plot(.936, .987, 'o', color=color_RPConvRejClass,
          label='     $\phi_V>2.9$, $mass<0.0035$', markersize=3)
 
-plt.plot(.015, .334,
+plt.plot(.4527, .8331,
          label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -93,7 +169,7 @@ plt.plot(.015, .334,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.008, .330,
+plt.plot(.5678, .9431,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -101,7 +177,7 @@ plt.plot(.008, .330,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.024, .342,
+plt.plot(.3544, .5896,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -109,7 +185,7 @@ plt.plot(.024, .342,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.022, .334,
+plt.plot(.4779, .8779,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -117,7 +193,7 @@ plt.plot(.022, .334,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.028, .336,
+plt.plot(.4389, .8217,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -125,7 +201,7 @@ plt.plot(.028, .336,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.014, .331,
+plt.plot(.5508, .9304,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -133,7 +209,7 @@ plt.plot(.014, .331,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.045, .343,
+plt.plot(.3430, .5812,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -141,7 +217,7 @@ plt.plot(.045, .343,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.006, .332,
+plt.plot(.4999, .8965,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -149,7 +225,7 @@ plt.plot(.006, .332,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.008, .334,
+plt.plot(.4595, .8394,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -157,7 +233,7 @@ plt.plot(.008, .334,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.004, .329,
+plt.plot(.5754, .9499,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -165,7 +241,7 @@ plt.plot(.004, .329,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.013, .341,
+plt.plot(.3598, .5946,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -173,7 +249,7 @@ plt.plot(.013, .341,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.095, .356,
+plt.plot(.2235, .5564,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -181,7 +257,7 @@ plt.plot(.095, .356,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.122, .359,
+plt.plot(.2031, .5190,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -189,7 +265,7 @@ plt.plot(.122, .359,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.064, .348,
+plt.plot(.2626, .5906,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -197,7 +273,7 @@ plt.plot(.064, .348,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.199, .636,
+plt.plot(.1596, .3635,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -205,8 +281,8 @@ plt.plot(.199, .636,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.012, .332,
-         label='     separately optimized cuts',
+plt.plot(.4930, .8900,
+         label='     individually optimized cuts',
          color=color_combined_highlighted,
          alpha=.75,
          marker='o',
@@ -220,8 +296,8 @@ plt.xlim([0.0, 1.05])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic curves (entire mass range)')
-plt.legend(loc=4, fontsize='xx-small', markerscale=.75)
+plt.title('Receiver operating characteristics (entire mass range)')
+plt.legend(loc=4, fontsize=6, markerscale=.75)
 plt.savefig('temp_output/ROCcurves_entireMassRange.png')
 plt.savefig('temp_output/ROCcurves_entireMassRange.pdf')
 
@@ -242,15 +318,88 @@ roc_auc_CombConvRejMVA_masscut = auc(fpr_CombConvRejMVA_masscut, tpr_CombConvRej
 fpr_singleConvTrackRejMVA_masscut, tpr_singleConvTrackRejMVA_masscut, thresholds_singleConvTrackRejMVA_masscut = roc_curve(IsConv_masscut, np.minimum.reduce([MVAoutput_convTrack1_masscut,MVAoutput_convTrack2_masscut]), pos_label=0)
 roc_auc_singleConvTrackRejMVA_masscut = auc(fpr_singleConvTrackRejMVA_masscut, tpr_singleConvTrackRejMVA_masscut)
 
-plt.figure()
+plt.figure(figsize=(fig_width,fig_height), dpi=fig_dpi)
 plt.plot(fpr_CombConvRejMVA_masscut, tpr_CombConvRejMVA_masscut,
         label='Comb. conv. rej. via MVA cuts (area = %.3f)' % roc_auc_CombConvRejMVA_masscut,
          color=color_CombConvRej)
+
+
+plt.plot(.7362, .9859,
+         color=color_CombConvRej,
+         marker='o',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.7138, .9721,
+         color=color_CombConvRej,
+         marker='^',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.7459, .9932,
+         color=color_CombConvRej,
+         marker='v',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(.3277, .6002,
+         color=color_CombConvRej,
+         marker='x',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+
 plt.plot(fpr_singleConvTrackRejMVA_masscut, tpr_singleConvTrackRejMVA_masscut,
         label='Single conv. track rej. via MVA cuts (area = %.3f)' % roc_auc_singleConvTrackRejMVA_masscut,
          color=color_singleConvTrackRej)
+
+# dummy points
+plt.plot(-99,-99,
+         label='RP conv. rej. via MVA cuts + prefiltering',
+         color=color_RPConvRejMVA,
+         marker=r'$\bigotimes$',
+         markersize=11,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='TMVA-optimized cuts',
+         color='#333333',
+         marker='o',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='cut var.: +10%',
+         color='#333333',
+         marker='^',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='cut var.: -10%',
+         color='#333333',
+         marker='v',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+plt.plot(-99, -99,
+         label='manual cut (for signal eff. at ~0.6)',
+         color='#333333',
+         marker='x',
+         markersize=8,
+         fillstyle='none',
+         mew=2,
+         linestyle='none')
+
+
 plt.plot(.717, .905,
-         label='RP conv. rej. via MVA cuts + prefiltering: TMVA-optimized cut',
+         #label='RP conv. rej. via MVA cuts + prefiltering: TMVA-optimized cut',
          color=color_RPConvRejMVA,
          marker='o',
          markersize=8,
@@ -258,7 +407,7 @@ plt.plot(.717, .905,
          mew=2,
          linestyle='none')
 plt.plot(.669, .849,
-         label='     cut var.: +10%',
+         #label='     cut var.: +10%',
          color=color_RPConvRejMVA,
          marker='^',
          markersize=8,
@@ -266,7 +415,7 @@ plt.plot(.669, .849,
          mew=2,
          linestyle='none')
 plt.plot(.803, .957,
-         label='     cut var.: -10%',
+         #label='     cut var.: -10%',
          color=color_RPConvRejMVA,
          marker='v',
          markersize=8,
@@ -274,7 +423,7 @@ plt.plot(.803, .957,
          mew=2,
          linestyle='none')
 plt.plot(.537, .609,
-         label='     manual cut (for signal eff. at ~0.6)',
+         #label='     manual cut (for signal eff. at ~0.6)',
          color=color_RPConvRejMVA,
          marker='x',
          markersize=8,
@@ -291,7 +440,7 @@ plt.plot(.741, .918, 'o', color=color_RPConvRejClass,
 plt.plot(.938, .987, 'o', color=color_RPConvRejClass,
          label='     $\phi_V>2.9$, $mass<0.0035$', markersize=3)
 
-plt.plot(.015, .331,
+plt.plot(.4522, .8362,
          label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -299,7 +448,7 @@ plt.plot(.015, .331,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.008, .326,
+plt.plot(.5646, .9435,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -307,7 +456,7 @@ plt.plot(.008, .326,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.024, .338,
+plt.plot(.3555, .5993,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -315,7 +464,7 @@ plt.plot(.024, .338,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.022, .330,
+plt.plot(.4759, .8790,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -323,7 +472,7 @@ plt.plot(.022, .330,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.028, .332,
+plt.plot(.4377, .8243,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -331,7 +480,7 @@ plt.plot(.028, .332,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.014, .327,
+plt.plot(.5471, .9302,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -339,7 +488,7 @@ plt.plot(.014, .327,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.045, .340,
+plt.plot(.3437, .5905,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -347,7 +496,7 @@ plt.plot(.045, .340,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.006, .328,
+plt.plot(.4986, .8985,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -355,7 +504,7 @@ plt.plot(.006, .328,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.008, .330,
+plt.plot(.4589, .8428,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -363,7 +512,7 @@ plt.plot(.008, .330,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.004, .326,
+plt.plot(.5725, .9506,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -371,7 +520,7 @@ plt.plot(.004, .326,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.013, .338,
+plt.plot(.3610, .6045,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -379,7 +528,7 @@ plt.plot(.013, .338,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.095, .353,
+plt.plot(.2142, .5427,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -387,7 +536,7 @@ plt.plot(.095, .353,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.122, .356,
+plt.plot(.1952, .5076,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -395,7 +544,7 @@ plt.plot(.122, .356,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.064, .345,
+plt.plot(.2507, .5747,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -403,7 +552,7 @@ plt.plot(.064, .345,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.199, .630,
+plt.plot(.1551, .3627,
          #label='Classifier combinations',
          color=color_combined,
          marker='o',
@@ -411,8 +560,8 @@ plt.plot(.199, .630,
          fillstyle='full',
          mew=2,
          linestyle='none')
-plt.plot(.012, .329,
-         label='     separately optimized cuts',
+plt.plot(.4915, .8917,
+         label='     individually optimized cuts',
          color=color_combined_highlighted,
          alpha=.75,
          marker='o',
@@ -426,7 +575,7 @@ plt.xlim([0.0, 1.05])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic curves (mass > 50 MeV/c$^2$)')
-plt.legend(loc=4, fontsize='xx-small', markerscale=.75)
+plt.title('Receiver operating characteristics (mass > 50 MeV/c$^2$)')
+plt.legend(loc=4, fontsize=6, markerscale=.75)
 plt.savefig('temp_output/ROCcurves_masscut.png')
 plt.savefig('temp_output/ROCcurves_masscut.pdf')
