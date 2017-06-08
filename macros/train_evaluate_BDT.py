@@ -31,13 +31,50 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 15000000
+num_entries = 10000000
 start = 0
 
 inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root"
 
+branches = [
+    #'px1','py1','pz1',
+    #'px2','py2','pz2',
+    #'phiv',
+    'mass',
+    #'sumz',
+    #'diffz',
+    #'opang',
+    #'nITS1',
+    #'nITS2',
+    'nITSshared1',
+    'nITSshared2',
+    #'nTPC1',
+    'nTPC2',
+    #'DCAx1','DCAy1',
+    'DCAz1',
+    #'DCAx2','DCAy2',
+    'DCAz2',
+    'DCAxy1_norm','DCAxy2_norm',
+    #'DCAz1_norm','DCAz2_norm',
+    #'ITSchi21',
+    'ITSchi22',
+    #'TPCchi21',
+    'TPCchi22',
+    'pt1',
+    'pt2',
+    #'eta1',
+    'eta2',
+    #'phi1',
+    'phi2',
+    'PIDeff1',
+    'PIDeff2',
+    'IsRP',
+    'IsConv'
+]
+
 print("Reading %d entries from file %s..." % (num_entries, inputfilename))
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
+                                                     branches=branches,
                                                      start=start,
                                                      stop=num_entries+start))
 
@@ -59,7 +96,7 @@ X = pd.DataFrame()
 ###X['diffz'] = dataSample_orig['diffz'] - 1.57
 ###X['opang'] = dataSample_orig['opang']
 ###X['nITS1'] = dataSample_orig['nITS1']
-X['nITS2'] = dataSample_orig['nITS2']
+###X['nITS2'] = dataSample_orig['nITS2']
 X['nITSshared1'] = dataSample_orig['nITSshared1']
 X['nITSshared2'] = dataSample_orig['nITSshared2']
 ###X['nTPC1'] = dataSample_orig['nTPC1']
@@ -94,16 +131,19 @@ X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
 X['ITSchi22'] = dataSample_orig['ITSchi22']
 ###X['TPCchi21'] = dataSample_orig['TPCchi21']
 X['TPCchi22'] = dataSample_orig['TPCchi22']
-###X['pt1'] = dataSample_orig['pt1']
+X['pt1'] = dataSample_orig['pt1']
 X['pt2'] = dataSample_orig['pt2']
 ###X['eta1'] = dataSample_orig['eta1']
 X['eta2'] = dataSample_orig['eta2']
 ###X['phi1'] = dataSample_orig['phi1']
 X['phi2'] = dataSample_orig['phi2']
 
-X_featureNames = {}
-for i in range(X.shape[1]):
-    X_featureNames[i] = X.columns.values[i]
+X_featureNames = list(X)
+print('Selected features:',X_featureNames)
+joblib.dump(X_featureNames, 'temp_output/bdt/featureNames.pkl')
+#X_featureNames = {}
+#for i in range(X.shape[1]):
+#    X_featureNames[i] = X.columns.values[i]
 
 
 print('Calculating sample weights...')
@@ -119,6 +159,8 @@ Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(in
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
 print('Number of backgr events in data sample: %d (%.2f percent)' % (Y[Y==0].shape[0], Y[Y==0].shape[0]*100/Y.shape[0]))
 
+
+del dataSample_orig
 
 
 
@@ -182,9 +224,12 @@ Y, Ytest = np.array_split(Y,2)
 sample_weight, sample_weight_test = np.array_split(sample_weight,2)
 
 #testing
-Xtest, Xtest2 = np.array_split(Xtest,2)
-Ytest, Ytest2 = np.array_split(Ytest,2)
-sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
+#Xtest, Xtest2 = np.array_split(Xtest,2)
+#Ytest, Ytest2 = np.array_split(Ytest,2)
+#sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
+Xtest = np.resize(Xtest, (int(Xtest.shape[0]/2),Xtest.shape[1]))
+Ytest = np.resize(Ytest, (int(Ytest.shape[0]/2)))
+sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
 
 
 Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
@@ -344,6 +389,10 @@ if doGridSearch:
     print('Scoring method: %s' % scoring)
     exit()
 
+
+
+
+del Xtrain, Ytrain, sample_weight_train
 
 # ## Evaluation of Trained Model
 
@@ -569,6 +618,8 @@ print('Classification report (validation sample):')
 print(classification_report(Yval, Yscore_val_labels,
                             target_names=['background','signal']))
 
+
+del Yscore_val
 
 # ---
 
