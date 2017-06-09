@@ -8,9 +8,13 @@ from sklearn.preprocessing import scale
 from sklearn.externals import joblib
 
 
-weights_filename = '/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/plots_sampleWeights/clf_weights.pkl'
+weights_filename = 'temp_output/bdt/clf_weights.pkl'
 
-data_filename = '/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root'
+data_filename = '/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split.root'
+
+scaler_attributes_filename = 'temp_output/bdt/StandardScaler_attributes.pkl'
+
+predictions_filename = 'temp_output/bdt/predictions_BDT.root'
 
 branches = [
     #'px1','py1','pz1',
@@ -111,9 +115,10 @@ Xapp['phi2'] = dataSample_orig['phi2']
 # data preprocessing
 doScale = True
 if doScale:
-    print('Scaling features to zero mean and unit variance...')
-    Xapp = scale(Xapp)
-
+    print('Scaling features analogously to training data...')
+    scaler_attributes = joblib.load('temp_output/bdt/StandardScaler_attributes.pkl')
+    scaler_mean = scaler_attributes[0,:]
+    scaler_scale = scaler_attributes[1,:]
 
 print('Loading previously trained weights...')
 clf = joblib.load(weights_filename)
@@ -125,8 +130,11 @@ Yscore = np.empty((0,2), dtype=np.float32)
 for i in range(0, n_chunks if (Xapp.shape[0]%n_chunks==0) else n_chunks+1):
     start = i*int(Xapp.shape[0]/(n_chunks*1.0))
     stop = (i+1)*int(Xapp.shape[0]/(n_chunks*1.0)) if (i+1)*int(Xapp.shape[0]/(n_chunks*1.0))<Xapp.shape[0] else Xapp.shape[0]
+    if doScale:
+        Xapp.iloc[start:stop,:] -= scaler_mean
+        Xapp.iloc[start:stop,:] /= scaler_scale
     Yscore = np.concatenate((Yscore,
-                             clf.predict_proba(Xapp[start:stop,:]).astype(np.float32)))
+                             clf.predict_proba(Xapp.iloc[start:stop,:]).astype(np.float32)))
     if i<n_chunks:
         print('%d%% done...' % int((i+1)*100/(n_chunks*1.0)))
 
@@ -136,9 +144,10 @@ Yscore[np.where(dataSample_orig['mass']<.05),:] = 999
 
 
 # export predictions
+print('Exporting predictions to file %s...' % predictions_filename)
 Yscore = np.array(Yscore[:,1], dtype=[('BDT', np.float32)])
 
 root_numpy.array2root(Yscore,
-                      'temp_output/bdt/predictions_BDT.root',
+                      predictions_filename,
                       treename='pairTree_MVAoutput',
                       mode='recreate')

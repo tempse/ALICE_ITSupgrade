@@ -8,7 +8,7 @@ import seaborn as sns; sns.set()
 import pandas as pd
 import root_numpy
 
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import cross_val_score, train_test_split
 #from sklearn import metrics
@@ -31,7 +31,7 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 10000000
+num_entries = 1000000
 start = 0
 
 inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root"
@@ -72,7 +72,7 @@ branches = [
     'IsConv'
 ]
 
-print("Reading %d entries from file %s..." % (num_entries, inputfilename))
+print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
                                                      branches=branches,
                                                      start=start,
@@ -138,12 +138,10 @@ X['eta2'] = dataSample_orig['eta2']
 ###X['phi1'] = dataSample_orig['phi1']
 X['phi2'] = dataSample_orig['phi2']
 
+
 X_featureNames = list(X)
-print('Selected features:',X_featureNames)
+print('Selected features:', X_featureNames)
 joblib.dump(X_featureNames, 'temp_output/bdt/featureNames.pkl')
-#X_featureNames = {}
-#for i in range(X.shape[1]):
-#    X_featureNames[i] = X.columns.values[i]
 
 
 print('Calculating sample weights...')
@@ -155,7 +153,7 @@ sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.a
 Y = pd.DataFrame()
 Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
 
-
+print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
 print('Number of backgr events in data sample: %d (%.2f percent)' % (Y[Y==0].shape[0], Y[Y==0].shape[0]*100/Y.shape[0]))
 
@@ -188,8 +186,16 @@ doScale = True
 
 if doScale:
     print('Scaling features to zero mean and unit variance...')
-    X = scale(X)
-
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    Xfeats_mean = scaler.mean_
+    Xfeats_scale = scaler.scale_
+    Xfeats_var = scaler.var_
+    
+    # store the (vstacked) array of shape (3,n_feats)
+    joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
+                'temp_output/bdt/StandardScaler_attributes.pkl')
+    
 
 # ### Principal Component Analysis
 
@@ -375,7 +381,7 @@ if doGridSearch:
     scoring = 'f1_macro'
     
     grid = GridSearchCV(estimator=clf, param_grid=param_grid, cv=3,
-                        n_jobs=-1, pre_dispatch=pre_dispatch,
+                        n_jobs=n_jobs, pre_dispatch=pre_dispatch,
                         scoring=scoring)
     
     grid_result = grid.fit(Xtrain, Ytrain)
@@ -393,6 +399,7 @@ if doGridSearch:
 
 
 del Xtrain, Ytrain, sample_weight_train
+
 
 # ## Evaluation of Trained Model
 
