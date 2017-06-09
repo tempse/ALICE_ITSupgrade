@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import root_numpy
 
+from sklearn.preprocessing import scale
 from sklearn.externals import joblib
 
 
@@ -107,20 +108,29 @@ Xapp['eta2'] = dataSample_orig['eta2']
 Xapp['phi2'] = dataSample_orig['phi2']
 
 
+# data preprocessing
+doScale = True
+if doScale:
+    print('Scaling features to zero mean and unit variance...')
+    Xapp = scale(Xapp)
+
+
 print('Loading previously trained weights...')
 clf = joblib.load(weights_filename)
 
+
 print('Applying the trained classifier...')
-n_chunks = 50
+n_chunks = 100
 Yscore = np.empty((0,2), dtype=np.float32)
 for i in range(0, n_chunks if (Xapp.shape[0]%n_chunks==0) else n_chunks+1):
     start = i*int(Xapp.shape[0]/(n_chunks*1.0))
     stop = (i+1)*int(Xapp.shape[0]/(n_chunks*1.0)) if (i+1)*int(Xapp.shape[0]/(n_chunks*1.0))<Xapp.shape[0] else Xapp.shape[0]
     Yscore = np.concatenate((Yscore,
-                             clf.predict_proba(Xapp.iloc[start:stop,:]).astype(np.float32)))
+                             clf.predict_proba(Xapp[start:stop,:]).astype(np.float32)))
     if i<n_chunks:
         print('%d%% done...' % int((i+1)*100/(n_chunks*1.0)))
 
+        
 # tag entries outside the training scope as untrustworthily classified
 Yscore[np.where(dataSample_orig['mass']<.05),:] = 999
 
