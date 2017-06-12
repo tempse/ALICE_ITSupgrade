@@ -20,16 +20,20 @@
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
+  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_CombConvRejMVAcuts_part2_1-9-split.root";  
+  TString fileName_MVAoutput = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/wSampleWeights_PIDeffs/clf_predict/predictions_BDT.root";  
 
-  TString h_text = "Comb. conv. rej. via MVA cuts (cut at -0.1)";
+  TString h_text = "Comb. conv. rej. via MVA cuts";
 
   // set the used MVA method:
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
+
+  // MVA output range in the corresponding input file:
+  const Float_t MVAoutputRange_min = 0.;
+  const Float_t MVAoutputRange_max = 1.;
 
 
   // Output ROOT file name containing all created histograms:
@@ -39,10 +43,15 @@ void PlotMass() {
     std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
     exit(1);
   }
+
+  if(MVAoutputRange_min >= MVAoutputRange_max) {
+    std::cout << "  ERROR: Ill-defined MVA output range (min>=max)." << std::endl;
+    exit(1);
+  }
   
 
   // set MVA cut value:
-  float MVAcut = .1;
+  float MVAcut = .66;
   
   const float stepSize = 1;
   const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
@@ -165,8 +174,8 @@ void PlotMass() {
   watch->Start();
 
   
-  // linear mapping of the MVA cut value: [-1,1] -> [0,1]:
-  if(isBDT) MVAcut = (MVAcut+1)/2.;
+  // linear mapping of the MVA cut value to the range [0,1]:
+  MVAcut = (MVAcut-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
   
   for(Int_t i=1; i<=nSteps; i++) {
@@ -180,12 +189,12 @@ void PlotMass() {
       TestTree->GetEvent(ev);
       MVAoutputTree->GetEvent(ev);
 
-      // linear mapping of the BDT values: [-1,1] -> [0,1]:
-      if(isBDT) MVAoutput = (MVAoutput+1)/2.;
+      // linear mapping of the MVA output values to the range [0,1]:
+      MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
       
-      // Skip irrelevant events (tagged with MVAoutputs greater or smaller than
-      // 0 or 1 (after BDT output transformation)):
+      // Skip irrelevant events (tagged with MVA outputs greater or smaller than
+      // 0 or 1 (after MVA output transformation)):
       if(MVAoutput < 0 || MVAoutput > 1) continue;
 
       
