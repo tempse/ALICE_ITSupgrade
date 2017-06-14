@@ -39,7 +39,7 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 10000000
+num_entries = 5000000
 start = 0
 
 inputfilename = "./FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root"
@@ -84,7 +84,8 @@ print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
                                                      branches=branches,
                                                      start=start,
-                                                     stop=num_entries+start))
+                                                     stop=num_entries+start
+))
 
 
 print('Setting initial mass cuts...')
@@ -411,8 +412,11 @@ def create_model(nr_of_layers = 2,
                    activation = activation,
                    kernel_initializer = kernel_initializer,
                    bias_initializer = bias_initializer))
-    
-    current_layer_size = int(first_layer_size * layers_slope_coeff) + 1
+
+    if layers_slope_coeff != 1:
+        current_layer_size = int(first_layer_size * layers_slope_coeff) + 1
+    else:
+        current_layer_size = int(first_layer_size)
     
     for index_of_layer in range(nr_of_layers - 1):
         #model.add(Dropout(dropout))
@@ -421,7 +425,8 @@ def create_model(nr_of_layers = 2,
                        activation = activation,
                        kernel_initializer = kernel_initializer,
                        bias_initializer = bias_initializer))
-        current_layer_size = int(current_layer_size * layers_slope_coeff) + 1
+        if layers_slope_coeff != 1:
+            current_layer_size = int(current_layer_size * layers_slope_coeff) + 1
     
     model.add(Dense(1,
                    kernel_initializer = kernel_initializer,
@@ -446,10 +451,10 @@ model = KerasClassifier(build_fn=create_model,
                         activation='tanh',
                         nr_of_layers=4,
                         first_layer_size=100,
-                        layers_slope_coeff=.6,
+                        layers_slope_coeff=1.,
                         input_dim = Xtrain.shape[1],
                         dropout=.25,
-                        noise=.75,
+                        noise=.1,
                         verbose=0)
 
 
@@ -464,7 +469,7 @@ if not doGridSearch:
     print('Fitting the model...')
     hist = model.fit(Xtrain, Ytrain,
                      #batch_size=250000,
-                     epochs=100,
+                     epochs=300,
                      callbacks=[roc_call],
                      verbose=0,
                      validation_data=(Xval, Yval))
@@ -568,13 +573,14 @@ plt.savefig('temp_output/ann/MVAoutput_SoverB_val.png')
 
 #Summarise history for accuracy
 
+#print(hist.history.keys())
 plt.figure()
-plt.plot(hist.history['precision'])
-plt.plot(hist.history['val_precision'])
+plt.plot(hist.history['precision'], label='train')
+plt.plot(hist.history['val_precision'], label='validate')
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'validate'])
+plt.legend()
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_acc_val.png')
 
@@ -582,12 +588,12 @@ plt.savefig('temp_output/ann/learningCurve_acc_val.png')
 # summarize history for loss
 
 plt.figure()
-plt.plot(hist.history['loss'])
-plt.plot(hist.history['val_loss'])
+plt.plot(hist.history['loss'], label='train')
+plt.plot(hist.history['val_loss'], label='validate')
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'validate'])
+plt.legend()
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_loss_val.png')
 
