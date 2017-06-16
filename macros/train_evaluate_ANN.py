@@ -324,7 +324,7 @@ class ROC(keras.callbacks.Callback):
         loss = logs.get('val_loss')
         self.losses.append(loss)
         global roc_auc_val
-        if(epoch%5 != 0):
+        if(epoch%10 != 0):
         
             y_pred_val = self.model.predict(Xval)
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
@@ -335,7 +335,7 @@ class ROC(keras.callbacks.Callback):
             print("   LogLoss: {:.4f}".format(loss)),
             print("   VAL AUC: {:.3f} %".format( roc_auc_val * 100))    
             
-        if(epoch%5 == 0):
+        if(epoch%10 == 0):
             y_pred_val = self.model.predict(Xval)
             
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
@@ -356,9 +356,10 @@ class ROC(keras.callbacks.Callback):
         
 #            print("Save Learning Curve")
             plt.clf()
-            plt.plot(self.aucs_val, label='validation sample')
+            plt.plot(self.aucs_val, label='validation sample', color='C1')
 #            aucs_train=zero_to_nan(self.aucs_train)     #remove 0 entries for plotting
-            plt.plot(self.aucs_train, label='training sample')
+            plt.plot(self.aucs_train, label='training sample', \
+                     marker='o', fillstyle='none', markersize=4, mew=2, linestyle='none', color='C0')
             plt.xlabel("Epochs")
             plt.ylabel("ROC AUC")
             plt.legend(loc='best')
@@ -619,7 +620,7 @@ plt.plot(hist.history['val_precision'], label='validate')
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend()
+plt.legend()#['train', 'validate'])
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_acc_val.png')
 
