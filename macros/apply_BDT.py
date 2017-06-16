@@ -10,13 +10,14 @@ from sklearn.externals import joblib
 
 weights_filename = 'temp_output/bdt/clf_weights.pkl'
 
-data_filename = '/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split.root'
+data_filename = '~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root'
 
 scaler_attributes_filename = 'temp_output/bdt/StandardScaler_attributes.pkl'
 
 predictions_filename = 'temp_output/bdt/predictions_BDT.root'
 
-branches = [
+
+branches_pairTree = [
     #'px1','py1','pz1',
     #'px2','py2','pz2',
     #'phiv',
@@ -48,9 +49,28 @@ branches = [
     'phi2'
 ]
 
+# singleTree features
+branches_singleTree = [
+    'eta',
+    'phi',
+    'pt',
+    'dcaR',
+    'dcaZ',
+    'particle.fPx',
+    'particle.fPy',
+    'particle.fPz',
+    'nITS',
+    'nTPC',
+    'nITSshared',
+    'ITSchi2',
+    'TPCchi2',
+    'pdgMother'
+]
+
+
 print("Reading file %s..." % data_filename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(data_filename,
-                                                     branches=branches))
+                                                     branches=branches_singleTree))
 
 #print('Setting initial mass cuts...')
 #dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
@@ -58,6 +78,8 @@ dataSample_orig = pd.DataFrame(root_numpy.root2array(data_filename,
 
 print('Engineering features...')
 
+"""
+# pairTree features
 Xapp = pd.DataFrame()
 ###Xapp['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
 ###                          (dataSample_orig['py1']+dataSample_orig['py2'])*(dataSample_orig['py1']+dataSample_orig['py2']) +
@@ -110,6 +132,24 @@ Xapp['pt2'] = dataSample_orig['pt2']
 Xapp['eta2'] = dataSample_orig['eta2']
 ###Xapp['phi1'] = dataSample_orig['phi1']
 Xapp['phi2'] = dataSample_orig['phi2']
+"""
+
+# singleTree features
+Xapp = pd.DataFrame()
+Xapp['eta'] = dataSample_orig['eta']
+Xapp['phi'] = dataSample_orig['phi']
+Xapp['pt'] = dataSample_orig['pt']
+Xapp['dcaR'] = dataSample_orig['dcaR']
+Xapp['dcaZ'] = dataSample_orig['dcaZ']
+Xapp['p'] = np.sqrt(dataSample_orig['particle.fPx']*dataSample_orig['particle.fPx'] + \
+                                  dataSample_orig['particle.fPy']*dataSample_orig['particle.fPy'] + \
+                                  dataSample_orig['particle.fPz']*dataSample_orig['particle.fPz'])
+Xapp['nITS'] = dataSample_orig['nITS']
+Xapp['nTPC'] = dataSample_orig['nTPC']
+Xapp['nITSshared'] = dataSample_orig['nITSshared']
+Xapp['ITSchi2'] = dataSample_orig['ITSchi2']
+Xapp['TPCchi2'] = dataSample_orig['TPCchi2']
+
 
 
 # data preprocessing
@@ -139,8 +179,8 @@ for i in range(0, n_chunks if (Xapp.shape[0]%n_chunks==0) else n_chunks+1):
         print('%d%% done...' % int((i+1)*100/(n_chunks*1.0)))
 
         
-# tag entries outside the training scope as untrustworthily classified
-Yscore[np.where(dataSample_orig['mass']<.05),:] = 999
+## tag entries outside the training scope as untrustworthily classified
+#Yscore[np.where(dataSample_orig['mass']<.05),:] = 999
 
 
 # export predictions

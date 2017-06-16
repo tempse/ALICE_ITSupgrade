@@ -39,12 +39,12 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 5000000
+num_entries = 25000000
 start = 0
 
-inputfilename = "./FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root"
+inputfilename = "~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root"
 
-branches = [
+branches_pairTree = [
     'px1','py1','pz1',
     'px2','py2','pz2',
     'phiv',
@@ -80,20 +80,41 @@ branches = [
     'IsConv'
 ]
 
+branches_singleTree = [
+    'eta',
+    'phi',
+    'pt',
+    'dcaR',
+    'dcaZ',
+    'particle.fPx',
+    'particle.fPy',
+    'particle.fPz',
+    'nITS',
+    'nTPC',
+    'nITSshared',
+    'ITSchi2',
+    'TPCchi2',
+    'pdgMother'
+]
+
+
 print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
-                                                     branches=branches,
+                                                     branches=branches_singleTree,
                                                      start=start,
                                                      stop=num_entries+start
 ))
 
 
-print('Setting initial mass cuts...')
-dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
+#print('Setting initial mass cuts...')
+#dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
 
 
 print('Engineering features...')
 
+
+"""
+# pairTree features
 X = pd.DataFrame()
 X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
                           (dataSample_orig['py1']+dataSample_orig['py2'])*(dataSample_orig['py1']+dataSample_orig['py2']) +
@@ -146,21 +167,38 @@ X['eta1'] = dataSample_orig['eta1']
 X['eta2'] = dataSample_orig['eta2']
 X['phi1'] = dataSample_orig['phi1']
 X['phi2'] = dataSample_orig['phi2']
+"""
 
+# singleTree features
+X = pd.DataFrame()
+X['eta'] = dataSample_orig['eta']
+X['phi'] = dataSample_orig['phi']
+X['pt'] = dataSample_orig['pt']
+X['dcaR'] = dataSample_orig['dcaR']
+X['dcaZ'] = dataSample_orig['dcaZ']
+X['p'] = np.sqrt(dataSample_orig['particle.fPx']*dataSample_orig['particle.fPx'] + \
+                 dataSample_orig['particle.fPy']*dataSample_orig['particle.fPy'] + \
+                 dataSample_orig['particle.fPz']*dataSample_orig['particle.fPz'])
+X['nITS'] = dataSample_orig['nITS']
+X['nTPC'] = dataSample_orig['nTPC']
+X['nITSshared'] = dataSample_orig['nITSshared']
+X['ITSchi2'] = dataSample_orig['ITSchi2']
+X['TPCchi2'] = dataSample_orig['TPCchi2']
 
 X_featureNames = list(X)
 print('Selected features:', X_featureNames)
 joblib.dump(X_featureNames, 'temp_output/ann/featureNames.pkl')
 
 
-print('Calculating sample weights...')
-sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
+#print('Calculating sample weights...')
+#sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
 
     
 
 # Preparation of the target vector (assign `1` and `0` to the entries, representing the signal and background classes, respectively):
 Y = pd.DataFrame()
-Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
+Y = (dataSample_orig['pdgMother']!=22).astype(int)
+#Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
 
 print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
@@ -236,7 +274,7 @@ print('Splitting the data in training, validation and test samples...')
 
 X, Xtest = np.array_split(X,2)
 Y, Ytest = np.array_split(Y,2)
-sample_weight, sample_weight_test = np.array_split(sample_weight,2)
+#sample_weight, sample_weight_test = np.array_split(sample_weight,2)
 
 #testing
 #Xtest, Xtest2 = np.array_split(Xtest,2)
@@ -244,10 +282,11 @@ sample_weight, sample_weight_test = np.array_split(sample_weight,2)
 #sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
 Xtest = np.resize(Xtest, (int(Xtest.shape[0]/2),Xtest.shape[1]))
 Ytest = np.resize(Ytest, (int(Ytest.shape[0]/2)))
-sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
+#sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
 
 
-Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
+Xtrain, Xval, Ytrain, Yval = train_test_split(X, Y, test_size=.5)
+#Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
 
 print('Number of signal events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==1].shape[0], Ytrain[Ytrain==1].shape[0]*100/Ytrain.shape[0]))
 print('Number of backgr events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==0].shape[0], Ytrain[Ytrain==0].shape[0]*100/Ytrain.shape[0]))
@@ -419,8 +458,8 @@ def create_model(nr_of_layers = 2,
         current_layer_size = int(first_layer_size)
     
     for index_of_layer in range(nr_of_layers - 1):
-        #model.add(Dropout(dropout))
-        model.add(GaussianNoise(noise))
+        model.add(Dropout(dropout))
+        if index_of_layer%2==0: model.add(GaussianNoise(noise))
         model.add(Dense(current_layer_size,
                        activation = activation,
                        kernel_initializer = kernel_initializer,
@@ -453,7 +492,7 @@ model = KerasClassifier(build_fn=create_model,
                         first_layer_size=100,
                         layers_slope_coeff=1.,
                         input_dim = Xtrain.shape[1],
-                        dropout=.25,
+                        dropout=.1,
                         noise=.1,
                         verbose=0)
 
@@ -469,7 +508,7 @@ if not doGridSearch:
     print('Fitting the model...')
     hist = model.fit(Xtrain, Ytrain,
                      #batch_size=250000,
-                     epochs=300,
+                     epochs=400,
                      callbacks=[roc_call],
                      verbose=0,
                      validation_data=(Xval, Yval))
@@ -588,12 +627,12 @@ plt.savefig('temp_output/ann/learningCurve_acc_val.png')
 # summarize history for loss
 
 plt.figure()
-plt.plot(hist.history['loss'], label='train')
-plt.plot(hist.history['val_loss'], label='validate')
+plt.plot(hist.history['loss'])
+plt.plot(hist.history['val_loss'])
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend()
+plt.legend(['train', 'validate'])
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_loss_val.png')
 
@@ -605,7 +644,7 @@ plt.savefig('temp_output/ann/learningCurve_loss_val.png')
 threshold_proba = pos_maxSignificance/nbins
 
 fpr, tpr, thresholds = roc_curve(Yval, Yscore_val[:,1], pos_label=1)
-roc_auc = roc_auc_score(Yval, Yscore_val[:,1], sample_weight=sample_weight_val)
+roc_auc = roc_auc_score(Yval, Yscore_val[:,1])#, sample_weight=sample_weight_val)
 
 plt.figure()
 plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)

@@ -34,9 +34,9 @@ print('Loading data...')
 num_entries = 1000000
 start = 0
 
-inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split.root"
+inputfilename = "~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part1_1-9-split.root"
 
-branches = [
+branches_pairTree = [
     #'px1','py1','pz1',
     #'px2','py2','pz2',
     #'phiv',
@@ -72,19 +72,41 @@ branches = [
     'IsConv'
 ]
 
+
+branches_singleTree = [
+        'eta',
+        'phi',
+        'pt',
+        'dcaR',
+        'dcaZ',
+        'particle.fPx',
+        'particle.fPy',
+        'particle.fPz',
+        'nITS',
+        'nTPC',
+        'nITSshared',
+        'ITSchi2',
+        'TPCchi2',
+        'pdgMother'
+    ]
+
+
 print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
-                                                     branches=branches,
-                                                     start=start,
-                                                     stop=num_entries+start))
+                                                     branches=branches_singleTree,
+                                                     #start=start,
+                                                     #stop=num_entries+start
+))
 
 
-print('Setting initial mass cuts...')
-dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
+#print('Setting initial mass cuts...')
+#dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
 
 
 print('Engineering features...')
 
+"""
+# pairTree features
 X = pd.DataFrame()
 ###X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
 ###                          (dataSample_orig['py1']+dataSample_orig['py2'])*(dataSample_orig['py1']+dataSample_orig['py2']) +
@@ -137,6 +159,24 @@ X['pt2'] = dataSample_orig['pt2']
 X['eta2'] = dataSample_orig['eta2']
 ###X['phi1'] = dataSample_orig['phi1']
 X['phi2'] = dataSample_orig['phi2']
+"""
+
+# singleTree features
+X = pd.DataFrame()
+X['eta'] = dataSample_orig['eta']
+X['phi'] = dataSample_orig['phi']
+X['pt'] = dataSample_orig['pt']
+X['dcaR'] = dataSample_orig['dcaR']
+X['dcaZ'] = dataSample_orig['dcaZ']
+X['p'] = np.sqrt(dataSample_orig['particle.fPx']*dataSample_orig['particle.fPx'] + \
+                                  dataSample_orig['particle.fPy']*dataSample_orig['particle.fPy'] + \
+                                  dataSample_orig['particle.fPz']*dataSample_orig['particle.fPz'])
+X['nITS'] = dataSample_orig['nITS']
+X['nTPC'] = dataSample_orig['nTPC']
+X['nITSshared'] = dataSample_orig['nITSshared']
+X['ITSchi2'] = dataSample_orig['ITSchi2']
+X['TPCchi2'] = dataSample_orig['TPCchi2']
+
 
 
 X_featureNames = list(X)
@@ -144,14 +184,15 @@ print('Selected features:', X_featureNames)
 joblib.dump(X_featureNames, 'temp_output/bdt/featureNames.pkl')
 
 
-print('Calculating sample weights...')
-sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
+#print('Calculating sample weights...')
+#sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
 
     
 
 # Preparation of the target vector (assign `1` and `0` to the entries, representing the signal and background classes, respectively):
 Y = pd.DataFrame()
-Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
+Y = (dataSample_orig['pdgMother']!=22).astype(int)
+#Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
 
 print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
@@ -227,7 +268,7 @@ print('Splitting the data in training, validation and test samples...')
 
 X, Xtest = np.array_split(X,2)
 Y, Ytest = np.array_split(Y,2)
-sample_weight, sample_weight_test = np.array_split(sample_weight,2)
+#sample_weight, sample_weight_test = np.array_split(sample_weight,2)
 
 #testing
 #Xtest, Xtest2 = np.array_split(Xtest,2)
@@ -235,10 +276,10 @@ sample_weight, sample_weight_test = np.array_split(sample_weight,2)
 #sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
 Xtest = np.resize(Xtest, (int(Xtest.shape[0]/2),Xtest.shape[1]))
 Ytest = np.resize(Ytest, (int(Ytest.shape[0]/2)))
-sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
+#sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
 
-
-Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
+Xtrain, Xval, Ytrain, Yval = train_test_split(X, Y, test_size=.5)
+#Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
 
 print('Number of signal events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==1].shape[0], Ytrain[Ytrain==1].shape[0]*100/Ytrain.shape[0]))
 print('Number of backgr events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==0].shape[0], Ytrain[Ytrain==0].shape[0]*100/Ytrain.shape[0]))
@@ -257,13 +298,13 @@ print('Number of backgr events in validation sample: %d (%.2f percent)' % (Yval[
 
 # #### Classifier parameter setting:
 
-n_jobs = -1
+n_jobs = 3
 pre_dispatch = 1
-n_estimators = 100
+n_estimators = 300
 max_depth = None
-min_samples_split = 2000
+min_samples_split = 500
 class_weight = 'balanced'
-criterion = 'entropy'
+criterion = 'gini'
 max_features = None
 
 
@@ -305,11 +346,13 @@ if not doGridSearch:
         #                         )
         clf = clf.fit(Xtrain[0:int(Xtrain.shape[0]*i),:],
                       Ytrain[0:int(Ytrain.shape[0]*i)],
-                      sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)])
+                      #sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)]
+        )
         joblib.dump(clf, 'temp_output/bdt/clf_weights.pkl')
         current_auc = roc_auc_score(Yval[0:int(Yval.shape[0]*i)],
                                     clf.predict_proba(Xval[0:int(Xval.shape[0]*i),:])[:,1],
-                                    sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)])
+                                    #sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)]
+        )
         print('Relative size of training sample: %.2f,\tROC AUC = %.3f' % (i, current_auc))
         plt.plot(int(Xtrain.shape[0]*i)/(1000000.0), current_auc,
                  marker='o',
@@ -398,7 +441,7 @@ if doGridSearch:
 
 
 
-del Xtrain, Ytrain, sample_weight_train
+del Xtrain, Ytrain#, sample_weight_train
 
 
 # ## Evaluation of Trained Model
@@ -469,9 +512,9 @@ plt.savefig('temp_output/bdt/MVAoutput_SoverB_val.png')
 
 print('Generating ROC curve...')
 
-fpr, tpr, thresholds = roc_curve(Yval, Yscore_val[:,1], pos_label=1, sample_weight=sample_weight_val)
+fpr, tpr, thresholds = roc_curve(Yval, Yscore_val[:,1], pos_label=1)
 #roc_auc = roc_auc_score(fpr, tpr)
-roc_auc = roc_auc_score(Yval, Yscore_val[:,1], sample_weight=sample_weight_val)
+roc_auc = roc_auc_score(Yval, Yscore_val[:,1])
 
 plt.figure()
 plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
@@ -695,9 +738,9 @@ plt.savefig('temp_output/bdt/MVAoutput_SoverB_test.png')
 
 print('Generating ROC curve...')
 
-fpr_test, tpr_test, thresholds_test = roc_curve(Ytest, Ytest_score[:,1], pos_label=1, sample_weight=sample_weight_test)
+fpr_test, tpr_test, thresholds_test = roc_curve(Ytest, Ytest_score[:,1], pos_label=1)
 #roc_auc_test = roc_auc_score(fpr_test, tpr_test)
-roc_auc_test = roc_auc_score(Ytest, Ytest_score[:,1], sample_weight=sample_weight_test)
+roc_auc_test = roc_auc_score(Ytest, Ytest_score[:,1])
 
 plt.figure()
 plt.plot(fpr_test, tpr_test, label='ROC curve (area = %0.3f)' % roc_auc_test)
