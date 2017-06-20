@@ -17,6 +17,8 @@
 #include <TLatex.h>
 
 
+Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
+
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
@@ -35,6 +37,13 @@ void PlotMass() {
   const Float_t MVAoutputRange_min = 0.;
   const Float_t MVAoutputRange_max = 1.;
 
+  const Bool_t doConsiderPIDefficiencies = kTRUE;
+
+  // File containing the pt-dependent PID efficiencies:
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
+  TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
+  h_PIDeff->GetXaxis()->SetRangeUser(0,5);
 
   // Output ROOT file name containing all created histograms:
   TString outfileName = "temp_output/mass_histos.root";
@@ -60,6 +69,7 @@ void PlotMass() {
   TFile *f = new TFile(fileName_testData,"READ");
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
   Float_t mass;
+  Float_t pt1, pt2;
   Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
   TestTree->SetBranchAddress("IsRP",&IsRP);
   TestTree->SetBranchAddress("IsConv",&IsConv);
@@ -67,6 +77,8 @@ void PlotMass() {
   TestTree->SetBranchAddress("motherPdg1",&motherPdg1);
   TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("mass",&mass);
+  TestTree->SetBranchAddress("pt1",&pt1);
+  TestTree->SetBranchAddress("pt2",&pt2);
 
   
   // input MVA output information from file:
@@ -153,6 +165,8 @@ void PlotMass() {
     }
   }
 
+  TH1D *h_sample_weight = new TH1D("h_sample_weight","",1000,0,1);
+
   
   if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
     std::cout << "   ERROR: The trees of the input files have different sizes."
@@ -191,11 +205,18 @@ void PlotMass() {
 
       // linear mapping of the MVA output values to the range [0,1]:
       MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
-
       
       // Skip irrelevant events (tagged with MVA outputs greater or smaller than
       // 0 or 1 (after MVA output transformation)):
       if(MVAoutput < 0 || MVAoutput > 1) continue;
+      
+      // if(pt1<1 || pt2<1) continue; //testing
+
+      Float_t sample_weight = 1.;
+      if(doConsiderPIDefficiencies) {
+	sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
+      }
+      h_sample_weight->Fill(sample_weight);
 
       
       if(MVAoutput >= stepSize*i) {
@@ -220,40 +241,40 @@ void PlotMass() {
       // create plots for a custom MVA cut value
       // (but not for each step in the scan):
       if(stepSize*(i-1)<MVAcut && MVAcut<=stepSize*i) {
-	h_SB->Fill(mass);
+	h_SB->Fill(mass, sample_weight);
 	if(IsRP==1 && IsConv==0) {
-	  h_S->Fill(mass);
+	  h_S->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
-	  h_CombiWithConvLeg->Fill(mass);
+	  h_CombiWithConvLeg->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
-	  h_CombiWithoutConvLeg->Fill(mass);
+	  h_CombiWithoutConvLeg->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && IsHF==1) {
-	  h_HF->Fill(mass);
+	  h_HF->Fill(mass, sample_weight);
 	}
 	if(IsRP==1 && IsConv==1) {
-	  h_RPConv->Fill(mass);
+	  h_RPConv->Fill(mass, sample_weight);
 	}
 	
 
 	if(MVAoutput >= MVAcut) {
-	  h_SB_MVAcut->Fill(mass);
+	  h_SB_MVAcut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_MVAcut->Fill(mass);
+	    h_S_MVAcut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
-	    h_CombiWithConvLeg_MVAcut->Fill(mass);
+	    h_CombiWithConvLeg_MVAcut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
-	    h_CombiWithoutConvLeg_MVAcut->Fill(mass);
+	    h_CombiWithoutConvLeg_MVAcut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_MVAcut->Fill(mass);
+	    h_HF_MVAcut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_MVAcut->Fill(mass);
+	    h_RPConv_MVAcut->Fill(mass, sample_weight);
 	  }
 	}
 	
@@ -393,6 +414,13 @@ void PlotMass() {
 
   
   gStyle->SetOptStat(0);
+
+  TCanvas *c_sample_weight = new TCanvas("c_sample_weight","",1024,768);
+  h_sample_weight->SetXTitle("Sample weight");
+  h_sample_weight->SetYTitle("Entries");
+  h_sample_weight->SaveAs("temp_output/mass_sampleWeight.root");
+  h_sample_weight->Draw();
+  c_sample_weight->SaveAs("temp_output/mass_sampleWeight.png");
   
   TCanvas *c_significance_scan = new TCanvas("c_significance_scan","",1024,768);
   c_significance_scan->SetGridy();
@@ -654,7 +682,15 @@ void PlotMass() {
 }
 
 
-// int main() {
-//   PlotMass();
-//   return 0;
-// }
+
+Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
+
+  Float_t PIDeff1 = (pt1 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt1));
+
+  Float_t PIDeff2 = (pt2 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt2));
+
+  return PIDeff1 * PIDeff2;
+  
+}
