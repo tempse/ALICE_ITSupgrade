@@ -1081,6 +1081,6 @@ void calculateHF() {
 
 
 Float_t getPIDefficiency(TH1D &h_effs, Float_t pT) {
-  return pT>=h_effs.GetBinLowEdge(h_effs.GetMaximumBin()) ?
-    h_effs.GetBinContent(h_effs.GetMaximumBin()-1) : h_effs.GetBinContent(h_effs.FindBin(pT));
+  return pT>=h_effs.GetBinLowEdge(h_effs.GetNbinsX()) ?
+    h_effs.GetBinContent(h_effs.GetNbinsX()) : h_effs.GetBinContent(h_effs.FindBin(pT));
 }
