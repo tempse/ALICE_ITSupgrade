@@ -1,5 +1,7 @@
 from __future__ import division
 
+import math
+
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
@@ -472,6 +474,7 @@ plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_distr_val.png')
 
 
+"""
 # ### Calculation of Significance
 
 significance = n_S/np.sqrt(n_S+n_B)
@@ -490,8 +493,10 @@ plt.xlabel('MVA output')
 plt.ylabel('$S / \sqrt{(S+B)}$')
 plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_significance_val.png')
+"""
 
 
+"""
 # ### Calculation of Signal-Background Ratio
 
 SoverB = n_S/(n_B*1.0)
@@ -506,6 +511,52 @@ plt.xlabel('MVA output')
 plt.ylabel('$S / B$')
 #plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_SoverB_val.png')
+"""
+
+
+# ### Cut efficiencies plot
+plt.figure()
+MVAcut = np.empty((0))
+
+fig, ax1 = plt.subplots()
+signal_efficiency = np.empty((0))
+backgr_efficiency = np.empty((0))
+for i in range(nbins):
+    signal_efficiency = np.append(signal_efficiency, \
+                                  np.sum(n_S[i:n_S.shape[0]]) / np.sum(n_S))
+    backgr_efficiency = np.append(backgr_efficiency, \
+                                  np.sum(n_B[i:n_B.shape[0]]) / np.sum(n_B))
+    MVAcut = np.append(MVAcut, i/(nbins*1.0))
+l1 = ax1.plot(MVAcut, signal_efficiency, label='signal efficiency', color='blue')
+l2 = ax1.plot(MVAcut, backgr_efficiency, label='background efficiency', color='red')
+ax1.set_xlabel('MVA cut')
+ax1.set_ylabel('Efficiency')
+
+ax2 = ax1.twinx()
+significance_per_MVAcut = np.empty((0))
+for i in range(nbins):
+    significance_per_MVAcut = np.append(significance_per_MVAcut, \
+                                        np.sum(n_S[i:n_S.shape[0]]) / \
+                                        math.sqrt(np.sum(n_S[i:n_S.shape[0]]+n_B[i:n_B.shape[0]])))
+    
+l3 = ax2.plot(MVAcut, significance_per_MVAcut,
+              label='significance',
+              color='green')
+pos_max = np.argmax(significance_per_MVAcut)
+threshold_pos_max = pos_max/(nbins*1.0)
+l4 = ax2.plot(pos_max/(nbins*1.0), significance_per_MVAcut[pos_max],
+              label='max. significance for cut at %.2f' % threshold_pos_max,
+              marker='o', markersize=10, fillstyle='none', mew=2, linestyle='none',
+              color='#005500')
+ax2.set_ylabel('Significance', color='green')
+ax2.tick_params('y', colors='green')
+
+plt.title('MVA cut efficiencies')
+lall = l1+l2+l3+l4
+labels = [l.get_label() for l in lall]
+ax2.legend(lall, labels, loc='lower left')
+plt.tight_layout()
+plt.savefig('temp_output/bdt/significance_vs_MVAcut_val.png')
 
 
 # ### ROC Curve
@@ -532,10 +583,10 @@ plt.title('Receiver operating characteristic curve')
 #         label="threshold at %.2f (optimal operating point)" % thresholds[close_optimum],
 #         fillstyle="none", mew=2)
     
-# find and plot threshold closest to threshold_proba
-close_threshold_proba = np.argmin(np.abs(thresholds-threshold_proba))
-plt.plot(fpr[close_threshold_proba], tpr[close_threshold_proba], 'o', markersize=10,
-        label="threshold at %.2f" % threshold_proba, fillstyle="none",
+# find and plot threshold closest to threshold_pos_max
+close_threshold_pos_max = np.argmin(np.abs(thresholds-threshold_pos_max))
+plt.plot(fpr[close_threshold_pos_max], tpr[close_threshold_pos_max], 'o', markersize=10,
+        label="threshold at %.2f" % threshold_pos_max, fillstyle="none",
         mew=2)
 
 plt.legend(loc=4)
@@ -566,12 +617,12 @@ plt.plot(recall, precision, lw=lw,
          label='Precision-recall curve of signal class (area = {1:0.2f})'
                 ''.format(1, average_precision))
 
-# find threshold closest to threshold_proba
-close_optimum = np.argmin(np.abs(thresholds_PRC-threshold_proba))
+# find threshold closest to threshold_pos_max
+close_optimum = np.argmin(np.abs(thresholds_PRC-threshold_pos_max))
 plt.plot(recall[close_optimum], precision[close_optimum],
          'o',
          markersize=10,
-         label="threshold at %.2f" % threshold_proba,
+         label="threshold at %.2f" % threshold_pos_max,
          fillstyle="none",
          mew=2)
 
@@ -643,7 +694,7 @@ def plot_confusion_matrix(cm, classes,
 
 
 # Compute confusion matrix
-Yscore_val_labels = (Yscore_val[:,1]>threshold_proba)
+Yscore_val_labels = (Yscore_val[:,1]>threshold_pos_max)
 cnf_matrix = confusion_matrix(Yval, Yscore_val_labels)
 np.set_printoptions(precision=2)
 
@@ -709,7 +760,7 @@ plt.figure()
 plt.plot(significance_test, label='significance')
 plt.plot(pos_maxSignificance, significance_test[pos_maxSignificance], 'o',
         markersize=10, fillstyle='none', mew=2,
-        label='max. significance for cut at %.2f' % (threshold_proba))
+        label='max. significance for cut at %.2f' % (threshold_pos_max))
 plt.title('Significance distribution')
 plt.xlabel('MVA output')
 plt.ylabel('$S / \sqrt{(S+B)}$')
@@ -753,9 +804,9 @@ plt.title('Receiver operating characteristic curve')
 
 # find point on ROC curve closest to the optimum operating point
 # as determined before
-close_optimum_test = np.argmin(np.abs(threshold_proba-thresholds_test))
+close_optimum_test = np.argmin(np.abs(threshold_pos_max-thresholds_test))
 plt.plot(fpr_test[close_optimum_test], tpr_test[close_optimum_test], 'o', markersize=10,
-         label="threshold at %.2f" % threshold_proba, fillstyle="none",
+         label="threshold at %.2f" % threshold_pos_max, fillstyle="none",
         mew=2)
 
 plt.legend(loc=4)
@@ -782,12 +833,12 @@ plt.plot(recall_test, precision_test, lw=lw,
          label='Precision-recall curve of signal class (area = {1:0.2f})'
          ''.format(1, average_precision_test))
 
-# find threshold closest to threshold_proba
-close_optimum = np.argmin(np.abs(thresholds_PRC_test-threshold_proba))
+# find threshold closest to threshold_pos_max
+close_optimum = np.argmin(np.abs(thresholds_PRC_test-threshold_pos_max))
 plt.plot(recall_test[close_optimum], precision_test[close_optimum],
          'o',
          markersize=10,
-         label="threshold at %.2f" % threshold_proba,
+         label="threshold at %.2f" % threshold_pos_max,
          fillstyle="none",
          mew=2)
 
@@ -811,7 +862,7 @@ plt.savefig('temp_output/bdt/precision_recall_test.png')
 
 
 # Compute confusion matrix
-Ytest_score_labels = (Ytest_score[:,1]>threshold_proba) #thresholds[close_optimum]).astype(int)
+Ytest_score_labels = (Ytest_score[:,1]>threshold_pos_max) #thresholds[close_optimum]).astype(int)
 cnf_matrix = confusion_matrix(Ytest, Ytest_score_labels)
 np.set_printoptions(precision=2)
 
