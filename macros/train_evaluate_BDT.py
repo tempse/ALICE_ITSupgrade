@@ -752,6 +752,7 @@ plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_distr_test.png')
 
 
+"""
 # ### Calculation of Significance
 
 significance_test = n_S/np.sqrt(n_S+n_B)
@@ -766,12 +767,19 @@ plt.xlabel('MVA output')
 plt.ylabel('$S / \sqrt{(S+B)}$')
 plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_significance_test.png')
+"""
 
-
+"""
 # ### Calculation of Signal-to-Background Ratio
 
-if not n_B.all()==0:
-    SoverB = n_S/(n_B*1.0)
+with np.errstate(divide='ignore', invalid='ignore'):
+    SoverB = np.true_divide(n_S, n_B)
+    SoverB[SoverB==np.inf] = 0
+    SoverB = np.nan_to_num(SoverB)
+
+#if not n_B.all()==0:
+#    SoverB = n_S/(n_B*1.0)
+
 #pos_maxSoverB = np.argmax(SoverB)
 plt.figure()
 plt.plot(SoverB, label='signal over background')
@@ -783,6 +791,7 @@ plt.xlabel('MVA output')
 plt.ylabel('$S / B$')
 #plt.legend()
 plt.savefig('temp_output/bdt/MVAoutput_SoverB_test.png')
+"""
 
 
 # ### ROC Curve
