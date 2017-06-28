@@ -16,6 +16,7 @@ struct particlePair {
   Int_t TrackID2;
   Int_t IsTaggedAccepted;
   Int_t IsTrueConv;
+  Int_t IsTrueRP;
   Long64_t originalPosition;
 };
 
@@ -57,11 +58,12 @@ void createROCdata_MVAplusPrefilter(TString MVAoutput_filename,
   TFile *MCdatafile = new TFile(MCdatafilename, "READ");
   TTree *tree_MCdatafile = (TTree*)MCdatafile->Get(treename_MCdatafile);
   Int_t EventID, TrackID1, TrackID2;
-  Int_t IsConv;
+  Int_t IsConv, IsRP;
   tree_MCdatafile->SetBranchAddress("EventID1", &EventID);
   tree_MCdatafile->SetBranchAddress("TrackID1", &TrackID1);
   tree_MCdatafile->SetBranchAddress("TrackID2", &TrackID2);
   tree_MCdatafile->SetBranchAddress("IsConv", &IsConv);
+  tree_MCdatafile->SetBranchAddress("IsRP", &IsRP);
   
   // if(tree_MCdatafile->GetListOfBranches()->FindObject(branchname_MCdatafile) != NULL) {
   //   std::cout << "  ERROR: A branch named " << branchname_MCdatafile
@@ -91,13 +93,18 @@ void createROCdata_MVAplusPrefilter(TString MVAoutput_filename,
   TTree *outtree = new TTree("ROCdata","ROCdata");
   Float_t tpr, fpr;
   Float_t currentMVAcut;
+  Int_t nTaggedAccepted;
+  Int_t nIsConv, nIsRP;
   outtree->Branch("tpr", &tpr, "tpr/F");
   outtree->Branch("fpr", &fpr, "fpr/F");
   outtree->Branch("MVAcut", &currentMVAcut, "MVAcut/F");
+  outtree->Branch("nTaggedAccepted", &nTaggedAccepted, "nTaggedAccepted/I");
+  outtree->Branch("nIsConv", &nIsConv, "nIsConv/I");
+  outtree->Branch("nIsRP", &nIsRP, "nIsRP/I");
   
 
   
-  const Long64_t nentries = tree_MCdatafile->GetEntries();
+  const Long64_t nentries = tree_MCdatafile->GetEntries()/10;
 
 
   TStopwatch *watch_overall = new TStopwatch();
@@ -140,6 +147,7 @@ void createROCdata_MVAplusPrefilter(TString MVAoutput_filename,
       currentPair.TrackID1 = TrackID1;
       currentPair.TrackID2 = TrackID2;
       currentPair.IsTrueConv = IsConv;
+      currentPair.IsTrueRP = IsRP;
       currentPair.originalPosition = j;
     
       if(signalRegion == "+") {
@@ -235,16 +243,26 @@ void createROCdata_MVAplusPrefilter(TString MVAoutput_filename,
 
 
     std::cout << "Calculating true and false positive rates...";
+
+    nTaggedAccepted = 0;
+    nIsConv = 0;
+    nIsRP = 0;
     Long64_t tp=0, fp=0, fn=0, tn=0;
+    
     for(Long64_t i=0; i<nentries; i++) {
       if(allPairs[i].IsTaggedAccepted!=0 && allPairs[i].IsTaggedAccepted!=1)
 	continue;
-    
+
+      if(allPairs[i].IsTaggedAccepted) nTaggedAccepted++;
+      if(allPairs[i].IsTrueConv) nIsConv++;
+      if(allPairs[i].IsTrueRP) nIsRP++;
+      
       if(allPairs[i].IsTaggedAccepted && allPairs[i].IsTrueConv) tn++;
       if(allPairs[i].IsTaggedAccepted && !allPairs[i].IsTrueConv) fn++;
       if(!allPairs[i].IsTaggedAccepted && allPairs[i].IsTrueConv) fp++;
       if(!allPairs[i].IsTaggedAccepted && !allPairs[i].IsTrueConv) tp++;
     }
+    
     tpr = tp/((Float_t)tp+fn);
     fpr = fp/((Float_t)fp+tn);
     currentMVAcut = MVAcut;
@@ -255,7 +273,8 @@ void createROCdata_MVAplusPrefilter(TString MVAoutput_filename,
     outtree->Fill();
 
 
-    std::cout << "Time elapsed: " << watch_step->RealTime() << " seconds." << std::endl;
+    std::cout << std::endl << "Time elapsed: " << watch_step->RealTime()
+	      << " seconds." << std::endl;
   }
 
   std::cout << std::endl << "Overall time elapsed: " << watch_overall->RealTime() << " seconds."
