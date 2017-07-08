@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns; sns.set()
 
 import numpy as np
+from numpy import trapz
 import pandas as pd
 import root_numpy
 
@@ -98,17 +99,21 @@ ax = plt.gca()
 
 ax.plot([0,1], [0,1], 'k--', color='#ababab')
 
-h_combi = ax.plot(data_ROCdata_combined['fpr_combi'], data_ROCdata_combined['tpr_combi'],
-                  label='classifier combinations',
-                  color=color_combined,
-                  linestyle='none',
-                  marker='.',
-                  markersize=6)
+
+p = (data_ROCdata_combined['fpr_combi']).argsort()
+fpr_combi = data_ROCdata_combined['fpr_combi'][p]
+tpr_combi = data_ROCdata_combined['tpr_combi'][p]
+
+
+h_combi = ax.plot(fpr_combi, tpr_combi,
+                  label='classifier combination (AUC = %.3f)' % (np.trapz(tpr_combi, fpr_combi)),
+                  color=color_combined)
 
 
 h_CombConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_noPrefilter'],
                            data_ROCdata_CombConvRej_RPConvRej['tpr_noPrefilter'],
-                           label='Comb. conv. rej. via MVA cuts',
+                           label='Comb. conv. rej. via MVA cuts (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_noPrefilter'],
+                                                                                          data_ROCdata_CombConvRej_RPConvRej['fpr_noPrefilter'])),
                            color=color_CombConvRej)
 
 ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['fpr_noPrefilter'],
@@ -122,7 +127,7 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRej
 
 
 h_singleConvTrackRejMVA = ax.plot(fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA,
-                                  label='Single-track conv. rej. via MVA cuts',
+                                  label='Single-track conv. rej. via MVA cuts (AUC = %.3f)' % (np.trapz(tpr_singleConvTrackRejMVA, fpr_singleConvTrackRejMVA)),
                                   color=color_singleConvTrackRej)
 
 ax.plot(fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
@@ -136,7 +141,8 @@ ax.plot(fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
 
 
 h_RPConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
-                         label='RP conv. rej. via MVA cuts + prefiltering',
+                         label='RP conv. rej. via MVA cuts + prefiltering (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
+                                                                                                    data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'])),
                          color=color_RPConvRejMVA)
 
 ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter'],
@@ -184,10 +190,9 @@ handles, labels = ax.get_legend_handles_labels()
 handles_temp, labels_temp = handles[0], labels[0]
 handles, labels = np.delete(handles, 0), np.delete(labels, 0)
 handles, labels = np.insert(handles, 4, handles_temp), np.insert(labels, 4, labels_temp)
-#h_all = [h_CombConvRejMVA, h_singleConvTrackRejMVA, h_RPConvRejMVA, h_optMarker,
-#         h_RPConvRejClass_1, h_RPConvRejClass_2, h_RPConvRejClass_3, h_RPConvRejClass_4]
 
 plt.legend(handles, labels, loc=4, fontsize=7)
+
 
 plt.savefig('temp_output/ROCcurves_entireMassRange.png')
 plt.savefig('temp_output/ROCcurves_entireMassRange.pdf')
