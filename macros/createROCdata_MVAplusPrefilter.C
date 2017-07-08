@@ -220,7 +220,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
 	if(MVAout_prefilter < MVAoutputRange_min || MVAout_prefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
 	  currentPair.IsTaggedAccepted_prefilter = -999;
-	}else if(MVAout_prefilter > MVAcut) {
+	}else if(MVAout_prefilter >= MVAcut) {
 	  currentPair.IsTaggedAccepted_prefilter = 1;
 
 	  particleTrack currentTrack1 = {EventID, TrackID1};
@@ -231,7 +231,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
 	if(MVAout_noPrefilter < MVAoutputRange_min || MVAout_noPrefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
 	  currentPair.IsTaggedAccepted_noPrefilter = -999;
-	}else if(MVAout_noPrefilter > MVAcut) {
+	}else if(MVAout_noPrefilter >= MVAcut) {
 	  currentPair.IsTaggedAccepted_noPrefilter = 1;
 	}else currentPair.IsTaggedAccepted_noPrefilter = 0;
 	
@@ -239,7 +239,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
 	if(MVAout_prefilter < MVAoutputRange_min || MVAout_prefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
 	  currentPair.IsTaggedAccepted_prefilter = -999;
-	}else if(MVAout_prefilter < MVAcut) {
+	}else if(MVAout_prefilter <= MVAcut) {
 	  currentPair.IsTaggedAccepted_prefilter = 1;
 
 	  particleTrack currentTrack1 = {EventID, TrackID1};
@@ -250,7 +250,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
 	if(MVAout_noPrefilter < MVAoutputRange_min || MVAout_noPrefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
 	  currentPair.IsTaggedAccepted_noPrefilter = -999;
-	}else if(MVAout_noPrefilter < MVAcut) {
+	}else if(MVAout_noPrefilter <= MVAcut) {
 	  currentPair.IsTaggedAccepted_noPrefilter = 1;
 	}else currentPair.IsTaggedAccepted_noPrefilter = 0;
 	
@@ -455,7 +455,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   
   
   for(Int_t i=0; i<num_steps; i+=stride_combi) {
-    std::cout << "\r  Processing entry " << i << " of " << num_steps << "...";
+    std::cout << "\r  Processing entry " << i+1 << " of " << num_steps << "...";
     
     tree_infile_ROCdata->GetEntry(i);
 
