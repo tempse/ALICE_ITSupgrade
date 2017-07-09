@@ -5,10 +5,14 @@
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TH1D.h>
+
+
+Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
 void GenerateConfusionMatrix() {
-  TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
+  TString infileName = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/applicationPhase1/output_pairtrees_veryVeryTightClassicalCuts.root";
 
   // "+"...signal-like events are near 1,
   // "-"...signal-like events are near 0 or -1
@@ -18,18 +22,31 @@ void GenerateConfusionMatrix() {
   TTree *tree = (TTree*)infile->Get("pairTree_us");
 
   Int_t isTaggedSignal, isSignal;
+  Float_t pt1, pt2;
   tree->SetBranchAddress("IsTaggedRPConv_classicalCuts_prefilter",
 			 &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
+  tree->SetBranchAddress("pt1", &pt1);
+  tree->SetBranchAddress("pt2", &pt2);
 
   Float_t mass;
   tree->SetBranchAddress("mass", &mass);
 
+  const Bool_t doConsiderPIDefficiencies = kTRUE;
 
+  // File containing the pt-dependent PID efficiencies:
+  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
+  TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
+  h_PIDeff->GetXaxis()->SetRangeUser(0,5);
+
+  
+  
   // true positives, false positives, true negatives, false negatives
-  Long64_t TP = 0, FP = 0, TN = 0, FN = 0;
+  Double_t TP = 0., FP = 0., TN = 0., FN = 0.;
   
   Long64_t nentries = tree->GetEntries();
+  
   
   for(Long64_t i=0; i<nentries; i++) {
     if((i%5000)==0) std::cout << "\rProcessing entry " << i << " of "
@@ -37,18 +54,23 @@ void GenerateConfusionMatrix() {
 			      << " %)...";
     tree->GetEntry(i);
 
-    if(mass<.05) continue;
+    // if(mass<.05) continue;
+
+    Float_t sample_weight = 1.;
+    if(doConsiderPIDefficiencies) {
+      sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
+    }
     
     if(signalRegion == "+") {
-      if(isTaggedSignal && isSignal) TP += 1;
-      if(!isTaggedSignal && isSignal) FN += 1;
-      if(isTaggedSignal && !isSignal) FP += 1;
-      if(!isTaggedSignal && !isSignal) TN += 1;
+      if(isTaggedSignal && isSignal) TP += sample_weight;
+      if(!isTaggedSignal && isSignal) FN += sample_weight;
+      if(isTaggedSignal && !isSignal) FP += sample_weight;
+      if(!isTaggedSignal && !isSignal) TN += sample_weight;
     }else if(signalRegion == "-") {
-      if(!isTaggedSignal && !isSignal) TP += 1;
-      if(isTaggedSignal && !isSignal) FN += 1;
-      if(!isTaggedSignal && isSignal) FP += 1;
-      if(isTaggedSignal && isSignal) TN += 1;
+      if(!isTaggedSignal && !isSignal) TP += sample_weight;
+      if(isTaggedSignal && !isSignal) FN += sample_weight;
+      if(!isTaggedSignal && isSignal) FP += sample_weight;
+      if(isTaggedSignal && isSignal) TN += sample_weight;
     }
   }
   std::cout << "\rProcessing entry " << nentries << " of " << nentries
@@ -69,4 +91,19 @@ void GenerateConfusionMatrix() {
 	    << "     sum: " << TP+FN+FP+TN << std::endl;
 
   gApplication->Terminate();
+}
+
+
+
+
+Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
+
+  Float_t PIDeff1 = (pt1 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt1));
+
+  Float_t PIDeff2 = (pt2 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt2));
+
+  return PIDeff1 * PIDeff2;
+  
 }
