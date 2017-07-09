@@ -15,27 +15,32 @@
 #include <TLatex.h>
 
 
+
+Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
+
+
+
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split.root";
+  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root";
   
-  TString h_text = "Conv. track rej. via single-track MVA cuts";
+  TString h_text = "RP conv. rej. via MVA cuts";
 
   // two variables are combined, e.g., via
   // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoVars = kTRUE;
+  Bool_t useTwoVars = kFALSE;
 
   Bool_t useTags = kTRUE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
   Int_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
-  Float_t MVAcut = 0.;
+  Float_t MVAcut = 0.47;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "IsTaggedConvTrack1";
-  TString variableName2 = "IsTaggedConvTrack2";
+  TString variableName1 = "IsTaggedRPConv_MVAcuts_prefilter_wPIDeffs";
+  TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
   const Int_t wantedPrefilterTagValue1 = 0.;
@@ -45,6 +50,7 @@ void PlotMass_prefilterCuts() {
   const Bool_t isMLP = kFALSE;
   const Bool_t isBDT = kTRUE;
 
+  const Bool_t doConsiderPIDefficiencies = kTRUE;
   
   // ROOT file name containing all created histograms:
   TString outfileName = "temp_output/mass_histos_prefilterCuts.root";
@@ -70,8 +76,11 @@ void PlotMass_prefilterCuts() {
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
 
   Float_t mass;
+  Float_t pt1, pt2;
   Int_t IsRP, IsConv, IsHF;
   TestTree->SetBranchAddress("mass", &mass);
+  TestTree->SetBranchAddress("pt1", &pt1);
+  TestTree->SetBranchAddress("pt2", &pt2);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsHF", &IsHF);
@@ -92,6 +101,15 @@ void PlotMass_prefilterCuts() {
     }
   }
 
+
+  // File containing the pt-dependent PID efficiencies:
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
+  TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
+  h_PIDeff->GetXaxis()->SetRangeUser(0,5);
+
+  TH1D *h_sample_weight = new TH1D("h_sample_weight","",1000,0,1);
+  
   
   const unsigned int min=0, max=5, nBins=50;
 
@@ -144,22 +162,30 @@ void PlotMass_prefilterCuts() {
     
     TestTree->GetEvent(ev);
 
+
+    Float_t sample_weight = 1.;
+    if(doConsiderPIDefficiencies) {
+      sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
+    }
+    h_sample_weight->Fill(sample_weight);
+    
+
     // Process all entries:
-    h_SB->Fill(mass);
+    h_SB->Fill(mass, sample_weight);
     if(IsRP==1 && IsConv==0) {
-      h_S->Fill(mass);
+      h_S->Fill(mass, sample_weight);
     }
     if(IsRP==0 && IsConv==1) {
-      h_CombiWithConvLeg->Fill(mass);
+      h_CombiWithConvLeg->Fill(mass, sample_weight);
     }
     if(IsRP==0 && IsConv==0) {
-      h_CombiWithoutConvLeg->Fill(mass);
+      h_CombiWithoutConvLeg->Fill(mass, sample_weight);
     }
     if(IsRP==0 && IsHF==1) {
-      h_HF->Fill(mass);
+      h_HF->Fill(mass, sample_weight);
     }
     if(IsRP==1 && IsConv==1) {
-      h_RPConv->Fill(mass);
+      h_RPConv->Fill(mass, sample_weight);
     }
 
 
@@ -168,41 +194,41 @@ void PlotMass_prefilterCuts() {
       
       if(!useTwoVars) {
 	if(variable1 == wantedPrefilterTagValue1) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
       }else { // if(useTwoVars)
 	if(variable1 == wantedPrefilterTagValue1 &&
 	   variable2 == wantedPrefilterTagValue2) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
       }
@@ -211,80 +237,80 @@ void PlotMass_prefilterCuts() {
       
       if(!useTwoVars) {
 	if(signalRegion == "+" && variable1 >= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
 	if(signalRegion == "-" && variable1 <= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
       }else { // if(useTwoVars)
 	if(signalRegion == "+" &&
 	   variable1 >= MVAcut &&
 	   variable2 >= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
 	if(signalRegion == "-" &&
 	   variable1 <= MVAcut &&
 	   variable2 <= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass);
+	  h_SB_prefilterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass);
+	    h_S_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass);
+	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass);
+	    h_HF_prefilterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass);
+	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
 	  }
 	}
       }
@@ -479,4 +505,17 @@ void PlotMass_prefilterCuts() {
   outfile->Close();
   
   // gApplication->Terminate();
+}
+
+
+Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
+
+  Float_t PIDeff1 = (pt1 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt1));
+
+  Float_t PIDeff2 = (pt2 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt2));
+
+  return PIDeff1 * PIDeff2;
+  
 }
