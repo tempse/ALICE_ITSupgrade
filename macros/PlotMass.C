@@ -220,21 +220,21 @@ void PlotMass() {
 
       
       if(MVAoutput >= stepSize*i) {
-	h_SB_currentMVAcut->Fill(mass);
+	h_SB_currentMVAcut->Fill(mass, sample_weight);
 	if(IsRP==1 && IsConv==0) {
-	  h_S_currentMVAcut->Fill(mass);
+	  h_S_currentMVAcut->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && (motherPdg1==22 || motherPdg2==22)) {
-	  h_CombiWithConvLeg_currentMVAcut->Fill(mass);
+	  h_CombiWithConvLeg_currentMVAcut->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
-	  h_CombiWithoutConvLeg_currentMVAcut->Fill(mass);
+	  h_CombiWithoutConvLeg_currentMVAcut->Fill(mass, sample_weight);
 	}
 	if(IsRP==0 && IsHF==1) {
-	  h_HF_currentMVAcut->Fill(mass);
+	  h_HF_currentMVAcut->Fill(mass, sample_weight);
 	}
 	if(IsRP==1 && IsConv==1) {
-	  h_RPConv_currentMVAcut->Fill(mass);
+	  h_RPConv_currentMVAcut->Fill(mass, sample_weight);
 	}
       }
       
