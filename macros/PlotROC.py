@@ -169,13 +169,13 @@ h_optMarker = ax.plot(-99, -99,
 
 
 
-h_RPConvRejClass_1 = ax.plot(.447, .532, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_1 = ax.plot(.490, .596, 'o', color=color_RPConvRejClass,
         label='RP conv. rej. via classical cuts: $\phi_V>\pi/2$, $mass<0.05$', markersize=8, alpha=.6)
-h_RPConvRejClass_2 = ax.plot(.613, .759, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_2 = ax.plot(.614, .776, 'o', color=color_RPConvRejClass,
         label='     $\phi_V>2$, $mass<0.04$', markersize=6, alpha=.6)
-h_RPConvRejClass_3 = ax.plot(.737, .916, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_3 = ax.plot(.721, .912, 'o', color=color_RPConvRejClass,
         label='     $\phi_V>2.4$, $mass<0.01$', markersize=4, alpha=.6)
-h_RPConvRejClass_4 = ax.plot(.936, .987, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_4 = ax.plot(.936, .986, 'o', color=color_RPConvRejClass,
         label='     $\phi_V>2.9$, $mass<0.0035$', markersize=3, alpha=.6)
 
 
