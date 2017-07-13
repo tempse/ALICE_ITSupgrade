@@ -31,7 +31,7 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 10000000
+num_entries = 4000000
 start = 0
 
 inputfilename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root"
@@ -68,8 +68,8 @@ branches_pairTree = [
     'eta2',
     #'phi1',
     #'phi2',
-    ##'PIDeff1',
-    ##'PIDeff2',
+    'PIDeff1',
+    'PIDeff2',
     'IsRP',
     'IsConv'
 ]
@@ -90,7 +90,7 @@ branches_singleTree = [
         'ITSchi2',
         'TPCchi2',
         'pdgMother'
-    ]
+]
 
 
 print("Reading file %s..." % inputfilename)
@@ -186,8 +186,8 @@ print('Selected features:', X_featureNames)
 joblib.dump(X_featureNames, 'temp_output/bdt/featureNames.pkl')
 
 
-#print('Calculating sample weights...')
-#sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
+print('Calculating sample weights...')
+sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
 
 
 
@@ -242,8 +242,9 @@ joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
 
 print('Splitting the data in training, validation and test samples...')
 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=1/3., random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=.5, random_state=43)
+X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=3000000, random_state=42)
+
+X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=.5, random_state=43)
 
 print('Number of signal events in training sample: %d (%.2f percent)' % (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
 print('Number of backgr events in training sample: %d (%.2f percent)' % (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
@@ -263,7 +264,7 @@ print('Creating random forest classifier...')
 clf = RandomForestClassifier(n_jobs=-1,
                              n_estimators=300,
                              max_depth=None,
-                             min_samples_split=500,
+                             min_samples_split=50,
                              class_weight='balanced',
                              criterion='gini',
                              max_features=None
@@ -287,12 +288,12 @@ for i in [1]:# [.1,.25,.4,.55,.7,.85,1]:
     #                         )
     clf = clf.fit(X_train[0:int(X_train.shape[0]*i),:],
                   y_train[0:int(y_train.shape[0]*i)],
-                  #sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)]
+                  sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)]
     )
     joblib.dump(clf, 'temp_output/bdt/clf_weights.pkl')
     current_auc = roc_auc_score(y_val[0:int(y_val.shape[0]*i)],
                                 clf.predict_proba(X_val[0:int(X_val.shape[0]*i),:])[:,1],
-                                #sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)]
+                                sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)]
     )
     print('Relative size of training sample: %.2f,\tROC AUC = %.3f' % (i, current_auc))
     plt.plot(int(X_train.shape[0]*i)/(1000000.0), current_auc,
@@ -338,8 +339,10 @@ plt.tight_layout()
 plt.savefig('temp_output/bdt/var_importance.png')
 
 
-del X_train, y_train#, sample_weight_train
+del X_train, y_train, sample_weight_train
 
+
+################################################################################
 
 
 # ## Evaluation of Trained Model
@@ -399,7 +402,7 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.xlabel('MVA output')
     plt.ylabel('Entries')
     plt.legend()
-    plt.savefig('temp_output/bdt/MVAoutput_distr'+label+'.png')
+    plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'.png')
     
     return n_truePos, n_trueNeg
 
@@ -457,13 +460,20 @@ plt.savefig('temp_output/bdt/significance_vs_MVAcut_val.png')
 
 # ### ROC Curve
 
-def plot_ROCcurve(y_truth, y_score, label='', workingpoint=-1):
+def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-1, pos_label=1):
     """
     Plots the ROC curve and (if specified) the chosen working point.
     """
+
+    # if not defined, do not use sample weights
+    if(sample_weight==None):
+        sample_weight = np.ones(y_truth.shape[0])
     
-    fpr, tpr, thresholds = roc_curve(y_truth, y_score[:,1], pos_label=1)
-    roc_auc = roc_auc_score(y_truth, y_score[:,1])
+    fpr, tpr, thresholds = roc_curve(y_truth, y_score[:,1],
+                                     sample_weight=sample_weight,
+                                     pos_label=pos_label)
+    roc_auc = roc_auc_score(y_truth, y_score[:,1], sample_weight=sample_weight)
+    print('ROC AUC: %.3f' % roc_auc)
     
     plt.figure()
     plt.plot(fpr, tpr, label='ROC curve (AUC = %0.3f)' % roc_auc)
@@ -487,16 +497,20 @@ def plot_ROCcurve(y_truth, y_score, label='', workingpoint=-1):
 
 
 print('Generating ROC curve...')
-plot_ROCcurve(y_val, y_val_score, 'val', MVAcut_opt)
+plot_ROCcurve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
 
 
 
 # ### Precision-Recall Curve
 
-def plot_precision_recall_curve(y_truth, y_score, label='', workingpoint=-1):
+def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', workingpoint=-1):
     """
     Plots the precision-recall curve.
     """
+
+    # if not defined, do not use sample weights
+    if(sample_weight==None):
+        sample_weight = np.ones(y_truth.shape[0])
     
     precision = dict()
     recall = dict()
@@ -504,9 +518,10 @@ def plot_precision_recall_curve(y_truth, y_score, label='', workingpoint=-1):
     
     precision, recall, thresholds_PRC = \
         precision_recall_curve(y_truth,
-                               y_score[:,1])
+                               y_score[:,1],
+                               sample_weight=sample_weight)
     
-    average_precision = average_precision_score(y_truth, y_score[:,1])
+    average_precision = average_precision_score(y_truth, y_score[:,1], sample_weight=sample_weight)
     
     plt.figure()
     plt.plot(recall, precision, lw=2,
@@ -534,7 +549,7 @@ def plot_precision_recall_curve(y_truth, y_score, label='', workingpoint=-1):
 
 
 print('Generating precision-recall curve...')
-plot_precision_recall_curve(y_val, y_val_score, 'val', MVAcut_opt)
+plot_precision_recall_curve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
 
 
 
@@ -589,8 +604,9 @@ def plot_confusion_matrix(cm, classes,
 
 # Compute confusion matrix
 y_val_score_labels = (y_val_score[:,1]>MVAcut_opt)
-cnf_matrix = confusion_matrix(y_val, y_val_score_labels)
+cnf_matrix = confusion_matrix(y_val, y_val_score_labels, sample_weight=sample_weight_val)
 np.set_printoptions(precision=2)
+
 
 
 # Plot non-normalized confusion matrix
@@ -607,13 +623,12 @@ plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
 # ### Classification Report
 
 
-print('Classification report (validation sample):')
+print('Classification report (validation sample_weight):')
 print(classification_report(y_val, y_val_score_labels,
                             target_names=['background','signal']))
 
 
 del y_val_score
-
 
 
 ################################################################################
@@ -635,17 +650,17 @@ plot_MVAoutput(y_test, y_test_score, label='test', nbins=nbins)
 # ### ROC Curve
 
 print('Generating ROC curve...')
-plot_ROCcurve(y_test, y_test_score, 'test', MVAcut_opt)
+plot_ROCcurve(y_test, y_test_score, sample_weight_test, 'test', MVAcut_opt)
 
 
 # ### Precision-Recall Curve
 
 print('Generating precision-recall curve...')
-plot_precision_recall_curve(y_test, y_test_score, 'test', MVAcut_opt)
+plot_precision_recall_curve(y_test, y_test_score, sample_weight_test, 'test', MVAcut_opt)
 
 # Compute confusion matrix
 y_test_score_labels = (y_test_score[:,1]>MVAcut_opt) #thresholds[close_optimum]).astype(int)
-cnf_matrix = confusion_matrix(y_test, y_test_score_labels)
+cnf_matrix = confusion_matrix(y_test, y_test_score_labels, sample_weight=sample_weight_test)
 np.set_printoptions(precision=2)
 
 
