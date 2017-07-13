@@ -17,16 +17,14 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, GaussianNoise
 from keras.wrappers.scikit_learn import KerasClassifier
-#from keras.utils.visualize_util import plot
 import keras.backend as K
 
-from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import roc_curve, roc_auc_score, accuracy_score, \
     confusion_matrix, classification_report, precision_recall_curve, \
     average_precision_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 import itertools
 
@@ -40,10 +38,10 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 25000000
+num_entries = 200000
 start = 0
 
-inputfilename = "~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root"
+inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root"
 
 branches_pairTree = [
     'px1','py1','pz1',
@@ -101,20 +99,20 @@ branches_singleTree = [
 
 print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
-                                                     branches=branches_singleTree,
+                                                     branches=branches_pairTree,
                                                      start=start,
                                                      stop=num_entries+start
 ))
 
 
-#print('Setting initial mass cuts...')
-#dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
+print('Setting initial mass cuts...')
+dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
 
 
 print('Engineering features...')
 
 
-"""
+
 # pairTree features
 X = pd.DataFrame()
 X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
@@ -168,8 +166,9 @@ X['eta1'] = dataSample_orig['eta1']
 X['eta2'] = dataSample_orig['eta2']
 X['phi1'] = dataSample_orig['phi1']
 X['phi2'] = dataSample_orig['phi2']
-"""
 
+
+"""
 # singleTree features
 X = pd.DataFrame()
 X['eta'] = dataSample_orig['eta']
@@ -185,21 +184,23 @@ X['nTPC'] = dataSample_orig['nTPC']
 X['nITSshared'] = dataSample_orig['nITSshared']
 X['ITSchi2'] = dataSample_orig['ITSchi2']
 X['TPCchi2'] = dataSample_orig['TPCchi2']
+"""
+
 
 X_featureNames = list(X)
 print('Selected features:', X_featureNames)
 joblib.dump(X_featureNames, 'temp_output/ann/featureNames.pkl')
 
 
-#print('Calculating sample weights...')
-#sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
+print('Calculating sample weights...')
+sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
 
     
 
 # Preparation of the target vector (assign `1` and `0` to the entries, representing the signal and background classes, respectively):
 Y = pd.DataFrame()
-Y = (dataSample_orig['pdgMother']!=22).astype(int)
-#Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
+#Y = (dataSample_orig['pdgMother']!=22).astype(int)
+Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
 
 print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
@@ -230,42 +231,16 @@ print('Preprocessing data...')
 
 # ### Feature Scaling to Zero Mean and Unit Variance
 
-doScale = True
+print('Scaling features to zero mean and unit variance...')
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+Xfeats_mean = scaler.mean_
+Xfeats_scale = scaler.scale_
+Xfeats_var = scaler.var_
 
-if doScale:
-    print('Scaling features to zero mean and unit variance...')
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-    Xfeats_mean = scaler.mean_
-    Xfeats_scale = scaler.scale_
-    Xfeats_var = scaler.var_
-    
-    # store the (vstacked) array of shape (3,n_feats)
-    joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
-                'temp_output/ann/StandardScaler_attributes.pkl')
-    
-
-# ### Principal Component Analysis
-
-pca = PCA().fit(X)
-plt.figure()
-plt.plot(np.cumsum(pca.explained_variance_ratio_))
-plt.xlabel('number of components')
-plt.ylabel('cumulative explained variance')
-plt.savefig('temp_output/ann/pca_cumvar_ndim.png')
-
-
-doPCA = False
-
-if doPCA:
-    print('Performing principal component analysis...')
-    n_components = int(X.shape[1]*.5)
-
-    print("original shape:    ", X.shape)
-    pca_train = PCA(n_components=n_components)
-    pca_train.fit(X)
-    X = pca_train.transform(X)
-    print("transformed shape: ", X.shape)
+# store the (vstacked) array of shape (3,n_feats)
+joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
+            'temp_output/ann/StandardScaler_attributes.pkl')
 
 
     
@@ -273,27 +248,15 @@ if doPCA:
 
 print('Splitting the data in training, validation and test samples...')
 
-X, Xtest = np.array_split(X,2)
-Y, Ytest = np.array_split(Y,2)
-#sample_weight, sample_weight_test = np.array_split(sample_weight,2)
+X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
 
-#testing
-#Xtest, Xtest2 = np.array_split(Xtest,2)
-#Ytest, Ytest2 = np.array_split(Ytest,2)
-#sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
-Xtest = np.resize(Xtest, (int(Xtest.shape[0]/2),Xtest.shape[1]))
-Ytest = np.resize(Ytest, (int(Ytest.shape[0]/2)))
-#sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
+X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=.5, random_state=43)
 
+print('Number of signal events in training sample: %d (%.2f percent)' % (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
+print('Number of backgr events in training sample: %d (%.2f percent)' % (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
 
-Xtrain, Xval, Ytrain, Yval = train_test_split(X, Y, test_size=.5)
-#Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
-
-print('Number of signal events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==1].shape[0], Ytrain[Ytrain==1].shape[0]*100/Ytrain.shape[0]))
-print('Number of backgr events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==0].shape[0], Ytrain[Ytrain==0].shape[0]*100/Ytrain.shape[0]))
-
-print('Number of signal events in validation sample: %d (%.2f percent)' % (Yval[Yval==1].shape[0], Yval[Yval==1].shape[0]*100/Yval.shape[0]))
-print('Number of backgr events in validation sample: %d (%.2f percent)' % (Yval[Yval==0].shape[0], Yval[Yval==0].shape[0]*100/Yval.shape[0]))
+print('Number of signal events in validation sample: %d (%.2f percent)' % (y_val[y_val==1].shape[0], y_val[y_val==1].shape[0]*100/y_val.shape[0]))
+print('Number of backgr events in validation sample: %d (%.2f percent)' % (y_val[y_val==0].shape[0], y_val[y_val==0].shape[0]*100/y_val.shape[0]))
 
 
 
@@ -327,7 +290,7 @@ class ROC(keras.callbacks.Callback):
         global roc_auc_val
         if(epoch%10 != 0):
         
-            y_pred_val = self.model.predict(Xval)
+            y_pred_val = self.model.predict(X_val)
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
             self.aucs_val.append(roc_auc_val)
             self.aucs_train.append(0)
@@ -337,28 +300,22 @@ class ROC(keras.callbacks.Callback):
             print("   VAL AUC: {:.3f} %".format( roc_auc_val * 100))    
             
         if(epoch%10 == 0):
-            y_pred_val = self.model.predict(Xval)
+            y_pred_val = self.model.predict(X_val)
             
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
             self.aucs_val.append(roc_auc_val)
 
-            y_pred_train = self.model.predict(Xtrain)
-            roc_auc_train = roc_auc_score(Ytrain, y_pred_train) 
+            y_pred_train = self.model.predict(X_train)
+            roc_auc_train = roc_auc_score(y_train, y_pred_train) 
             self.aucs_train.append(roc_auc_train)
-            
-            #test
-#            roc_auc_val_test = roc_auc_score(self.model.validation_data[1], y_pred_val)
-
+        
             print("Epoch {} took {:.1f}s".format(epoch, time.time() - start_time)),
             print("   LogLoss: {:.4f}".format(loss)),        
             print("   VAL AUC: {:.3f} %".format( roc_auc_val  * 100)),
             print("   TRAIN AUC: {:.3f} %".format( roc_auc_train * 100))
-#            print(" VAL AUC unw.: {:.3f} %".format( roc_auc_val_test  * 100))
-        
-#            print("Save Learning Curve")
+
             plt.clf()
             plt.plot(self.aucs_val, label='validation sample', color='C1')
-#            aucs_train=zero_to_nan(self.aucs_train)     #remove 0 entries for plotting
             plt.plot(self.aucs_train, label='training sample', \
                      marker='o', fillstyle='none', markersize=4, mew=2, linestyle='none', color='C0')
             plt.xlabel("Epochs")
@@ -367,22 +324,7 @@ class ROC(keras.callbacks.Callback):
             plt.grid(True)
             plt.ylim(0.5,1.05);
             plt.savefig('temp_output/ann/learningcurve_rocauc_epochs.png')
-            
-#            print("Save ROC curve")        
-#            fpr, tpr, thresholds = roc_curve(self.model.validation_data[1][:,1], y_pred_val[:,1], sample_weight=pairweights_val)
-#            roc_auc = auc(fpr, tpr)
-#            plt.figure()
-#            plt.plot(tpr, 1-fpr, lw=1, label='ROC (area = %0.4f)'%(roc_auc))
-#            plt.locator_params(nbins=11)
-#            plt.xlim([-0.0, 1.0])
-#            plt.ylim([-0.0, 1.0])
-#            plt.ylabel('1-False Positive Rate = BG Rejection')
-#            plt.xlabel('True Positive Rate = Sig Eff')
-#            plt.title('Receiver operating characteristic')
-#            plt.legend(loc="lower right")
-#            plt.grid()    
-#            plt.show()
-#            plt.savefig('ROC_pref_train.png')
+
         current = roc_auc_val
         if current > self.best:
             self.best = current
@@ -392,11 +334,11 @@ class ROC(keras.callbacks.Callback):
 
         else:
             if self.wait >= 10:             #patience
-#                self.model.stop_training = True
+                # self.model.stop_training = True
                 print('Epoch %05d: early stopping' % (epoch))
                 
                 
-            self.wait += 1 #incremental the number of times without improvement
+            self.wait += 1 #increment the number of times without improvement
         return
 
     def on_batch_begin(self, batch, logs={}):
@@ -483,135 +425,87 @@ def create_model(nr_of_layers = 2,
 
 
 
-
-model = KerasClassifier(build_fn=create_model,
-                        epochs=30,
-                        batch_size=1000000,
-                        kernel_initializer='glorot_normal',
-                        bias_initializer='uniform',
-                        activation='tanh',
-                        nr_of_layers=4,
-                        first_layer_size=100,
-                        layers_slope_coeff=1.,
-                        input_dim = Xtrain.shape[1],
-                        dropout=.1,
-                        noise=.1,
-                        verbose=0)
+model = create_model(nr_of_layers=3,
+                     first_layer_size=50,
+                     layers_slope_coeff=1.,
+                     dropout=.1,
+                     noise=.1,
+                     activation='tanh',
+                     kernel_initializer='glorot_normal',
+                     bias_initializer='uniform',
+                     input_dim= X_train.shape[1])
 
 
 # model training
 
-doGridSearch = False
-
-
 roc_call = ROC()
 
-if not doGridSearch:
-    print('Fitting the model...')
-    hist = model.fit(Xtrain, Ytrain,
-                     #batch_size=250000,
-                     epochs=400,
-                     callbacks=[roc_call],
-                     verbose=0,
-                     validation_data=(Xval, Yval))
-    
+print('Fitting the model...')
+hist = model.fit(X_train, y_train,
+                 #batch_size=250000,
+                 epochs=3,
+                 callbacks=[roc_call],
+                 verbose=0,
+                 validation_data=(X_val, y_val))
 
 
-if doGridSearch:    
-    param_grid = {
-        'epochs': [5, 10, 50],
-        'batch_size': [500],
-        'nr_of_layers': [2,8],
-        'first_layer_size': [5, int(Xtrain.shape[1]/2)],
-        'layers_slope_coeff': [.3,.6],
-        'dropout': [.5,.75],
-        'kernel_initializer': ['uniform', 'glorot_normal'], #['uniform', 'normal', 'glorot_normal', 'glorot_uniform', 'he_normal', 'he_uniform'],
-        'bias_initializer': ['uniform'], #['uniform', 'normal', 'glorot_normal', 'glorot_uniform', 'he_normal', 'he_uniform'],
-        'activation': ['tanh'] #['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']
-    }
-    
-    grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=3,
-                       n_jobs=-1, pre_dispatch=2, verbose=0)
-    
-    grid_result = grid.fit(Xtrain, Ytrain)
-        
-    print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
-    means = grid_result.cv_results_['mean_test_score']
-    stds = grid_result.cv_results_['std_test_score']
-    params = grid_result.cv_results_['params']
-    for mean, stdev, param in zip(means, stds, params):
-        print("%f (%f) with: %r" % (mean, stdev, param))
-    exit()
-
+################################################################################
 
 
 # evaluation of the trained model
 
-Yscore_val = model.predict_proba(Xval)
+print('Evaluating the model on the validation sample...')
+y_val_score = model.predict_proba(X_val)
 
-
-Yscore_val_backgr, Yscore_val_signal = np.split(Yscore_val, 2, axis=1)
-
-Yscore_val_signal_trueSignal = Yscore_val_signal[np.array(Yval==1)]
-Yscore_val_signal_trueBackgr = Yscore_val_signal[np.array(Yval==0)]
-
+# general plotting parameters
 nbins = 100
-plt.figure()
-n_total, bins_total, patches_total = plt.hist(Yscore_val[:,1],
-                                              bins=nbins,
-                                              alpha=.25,
-                                              color='black',
-                                              label='MVA output')
-n_B, bins_B, patches_B = plt.hist(Yscore_val_signal_trueBackgr,
-                                  bins=nbins,
-                                  alpha=.5,
-                                  color='#dd0000',
-                                  label='true background')
-n_S, bins_S, patches_S = plt.hist(Yscore_val_signal_trueSignal,
-                                  bins=nbins,
-                                  alpha=.5,
-                                  color='green',
-                                  label='true signal')
-plt.title('Signal probability distribution')
-plt.xlabel('Signal probability')
-plt.ylabel('Entries')
-plt.xlim(0,1)
-plt.legend()
-plt.savefig('temp_output/ann/MVAoutput_distr_val.png')
 
-"""
-# calculation of significance
 
-significance = n_S/np.sqrt(n_S+n_B)
-pos_maxSignificance = np.argmax(significance)
-plt.figure()
-plt.plot(significance, label='significance')
-plt.plot(pos_maxSignificance, significance[pos_maxSignificance], 'o',
-        markersize=10, fillstyle='none', mew=2,
-        label='max. significance for cut at %.2f' % (pos_maxSignificance/nbins))
-plt.title('Significance distribution')
-plt.xlabel('Signal probability [%]')
-plt.ylabel('$S / \sqrt{(S+B)}$')
-plt.legend()
-plt.savefig('temp_output/ann/MVAoutput_significance_val.png')
-"""
+def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
+    """
+    Plots the MVA output as histogram and returns the underlying
+    distributions of the positive and the negative class.
+    """
+    
+    y_score_truePos = y_score[np.array(y_truth==1)]
+    y_score_trueNeg = y_score[np.array(y_truth==0)]
+    
+    plt.figure()
 
-"""
-# calculation of signal over background
+    n_total, bins_total, patches_total = \
+        plt.hist(y_score,
+                 bins=nbins,
+                 alpha=.25,
+                 color='black',
+                 label='MVA output')
+    
+    n_trueNeg, bins_trueNeg, patches_trueNeg = \
+        plt.hist(y_score_trueNeg,
+                 bins=nbins,
+                 alpha=0.5,
+                 color='#dd0000',
+                 label='true negative')
+    
+    n_truePos, bins_truePos, patches_truePos = \
+        plt.hist(y_score_truePos,
+                 bins=nbins,
+                 alpha=0.5,
+                 color='green',
+                 label='true positive')
+    
+    plt.title('MVA output distribution (positive class)')
+    plt.xlim(-0.05, 1.05)
+    plt.xlabel('MVA output')
+    plt.ylabel('Entries')
+    plt.legend()
+    plt.savefig('temp_output/ann/MVAoutput_distr'+label+'.png')
+    
+    return n_truePos, n_trueNeg
 
-SoverB = n_S/n_B
-#pos_maxSoverB = np.argmax(SoverB)
-plt.figure()
-plt.plot(SoverB, label='significance')
-#plt.plot(pos_maxSoverB, SoverB[pos_maxSoverB], 'o',
-#        markersize=10, fillstyle='none', mew=2,
-#        label='max. signal-over-backgr. for cut at %.2f' % (pos_maxSoverB/nbins))
-plt.title('Signal-over-background distribution')
-plt.xlabel('Signal probability [%]')
-plt.ylabel('$S / B$')
-#plt.legend()
-plt.savefig('temp_output/ann/MVAoutput_SoverB_val.png')
-"""
+
+print('Creating MVA output distributions...')
+n_S, n_B = plot_MVAoutput(y_val, y_val_score, 'val', nbins)
+
 
 
 # Cut efficiencies plot
@@ -644,9 +538,9 @@ l3 = ax2.plot(MVAcut, significance_per_MVAcut,
               label='significance',
               color='green')
 pos_max = np.argmax(significance_per_MVAcut)
-threshold_pos_max = pos_max/(nbins*1.0)
+MVAcut_opt = pos_max/(nbins*1.0)
 l4 = ax2.plot(pos_max/(nbins*1.0), significance_per_MVAcut[pos_max],
-              label='max. significance for cut at %.2f' % threshold_pos_max,
+              label='max. significance for cut at %.2f' % MVAcut_opt,
               marker='o', markersize=10, fillstyle='none', mew=2, linestyle='none',
               color='#005500')
 ax2.set_ylabel('Significance', color='green')
@@ -688,90 +582,98 @@ plt.savefig('temp_output/ann/learningCurve_loss_val.png')
 
 
 
-# ROC curve
+# ### ROC Curve
 
-fpr, tpr, thresholds = roc_curve(Yval, Yscore_val[:,1], pos_label=1)
-roc_auc = roc_auc_score(Yval, Yscore_val[:,1])#, sample_weight=sample_weight_val)
+def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-1, pos_label=1):
+    """
+    Plots the ROC curve and (if specified) the chosen working point.
+    """
 
-plt.figure()
-plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlim([0.0, 1.05])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic curve')
-
-# find point on ROC curve closest to the upper left corner
-#close_optimum = np.argmin(fpr*fpr + (tpr-1)*(tpr-1))
-#plt.plot(fpr[close_optimum], tpr[close_optimum], 'o',
-#         markersize=10,
-#         label="threshold at %.2f (optimal operating point)" % thresholds[close_optimum],
-#         fillstyle="none", mew=2)
+    #if not defined, do not use sample weights
+    if(sample_weight==None):
+        sample_weight = np.ones(y_truth.shape[0])
     
-# find and plot threshold closest to threshold_pos_max
-close_threshold_pos_max = np.argmin(np.abs(thresholds-threshold_pos_max))
-plt.plot(fpr[close_threshold_pos_max], tpr[close_threshold_pos_max], 'o', markersize=10,
-        label="threshold at %.2f" % threshold_pos_max, fillstyle="none",
-        mew=2)
+    fpr, tpr, thresholds = roc_curve(y_truth, y_score, sample_weight=sample_weight,
+                                     pos_label=pos_label)
+    roc_auc = roc_auc_score(y_truth, y_score, sample_weight=sample_weight)
+    print('ROC AUC: %.3f' % roc_auc)
+    
+    plt.figure()
+    plt.plot(fpr, tpr, label='ROC curve (AUC = %0.3f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic curve')
+    
+    if workingpoint != -1:
+        # find and plot threshold closest to the chosen working point
+        close_MVAcut_opt = np.argmin(np.abs(thresholds-workingpoint))
+    
+        plt.plot(fpr[close_MVAcut_opt], tpr[close_MVAcut_opt], 'o', markersize=10,
+                 label="threshold at %.2f" % workingpoint, fillstyle="none",
+                 mew=2)
+    
+    plt.legend(loc=4)
+    plt.savefig('temp_output/ann/roc_curve_'+label+'.png')
 
-plt.legend(loc=4)
-#plt.show()
-print('AUC: %f' % roc_auc)
-plt.savefig('temp_output/ann/ROCcurve_val.png')
+
+print('Generating ROC curve...')
+plot_ROCcurve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
+
 
 
 # ### Precision-Recall Curve
 
+def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', workingpoint=-1):
+    """
+    Plots the precision-recall curve.
+    """
+    
+    # if not defined, do not use sample weights
+    if(sample_weight==None):
+        sample_weight = np.ones(y_truth.shape[0])
+    
+    precision = dict()
+    recall = dict()
+    average_precision = dict()
+    
+    precision, recall, thresholds_PRC = \
+        precision_recall_curve(y_truth,
+                               y_score,
+                               sample_weight=sample_weight)
+    
+    average_precision = average_precision_score(y_truth, y_score, sample_weight=sample_weight)
+    
+    plt.figure()
+    plt.plot(recall, precision, lw=2,
+             label='Precision-recall curve of signal class (area = {1:0.2f})'
+                    ''.format(1, average_precision))
+    
+    if workingpoint != -1:
+        # find threshold closest to the chosen working point
+        close_optimum = np.argmin(np.abs(thresholds_PRC-workingpoint))
+        
+        plt.plot(recall[close_optimum], precision[close_optimum],
+                 'o',
+                 markersize=10,
+                 label="threshold at %.2f" % workingpoint,
+                 fillstyle="none",
+                 mew=2)
+    
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel(r'Recall $R=T_p / (T_p+F_n)$')
+    plt.ylabel(r'Precision $P=T_p / (T_p+F_p)$')
+    plt.title('Precision-Recall Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('temp_output/ann/precision_recall_'+label+'.png')
+
+
 print('Generating precision-recall curve...')
+plot_precision_recall_curve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
 
-
-# compute Precision-Recall
-
-precision = dict()
-recall = dict()
-average_precision = dict()
-precision, recall, thresholds_PRC = precision_recall_curve(Yval,
-                                                           Yscore_val[:,1])
-average_precision = average_precision_score(Yval, Yscore_val[:,1])
-
-
-# Plot Precision-Recall curve
-
-lw=2
-n_classes=1
-plt.clf()
-
-plt.plot(recall, precision, lw=lw,
-         label='Precision-recall curve of signal class (area = {1:0.2f})'
-                ''.format(1, average_precision))
-
-# find threshold closest to threshold_pos_max
-close_optimum = np.argmin(np.abs(thresholds_PRC-threshold_pos_max))
-plt.plot(recall[close_optimum], precision[close_optimum],
-         'o',
-         markersize=10,
-         label="threshold at %.2f" % threshold_pos_max,
-         fillstyle="none",
-         mew=2)
-
-# find threshold closest to zero
-close_zero = np.argmin(np.abs(thresholds_PRC))
-plt.plot(recall[close_zero], precision[close_zero],
-         'o',
-         markersize=10,
-         label="threshold zero",
-         fillstyle="none",
-         mew=2)
-
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
-plt.xlabel(r'Recall $R=T_p / (T_p+F_n)$')
-plt.ylabel(r'Precision $P=T_p / (T_p+F_p)$')
-plt.title('Precision-Recall Curve')
-plt.legend(loc="lower right")
-#plt.show()
-plt.savefig('temp_output/ann/precision_recall_val.png')
 
 
 # confusion matrix
@@ -787,7 +689,8 @@ def plot_confusion_matrix(cm, classes,
     """
     
     print('Generating confusion matrix...')
-    
+
+    plt.figure()
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -823,28 +726,71 @@ def plot_confusion_matrix(cm, classes,
 
 # Compute confusion matrix
 
-Yscore_val_labels = (Yscore_val[:,1]>threshold_pos_max)
-cnf_matrix = confusion_matrix(Yval, Yscore_val_labels)
+y_val_score_labels = (y_val_score>MVAcut_opt)
+cnf_matrix = confusion_matrix(y_val, y_val_score_labels, sample_weight=sample_weight_val)
 np.set_printoptions(precision=2)
 
 
 # Plot non-normalized confusion matrix
-
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       title='Confusion matrix, without normalization', label='val')
 #plt.show()
 
 
 # Plot normalized confusion matrix
-
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       normalize=True, title='Normalized confusion matrix', label='val')
 
 
 # classification report
-
-print(classification_report(Yval, Yscore_val_labels,
+print(classification_report(y_val, y_val_score_labels,
                             target_names=['background','signal']))
 
+
+
+
+################################################################################
+
+
+
+# ## Test Model on New Data and Evaluate It
+
+print('Evaluating the trained model on the test sample...')
+
+y_test_score = model.predict_proba(X_test)
+
+
+# ### MVA Output Distribution
+plot_MVAoutput(y_test, y_test_score, label='test', nbins=nbins)
+
+
+
+# ### ROC Curve
+
+print('Generating ROC curve...')
+plot_ROCcurve(y_test, y_test_score, sample_weight_test, 'test', MVAcut_opt)
+
+
+# ### Precision-Recall Curve
+
+print('Generating precision-recall curve...')
+plot_precision_recall_curve(y_test, y_test_score, sample_weight_test, 'test', MVAcut_opt)
+
+# Compute confusion matrix
+y_test_score_labels = (y_test_score>MVAcut_opt) #thresholds[close_optimum]).astype(int)
+cnf_matrix = confusion_matrix(y_test, y_test_score_labels, sample_weight=sample_weight_test)
+np.set_printoptions(precision=2)
+
+
+# Plot normalized confusion matrix
+plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
+                      normalize=True, title='Normalized confusion matrix', label='test')
+
+# Plot non-normalized confusion matrix
+plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
+                      normalize=False, title='Confusion matrix (non-normalized)', label='test')
+
+
+print('Classification report (test sample):')
+print(classification_report(y_test, y_test_score_labels,
+                            target_names=['background','signal']))
