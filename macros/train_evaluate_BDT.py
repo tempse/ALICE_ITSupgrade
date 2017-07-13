@@ -13,12 +13,10 @@ import root_numpy
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import cross_val_score, train_test_split
-#from sklearn import metrics
 from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.ensemble import RandomForestClassifier
-#from sklearn.ensemble import BaggingClassifier
 from sklearn.externals import joblib
 import itertools
 
@@ -33,10 +31,10 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 1000000
+num_entries = 10000000
 start = 0
 
-inputfilename = "~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part1_1-9-split.root"
+inputfilename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root"
 
 branches_pairTree = [
     #'px1','py1','pz1',
@@ -45,31 +43,33 @@ branches_pairTree = [
     'mass',
     #'sumz',
     #'diffz',
-    #'opang',
+    'opang',
     #'nITS1',
-    #'nITS2',
+    'nITS2',
     'nITSshared1',
     'nITSshared2',
     #'nTPC1',
-    'nTPC2',
-    #'DCAx1','DCAy1',
+    #'nTPC2',
+    'DCAx1',
+    'DCAy1',
     'DCAz1',
-    #'DCAx2','DCAy2',
+    'DCAx2',
+    'DCAy2',
     'DCAz2',
-    'DCAxy1_norm','DCAxy2_norm',
-    #'DCAz1_norm','DCAz2_norm',
+    #'DCAxy1', 'DCAxy2', #'DCAxy1_norm','DCAxy2_norm',
+    ##'DCAz1_norm','DCAz2_norm',
     #'ITSchi21',
     'ITSchi22',
     #'TPCchi21',
-    'TPCchi22',
-    'pt1',
+    #'TPCchi22',
+    #'pt1',
     'pt2',
     #'eta1',
     'eta2',
     #'phi1',
-    'phi2',
-    'PIDeff1',
-    'PIDeff2',
+    #'phi2',
+    ##'PIDeff1',
+    ##'PIDeff2',
     'IsRP',
     'IsConv'
 ]
@@ -95,36 +95,36 @@ branches_singleTree = [
 
 print("Reading file %s..." % inputfilename)
 dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
-                                                     branches=branches_singleTree,
-                                                     #start=start,
-                                                     #stop=num_entries+start
+                                                     branches=branches_pairTree,
+                                                     start=start,
+                                                     stop=num_entries+start
 ))
 
 
-#print('Setting initial mass cuts...')
-#dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
+print('Setting initial mass cuts...')
+dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
 
 
 print('Engineering features...')
 
-"""
+
 # pairTree features
 X = pd.DataFrame()
-###X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
-###                          (dataSample_orig['py1']+dataSample_orig['py2'])*(dataSample_orig['py1']+dataSample_orig['py2']) +
-###                          (dataSample_orig['pz1']+dataSample_orig['pz2'])*(dataSample_orig['pz1']+dataSample_orig['pz2']))
-###X['phiv'] = dataSample_orig['phiv'] - 1.57
-###X['mass'] = dataSample_orig['mass']
-###X['pz_diff'] = np.divide(dataSample_orig['pz1'], np.sqrt(dataSample_orig['px1']*dataSample_orig['px1'] + dataSample_orig['py1']*dataSample_orig['py1'])) - np.divide(dataSample_orig['pz2'], np.sqrt(dataSample_orig['px2']*dataSample_orig['px2'] + dataSample_orig['py2']*dataSample_orig['py2']))
-###X['sumz'] = dataSample_orig['sumz']
-###X['diffz'] = dataSample_orig['diffz'] - 1.57
-###X['opang'] = dataSample_orig['opang']
-###X['nITS1'] = dataSample_orig['nITS1']
-###X['nITS2'] = dataSample_orig['nITS2']
+#X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
+#                          (dataSample_orig['py1']+dataSample_orig['py2'])*(dataSample_orig['py1']+dataSample_orig['py2']) +
+#                          (dataSample_orig['pz1']+dataSample_orig['pz2'])*(dataSample_orig['pz1']+dataSample_orig['pz2']))
+#X['phiv'] = dataSample_orig['phiv'] - 1.57
+#X['mass'] = dataSample_orig['mass']
+#X['pz_diff'] = np.divide(dataSample_orig['pz1'], np.sqrt(dataSample_orig['px1']*dataSample_orig['px1'] + dataSample_orig['py1']*dataSample_orig['py1'])) - np.divide(dataSample_orig['pz2'], np.sqrt(dataSample_orig['px2']*dataSample_orig['px2'] + dataSample_orig['py2']*dataSample_orig['py2']))
+#X['sumz'] = dataSample_orig['sumz']
+#X['diffz'] = dataSample_orig['diffz'] - 1.57
+X['opang'] = dataSample_orig['opang']
+#X['nITS1'] = dataSample_orig['nITS1']
+X['nITS2'] = dataSample_orig['nITS2']
 X['nITSshared1'] = dataSample_orig['nITSshared1']
 X['nITSshared2'] = dataSample_orig['nITSshared2']
-###X['nTPC1'] = dataSample_orig['nTPC1']
-X['nTPC2'] = dataSample_orig['nTPC2']
+#X['nTPC1'] = dataSample_orig['nTPC1']
+#X['nTPC2'] = dataSample_orig['nTPC2']
 
 ## calculate angle between pair DCA vectors
 #temp_DCAprod = ((dataSample_orig['DCAx1']*dataSample_orig['DCAx2']) + (dataSample_orig['DCAy1']*dataSample_orig['DCAy2']) + (dataSample_orig['DCAz1']*dataSample_orig['DCAz2'])) / (np.sqrt(dataSample_orig['DCAx1']*dataSample_orig['DCAx1'] + dataSample_orig['DCAy1']*dataSample_orig['DCAy1'] + dataSample_orig['DCAz1']*dataSample_orig['DCAz1']) * np.sqrt(dataSample_orig['DCAx2']*dataSample_orig['DCAx2'] + dataSample_orig['DCAy2']*dataSample_orig['DCAy2'] + dataSample_orig['DCAz2']*dataSample_orig['DCAz2']))
@@ -147,22 +147,22 @@ X['nTPC2'] = dataSample_orig['nTPC2']
 #X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
 #X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
 
-X['DCAxy1'] = np.log(np.abs(dataSample_orig['DCAxy1_norm']))
-X['DCAxy2'] = np.log(np.abs(dataSample_orig['DCAxy2_norm']))
+#X['DCAxy1'] = np.log(np.abs(dataSample_orig['DCAxy1'])) #dataSample_orig['DCAxy1_norm']))
+#X['DCAxy2'] = np.log(np.abs(dataSample_orig['DCAxy2'])) #dataSample_orig['DCAxy2_norm']))
 X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
 X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
-###X['ITSchi21'] = dataSample_orig['ITSchi21']
+#X['ITSchi21'] = dataSample_orig['ITSchi21']
 X['ITSchi22'] = dataSample_orig['ITSchi22']
-###X['TPCchi21'] = dataSample_orig['TPCchi21']
-X['TPCchi22'] = dataSample_orig['TPCchi22']
-X['pt1'] = dataSample_orig['pt1']
+#X['TPCchi21'] = dataSample_orig['TPCchi21']
+#X['TPCchi22'] = dataSample_orig['TPCchi22']
+#X['pt1'] = dataSample_orig['pt1']
 X['pt2'] = dataSample_orig['pt2']
-###X['eta1'] = dataSample_orig['eta1']
+#X['eta1'] = dataSample_orig['eta1']
 X['eta2'] = dataSample_orig['eta2']
-###X['phi1'] = dataSample_orig['phi1']
-X['phi2'] = dataSample_orig['phi2']
-"""
+#X['phi1'] = dataSample_orig['phi1']
+#X['phi2'] = dataSample_orig['phi2']
 
+"""
 # singleTree features
 X = pd.DataFrame()
 X['eta'] = dataSample_orig['eta']
@@ -178,7 +178,7 @@ X['nTPC'] = dataSample_orig['nTPC']
 X['nITSshared'] = dataSample_orig['nITSshared']
 X['ITSchi2'] = dataSample_orig['ITSchi2']
 X['TPCchi2'] = dataSample_orig['TPCchi2']
-
+"""
 
 
 X_featureNames = list(X)
@@ -189,12 +189,12 @@ joblib.dump(X_featureNames, 'temp_output/bdt/featureNames.pkl')
 #print('Calculating sample weights...')
 #sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.astype(np.float32)
 
-    
+
 
 # Preparation of the target vector (assign `1` and `0` to the entries, representing the signal and background classes, respectively):
 Y = pd.DataFrame()
-Y = (dataSample_orig['pdgMother']!=22).astype(int)
-#Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
+#Y = (dataSample_orig['pdgMother']!=22).astype(int)
+Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
 
 print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
@@ -225,42 +225,16 @@ print('Preprocessing data...')
 
 # ### Feature Scaling to Zero Mean and Unit Variance
 
-doScale = True
+print('Scaling features to zero mean and unit variance...')
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+Xfeats_mean = scaler.mean_
+Xfeats_scale = scaler.scale_
+Xfeats_var = scaler.var_
 
-if doScale:
-    print('Scaling features to zero mean and unit variance...')
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-    Xfeats_mean = scaler.mean_
-    Xfeats_scale = scaler.scale_
-    Xfeats_var = scaler.var_
-    
-    # store the (vstacked) array of shape (3,n_feats)
-    joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
-                'temp_output/bdt/StandardScaler_attributes.pkl')
-    
-
-# ### Principal Component Analysis
-
-pca = PCA().fit(X)
-plt.figure()
-plt.plot(np.cumsum(pca.explained_variance_ratio_))
-plt.xlabel('number of components')
-plt.ylabel('cumulative explained variance')
-plt.savefig('temp_output/bdt/pca_cumvar_ndim.png')
-
-
-doPCA = False
-
-if doPCA:
-    print('Performing principal component analysis...')
-    n_components = int(X.shape[1]*.5)
-
-    print("original shape:    ", X.shape)
-    pca_train = PCA(n_components=n_components)
-    pca_train.fit(X)
-    X = pca_train.transform(X)
-    print("transformed shape: ", X.shape)
+# store the (vstacked) array of shape (3,n_feats)
+joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
+            'temp_output/bdt/StandardScaler_attributes.pkl')
 
 
     
@@ -268,26 +242,14 @@ if doPCA:
 
 print('Splitting the data in training, validation and test samples...')
 
-X, Xtest = np.array_split(X,2)
-Y, Ytest = np.array_split(Y,2)
-#sample_weight, sample_weight_test = np.array_split(sample_weight,2)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=1/3., random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=.5, random_state=43)
 
-#testing
-#Xtest, Xtest2 = np.array_split(Xtest,2)
-#Ytest, Ytest2 = np.array_split(Ytest,2)
-#sample_weight_test, sample_weight_test2 = np.array_split(sample_weight_test,2)
-Xtest = np.resize(Xtest, (int(Xtest.shape[0]/2),Xtest.shape[1]))
-Ytest = np.resize(Ytest, (int(Ytest.shape[0]/2)))
-#sample_weight_test = np.resize(sample_weight_test, (int(sample_weight_test.shape[0]/2)))
+print('Number of signal events in training sample: %d (%.2f percent)' % (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
+print('Number of backgr events in training sample: %d (%.2f percent)' % (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
 
-Xtrain, Xval, Ytrain, Yval = train_test_split(X, Y, test_size=.5)
-#Xtrain, Xval, Ytrain, Yval, sample_weight_train, sample_weight_val = train_test_split(X, Y, sample_weight, test_size=.5)
-
-print('Number of signal events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==1].shape[0], Ytrain[Ytrain==1].shape[0]*100/Ytrain.shape[0]))
-print('Number of backgr events in training sample: %d (%.2f percent)' % (Ytrain[Ytrain==0].shape[0], Ytrain[Ytrain==0].shape[0]*100/Ytrain.shape[0]))
-
-print('Number of signal events in validation sample: %d (%.2f percent)' % (Yval[Yval==1].shape[0], Yval[Yval==1].shape[0]*100/Yval.shape[0]))
-print('Number of backgr events in validation sample: %d (%.2f percent)' % (Yval[Yval==0].shape[0], Yval[Yval==0].shape[0]*100/Yval.shape[0]))
+print('Number of signal events in validation sample: %d (%.2f percent)' % (y_val[y_val==1].shape[0], y_val[y_val==1].shape[0]*100/y_val.shape[0]))
+print('Number of backgr events in validation sample: %d (%.2f percent)' % (y_val[y_val==0].shape[0], y_val[y_val==0].shape[0]*100/y_val.shape[0]))
 
 
 
@@ -296,222 +258,156 @@ print('Number of backgr events in validation sample: %d (%.2f percent)' % (Yval[
 
 # ### Boosted Decision Trees (Random Forest)
 
-
-
-# #### Classifier parameter setting:
-
-n_jobs = 3
-pre_dispatch = 1
-n_estimators = 300
-max_depth = None
-min_samples_split = 500
-class_weight = 'balanced'
-criterion = 'gini'
-max_features = None
-
-
 print('Creating random forest classifier...')
 
-clf = RandomForestClassifier(n_jobs=n_jobs,
-                             n_estimators=n_estimators,
-                             max_depth=max_depth,
-                             min_samples_split=min_samples_split,
-                             class_weight=class_weight,
-                             criterion=criterion,
-                             max_features=max_features
-                            )
-
-#clf = BaggingClassifier(rfc,
-#                        bootstrap=False,
-#                        n_estimators=15,
-#                        max_samples=0.5)
+clf = RandomForestClassifier(n_jobs=-1,
+                             n_estimators=300,
+                             max_depth=None,
+                             min_samples_split=500,
+                             class_weight='balanced',
+                             criterion='gini',
+                             max_features=None
+)
 
 
-doGridSearch = False
+print('Training the classifier...')
 
-if not doGridSearch:
-    print('Training the classifier...')
+plt.figure()
+plt.xlabel('Number of training events (in millions)')
+plt.ylabel('ROC AUC')
+plt.ylim(.65,1.05)
+for i in [1]:# [.1,.25,.4,.55,.7,.85,1]:
+    #scores = cross_val_score(clf,
+    #                         X_train[0:int(X_train.shape[0]*i),:],
+    #                         y_train[0:int(y_train.shape[0]*i)],
+    #                         cv=2,
+    #                         scoring='f1_macro',
+    #                         n_jobs=n_jobs,
+    #                         pre_dispatch=pre_dispatch
+    #                         )
+    clf = clf.fit(X_train[0:int(X_train.shape[0]*i),:],
+                  y_train[0:int(y_train.shape[0]*i)],
+                  #sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)]
+    )
+    joblib.dump(clf, 'temp_output/bdt/clf_weights.pkl')
+    current_auc = roc_auc_score(y_val[0:int(y_val.shape[0]*i)],
+                                clf.predict_proba(X_val[0:int(X_val.shape[0]*i),:])[:,1],
+                                #sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)]
+    )
+    print('Relative size of training sample: %.2f,\tROC AUC = %.3f' % (i, current_auc))
+    plt.plot(int(X_train.shape[0]*i)/(1000000.0), current_auc,
+             marker='o',
+             markersize=10,
+             color='#1f77b4',
+             linestyle='none')
+    plt.tight_layout()
+    plt.savefig('temp_output/bdt/ROCAUC_sampleSize.png')
+
+    print("Accuracy on training set:   {:.3f}".format(clf.score(X_train, y_train)))
+    print("Accuracy on validation set: {:.3f}".format(clf.score(X_val, y_val)))
+
     
-    plt.figure()
-    #plt.xticks(rotation=90)
-    plt.xlabel('Number of training events (in millions)')
-    plt.ylabel('ROC AUC')
-    plt.ylim(.65,1.05)
-    for i in [1]:# [.1,.25,.4,.55,.7,.85,1]:
-        #scores = cross_val_score(clf,
-        #                         Xtrain[0:int(Xtrain.shape[0]*i),:],
-        #                         Ytrain[0:int(Ytrain.shape[0]*i)],
-        #                         cv=2,
-        #                         scoring='f1_macro',
-        #                         n_jobs=n_jobs,
-        #                         pre_dispatch=pre_dispatch
-        #                         )
-        clf = clf.fit(Xtrain[0:int(Xtrain.shape[0]*i),:],
-                      Ytrain[0:int(Ytrain.shape[0]*i)],
-                      #sample_weight=sample_weight_train[0:int(sample_weight_train.shape[0]*i)]
-        )
-        joblib.dump(clf, 'temp_output/bdt/clf_weights.pkl')
-        current_auc = roc_auc_score(Yval[0:int(Yval.shape[0]*i)],
-                                    clf.predict_proba(Xval[0:int(Xval.shape[0]*i),:])[:,1],
-                                    #sample_weight=sample_weight_val[0:int(sample_weight_val.shape[0]*i)]
-        )
-        print('Relative size of training sample: %.2f,\tROC AUC = %.3f' % (i, current_auc))
-        plt.plot(int(Xtrain.shape[0]*i)/(1000000.0), current_auc,
-                 marker='o',
-                 markersize=10,
-                 color='#1f77b4',
-                 linestyle='none')
-        plt.tight_layout()
-        plt.savefig('temp_output/bdt/ROCAUC_sampleSize.png')
-        
-    #print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-
-    print("Accuracy on training set:   {:.3f}".format(clf.score(Xtrain, Ytrain)))
-    print("Accuracy on validation set: {:.3f}".format(clf.score(Xval, Yval)))
-
 # ### Variable Importances
 
-if not doGridSearch:
-    print('Calculating feature importances...')
-    importances = clf.feature_importances_
-    std = np.std([tree.feature_importances_ for tree in clf.estimators_],
-                 axis=0)
-    indices = np.argsort(importances)[::-1]
+print('Calculating feature importances...')
+importances = clf.feature_importances_
+std = np.std([tree.feature_importances_ for tree in clf.estimators_],
+             axis=0)
+indices = np.argsort(importances)[::-1]
     
-    # Print the feature ranking
-    print("Feature ranking:")
+# Print the feature ranking
+print("Feature ranking:")
+
+indices_featureNames = np.empty([X_train.shape[1]], dtype=object)
+
+for f in range(X_train.shape[1]):
+    indices_featureNames[f] = X_featureNames[indices[f]]
+    print("\t%d. %s \t(%f)" % (f + 1,
+                               indices_featureNames[f],
+                               importances[indices[f]]))
     
-    indices_featureNames = np.empty([Xtrain.shape[1]], dtype=object)
-    
-    for f in range(Xtrain.shape[1]):
-        if not doPCA:
-            indices_featureNames[f] = X_featureNames[indices[f]]
-            print("\t%d. %s \t(%f)" % (f + 1,
-                                     indices_featureNames[f],
-                                     importances[indices[f]]))
-        if doPCA:
-            print("\t%d. feature %d \t(%f)" % (f + 1,
-                                            indices[f],
-                                            importances[indices[f]]))
-    
-    # Plot the feature importances of the forest
-    plt.figure()
-    plt.title("Feature importances")
-    plt.bar(range(Xtrain.shape[1]), importances[indices],
-           color="r", yerr=std[indices], align="center")
-    if doPCA:
-        plt.xticks(range(Xtrain.shape[1]), indices)
-    else:
-        plt.xticks(range(Xtrain.shape[1]), indices_featureNames, rotation=90)
-    plt.xlim([-1, Xtrain.shape[1]])
-    plt.tight_layout()
-    #plt.show()
-    plt.savefig('temp_output/bdt/var_importance.png')
+# Plot the feature importances of the forest
+plt.figure()
+plt.title("Feature importances")
+plt.bar(range(X_train.shape[1]), importances[indices],
+        color="r", yerr=std[indices], align="center")
+plt.xticks(range(X_train.shape[1]), indices_featureNames, rotation=90)
+plt.xlim([-1, X_train.shape[1]])
+plt.tight_layout()
+#plt.show()
+plt.savefig('temp_output/bdt/var_importance.png')
 
 
-# ## Grid Search
+del X_train, y_train#, sample_weight_train
 
-if doGridSearch:
-    print('Performing grid search...')
-    from sklearn.model_selection import GridSearchCV
-    
-    param_grid = {
-        'n_estimators': [100,200],
-        'max_depth': [15, None],
-        'min_samples_split': [2000,5000],
-        'max_features': ['auto',None],
-        'class_weight': ['balanced'],
-        'criterion': ['entropy','gini']
-    }
-    scoring = 'f1_macro'
-    
-    grid = GridSearchCV(estimator=clf, param_grid=param_grid, cv=3,
-                        n_jobs=n_jobs, pre_dispatch=pre_dispatch,
-                        scoring=scoring)
-    
-    grid_result = grid.fit(Xtrain, Ytrain)
-    
-    print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
-    means = grid_result.cv_results_['mean_test_score']
-    stds = grid_result.cv_results_['std_test_score']
-    params = grid_result.cv_results_['params']
-    for mean, stdev, param in zip(means, stds, params):
-        print("%f (%f) with: %r" % (mean, stdev, param))
-    print('Scoring method: %s' % scoring)
-    exit()
-
-
-
-
-del Xtrain, Ytrain#, sample_weight_train
 
 
 # ## Evaluation of Trained Model
 
 print('Evaluating the trained model on the validation set...')
 
-Yscore_val = clf.predict_proba(Xval)
+# general plotting parameters
+nbins = 100
+
+
+y_val_score = clf.predict_proba(X_val)
 
 
 # ### MVA Output Distributions
 
+def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
+    """
+    Plots the MVA output as histogram and returns the underlying
+    distributions of the positive and the negative class.
+    """
+    
+    # split the array and use only the column containing the
+    # probabilities of an event to belong the the "signal" class
+    # (can be done in case of 'binary' classification)
+    discard, y_score_posClass = np.split(y_score,
+                                         2,
+                                         axis=1)
+    
+    y_score_posClass_truePos = y_score_posClass[np.array(y_truth==1)]
+    y_score_posClass_trueNeg = y_score_posClass[np.array(y_truth==0)]
+    
+    plt.figure()
+
+    n_total, bins_total, patches_total = \
+        plt.hist(y_score[:,1],
+                 bins=nbins,
+                 alpha=.25,
+                 color='black',
+                 label='MVA output')
+    
+    n_trueNeg, bins_trueNeg, patches_trueNeg = \
+        plt.hist(y_score_posClass_trueNeg,
+                 bins=nbins,
+                 alpha=0.5,
+                 color='#dd0000',
+                 label='true negative')
+    
+    n_truePos, bins_truePos, patches_truePos = \
+        plt.hist(y_score_posClass_truePos,
+                 bins=nbins,
+                 alpha=0.5,
+                 color='green',
+                 label='true positive')
+    
+    plt.title('MVA output distribution (positive class)')
+    plt.xlim(-0.05, 1.05)
+    plt.xlabel('MVA output')
+    plt.ylabel('Entries')
+    plt.legend()
+    plt.savefig('temp_output/bdt/MVAoutput_distr'+label+'.png')
+    
+    return n_truePos, n_trueNeg
+
+
 print('Creating MVA output distributions...')
-
-Yscore_val_backgr, Yscore_val_signal = np.split(Yscore_val, 2, axis=1)
-
-Yscore_val_signal_trueSignal = Yscore_val_signal[np.array(Yval==1)]
-Yscore_val_signal_trueBackgr = Yscore_val_signal[np.array(Yval==0)]
-
-plt.figure()
-nbins = 100
-n_total, bins_total, patches_total = plt.hist(Yscore_val[:,1], bins=nbins, alpha=.25, color='black', label='MVA output')
-n_B, bins_B, patches_B = plt.hist(Yscore_val_signal_trueBackgr, bins=nbins, alpha=.5, color='#dd0000', label='true background')
-n_S, bins_S, patches_S = plt.hist(Yscore_val_signal_trueSignal, bins=nbins, alpha=.5, color='green', label='true signal')
-plt.title('MVA output distribution (signal class)')
-plt.xlabel('MVA output')
-plt.ylabel('Entries')
-plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_distr_val.png')
+n_S, n_B = plot_MVAoutput(y_val, y_val_score, 'val', nbins)
 
 
-"""
-# ### Calculation of Significance
-
-significance = n_S/np.sqrt(n_S+n_B)
-pos_maxSignificance = np.argmax(significance)
-
-# probability threshold above which events are classified as 'signal':
-threshold_proba = pos_maxSignificance/(nbins*1.0)
-
-plt.figure()
-plt.plot(significance, label='significance')
-plt.plot(pos_maxSignificance, significance[pos_maxSignificance], 'o',
-        markersize=10, fillstyle='none', mew=2,
-        label='max. significance for cut at %.2f' % (threshold_proba))
-plt.title('Significance distribution')
-plt.xlabel('MVA output')
-plt.ylabel('$S / \sqrt{(S+B)}$')
-plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_significance_val.png')
-"""
-
-
-"""
-# ### Calculation of Signal-Background Ratio
-
-SoverB = n_S/(n_B*1.0)
-#pos_maxSoverB = np.argmax(SoverB)
-plt.figure()
-plt.plot(SoverB, label='signal over background')
-#plt.plot(pos_maxSoverB, SoverB[pos_maxSoverB], 'o',
-#        markersize=10, fillstyle='none', mew=2,
-#        label='max. signal-over-backgr. for cut at %.2f' % (pos_maxSoverB/nbins))
-plt.title('Signal-over-background distribution')
-plt.xlabel('MVA output')
-plt.ylabel('$S / B$')
-#plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_SoverB_val.png')
-"""
 
 
 # ### Cut efficiencies plot
@@ -543,9 +439,9 @@ l3 = ax2.plot(MVAcut, significance_per_MVAcut,
               label='significance',
               color='green')
 pos_max = np.argmax(significance_per_MVAcut)
-threshold_pos_max = pos_max/(nbins*1.0)
+MVAcut_opt = pos_max/(nbins*1.0)
 l4 = ax2.plot(pos_max/(nbins*1.0), significance_per_MVAcut[pos_max],
-              label='max. significance for cut at %.2f' % threshold_pos_max,
+              label='max. significance for cut at %.2f' % MVAcut_opt,
               marker='o', markersize=10, fillstyle='none', mew=2, linestyle='none',
               color='#005500')
 ax2.set_ylabel('Significance', color='green')
@@ -561,88 +457,85 @@ plt.savefig('temp_output/bdt/significance_vs_MVAcut_val.png')
 
 # ### ROC Curve
 
-print('Generating ROC curve...')
-
-fpr, tpr, thresholds = roc_curve(Yval, Yscore_val[:,1], pos_label=1)
-#roc_auc = roc_auc_score(fpr, tpr)
-roc_auc = roc_auc_score(Yval, Yscore_val[:,1])
-
-plt.figure()
-plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlim([0.0, 1.05])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic curve')
-
-## find point on ROC curve closest to the upper left corner
-#close_optimum = np.argmin(fpr*fpr + (tpr-1)*(tpr-1))
-#plt.plot(fpr[close_optimum], tpr[close_optimum], 'o',
-#         markersize=10,
-#         label="threshold at %.2f (optimal operating point)" % thresholds[close_optimum],
-#         fillstyle="none", mew=2)
+def plot_ROCcurve(y_truth, y_score, label='', workingpoint=-1):
+    """
+    Plots the ROC curve and (if specified) the chosen working point.
+    """
     
-# find and plot threshold closest to threshold_pos_max
-close_threshold_pos_max = np.argmin(np.abs(thresholds-threshold_pos_max))
-plt.plot(fpr[close_threshold_pos_max], tpr[close_threshold_pos_max], 'o', markersize=10,
-        label="threshold at %.2f" % threshold_pos_max, fillstyle="none",
-        mew=2)
+    fpr, tpr, thresholds = roc_curve(y_truth, y_score[:,1], pos_label=1)
+    roc_auc = roc_auc_score(y_truth, y_score[:,1])
+    
+    plt.figure()
+    plt.plot(fpr, tpr, label='ROC curve (AUC = %0.3f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic curve')
+    
+    if workingpoint != -1:
+        # find and plot threshold closest to the chosen working point
+        close_MVAcut_opt = np.argmin(np.abs(thresholds-workingpoint))
+    
+        plt.plot(fpr[close_MVAcut_opt], tpr[close_MVAcut_opt], 'o', markersize=10,
+                 label="threshold at %.2f" % workingpoint, fillstyle="none",
+                 mew=2)
+    
+    plt.legend(loc=4)
+    plt.savefig('temp_output/bdt/roc_curve_'+label+'.png')
 
-plt.legend(loc=4)
-#plt.show()
-plt.savefig('temp_output/bdt/roc_curve_val.png')
-print('AUC: %f' % roc_auc)
+
+print('Generating ROC curve...')
+plot_ROCcurve(y_val, y_val_score, 'val', MVAcut_opt)
+
 
 
 # ### Precision-Recall Curve
 
-print('Generating precision-recall curve...')
-
-
-# Compute Precision-Recall
-precision = dict()
-recall = dict()
-average_precision = dict()
-precision, recall, thresholds_PRC = precision_recall_curve(Yval,
-                                                           Yscore_val[:,1])
-average_precision = average_precision_score(Yval, Yscore_val[:,1])
+def plot_precision_recall_curve(y_truth, y_score, label='', workingpoint=-1):
+    """
+    Plots the precision-recall curve.
+    """
     
-# Plot Precision-Recall curve
-lw=2
-n_classes=1
-plt.clf()
+    precision = dict()
+    recall = dict()
+    average_precision = dict()
+    
+    precision, recall, thresholds_PRC = \
+        precision_recall_curve(y_truth,
+                               y_score[:,1])
+    
+    average_precision = average_precision_score(y_truth, y_score[:,1])
+    
+    plt.figure()
+    plt.plot(recall, precision, lw=2,
+             label='Precision-recall curve of signal class (area = {1:0.2f})'
+                    ''.format(1, average_precision))
+    
+    if workingpoint != -1:
+        # find threshold closest to the chosen working point
+        close_optimum = np.argmin(np.abs(thresholds_PRC-workingpoint))
+        
+        plt.plot(recall[close_optimum], precision[close_optimum],
+                 'o',
+                 markersize=10,
+                 label="threshold at %.2f" % workingpoint,
+                 fillstyle="none",
+                 mew=2)
+    
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel(r'Recall $R=T_p / (T_p+F_n)$')
+    plt.ylabel(r'Precision $P=T_p / (T_p+F_p)$')
+    plt.title('Precision-Recall Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('temp_output/bdt/precision_recall_'+label+'.png')
 
-plt.plot(recall, precision, lw=lw,
-         label='Precision-recall curve of signal class (area = {1:0.2f})'
-                ''.format(1, average_precision))
 
-# find threshold closest to threshold_pos_max
-close_optimum = np.argmin(np.abs(thresholds_PRC-threshold_pos_max))
-plt.plot(recall[close_optimum], precision[close_optimum],
-         'o',
-         markersize=10,
-         label="threshold at %.2f" % threshold_pos_max,
-         fillstyle="none",
-         mew=2)
+print('Generating precision-recall curve...')
+plot_precision_recall_curve(y_val, y_val_score, 'val', MVAcut_opt)
 
-# find threshold closest to zero
-close_zero = np.argmin(np.abs(thresholds_PRC))
-plt.plot(recall[close_zero], precision[close_zero],
-         'o',
-         markersize=10,
-         label="threshold zero",
-         fillstyle="none",
-         mew=2)
-
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
-plt.xlabel(r'Recall $R=T_p / (T_p+F_n)$')
-plt.ylabel(r'Precision $P=T_p / (T_p+F_p)$')
-plt.title('Precision-Recall Curve')
-plt.legend(loc="lower right")
-#plt.show()
-plt.savefig('temp_output/bdt/precision_recall_val.png')
 
 
 # ### Confusion Matrix
@@ -659,7 +552,8 @@ def plot_confusion_matrix(cm, classes,
     """
     
     print('Generating confusion matrix...')
-    
+
+    plt.figure()
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -694,20 +588,18 @@ def plot_confusion_matrix(cm, classes,
 
 
 # Compute confusion matrix
-Yscore_val_labels = (Yscore_val[:,1]>threshold_pos_max)
-cnf_matrix = confusion_matrix(Yval, Yscore_val_labels)
+y_val_score_labels = (y_val_score[:,1]>MVAcut_opt)
+cnf_matrix = confusion_matrix(y_val, y_val_score_labels)
 np.set_printoptions(precision=2)
 
 
 # Plot non-normalized confusion matrix
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       title='Confusion matrix (non-normalized)', label='val')
 #plt.show()
 
 
 # Plot normalized confusion matrix
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       normalize=True, title='Normalized confusion matrix', label='val')
 
@@ -716,177 +608,56 @@ plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
 
 
 print('Classification report (validation sample):')
-print(classification_report(Yval, Yscore_val_labels,
+print(classification_report(y_val, y_val_score_labels,
                             target_names=['background','signal']))
 
 
-del Yscore_val
+del y_val_score
 
-# ---
+
+
+################################################################################
+
+
 
 # ## Test Model on New Data and Evaluate It
 
 print('Evaluating the trained model on the test sample...')
 
-Ytest_score = clf.predict_proba(Xtest)
+y_test_score = clf.predict_proba(X_test)
 
 
 # ### MVA Output Distribution
+plot_MVAoutput(y_test, y_test_score, label='test', nbins=nbins)
 
-print('Creating MVA output distributions...')
-
-Yscore_test_backgr, Yscore_test_signal = np.split(Ytest_score, 2, axis=1)
-
-Yscore_test_signal_trueSignal = Yscore_test_signal[np.array(Ytest==1)]
-Yscore_test_signal_trueBackgr = Yscore_test_signal[np.array(Ytest==0)]
-
-plt.figure()
-nbins = 100
-n_total, bins_total, patches_total = plt.hist(Ytest_score[:,1], bins=nbins, alpha=.25, color='black', label='MVA output')
-n_B, bins_B, patches_B = plt.hist(Yscore_test_signal_trueBackgr, bins=nbins, alpha=.5, color='#dd0000', label='true background')
-n_S, bins_S, patches_S = plt.hist(Yscore_test_signal_trueSignal, bins=nbins, alpha=.5, color='green', label='true signal')
-plt.title('MVA output distribution (signal class)')
-plt.xlabel('MVA output')
-plt.ylabel('Entries')
-plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_distr_test.png')
-
-
-"""
-# ### Calculation of Significance
-
-significance_test = n_S/np.sqrt(n_S+n_B)
-pos_maxSignificance = np.argmax(significance_test)
-plt.figure()
-plt.plot(significance_test, label='significance')
-plt.plot(pos_maxSignificance, significance_test[pos_maxSignificance], 'o',
-        markersize=10, fillstyle='none', mew=2,
-        label='max. significance for cut at %.2f' % (threshold_pos_max))
-plt.title('Significance distribution')
-plt.xlabel('MVA output')
-plt.ylabel('$S / \sqrt{(S+B)}$')
-plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_significance_test.png')
-"""
-
-"""
-# ### Calculation of Signal-to-Background Ratio
-
-with np.errstate(divide='ignore', invalid='ignore'):
-    SoverB = np.true_divide(n_S, n_B)
-    SoverB[SoverB==np.inf] = 0
-    SoverB = np.nan_to_num(SoverB)
-
-#if not n_B.all()==0:
-#    SoverB = n_S/(n_B*1.0)
-
-#pos_maxSoverB = np.argmax(SoverB)
-plt.figure()
-plt.plot(SoverB, label='signal over background')
-#plt.plot(pos_maxSoverB, SoverB[pos_maxSoverB], 'o',
-#        markersize=10, fillstyle='none', mew=2,
-#        label='max. signal-over-backgr. for cut at %.2f' % (pos_maxSoverB/nbins))
-plt.title('Signal-over-background distribution')
-plt.xlabel('MVA output')
-plt.ylabel('$S / B$')
-#plt.legend()
-plt.savefig('temp_output/bdt/MVAoutput_SoverB_test.png')
-"""
 
 
 # ### ROC Curve
 
 print('Generating ROC curve...')
-
-fpr_test, tpr_test, thresholds_test = roc_curve(Ytest, Ytest_score[:,1], pos_label=1)
-#roc_auc_test = roc_auc_score(fpr_test, tpr_test)
-roc_auc_test = roc_auc_score(Ytest, Ytest_score[:,1])
-
-plt.figure()
-plt.plot(fpr_test, tpr_test, label='ROC curve (area = %0.3f)' % roc_auc_test)
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlim([0.0, 1.05])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic curve')
-
-# find point on ROC curve closest to the optimum operating point
-# as determined before
-close_optimum_test = np.argmin(np.abs(threshold_pos_max-thresholds_test))
-plt.plot(fpr_test[close_optimum_test], tpr_test[close_optimum_test], 'o', markersize=10,
-         label="threshold at %.2f" % threshold_pos_max, fillstyle="none",
-        mew=2)
-
-plt.legend(loc=4)
-#plt.show()
-plt.savefig('temp_output/bdt/roc_curve_test.png')
-print('AUC: %f' % roc_auc_test)
+plot_ROCcurve(y_test, y_test_score, 'test', MVAcut_opt)
 
 
 # ### Precision-Recall Curve
 
 print('Generating precision-recall curve...')
-
-# Compute Precision-Recall
-precision_test = dict()
-recall_test = dict()
-average_precision_test = dict()
-precision_test, recall_test, thresholds_PRC_test = precision_recall_curve(Ytest,
-                                                                          Ytest_score[:,1])
-average_precision_test = average_precision_score(Ytest, Ytest_score[:,1])
-
-plt.clf()
-
-plt.plot(recall_test, precision_test, lw=lw,
-         label='Precision-recall curve of signal class (area = {1:0.2f})'
-         ''.format(1, average_precision_test))
-
-# find threshold closest to threshold_pos_max
-close_optimum = np.argmin(np.abs(thresholds_PRC_test-threshold_pos_max))
-plt.plot(recall_test[close_optimum], precision_test[close_optimum],
-         'o',
-         markersize=10,
-         label="threshold at %.2f" % threshold_pos_max,
-         fillstyle="none",
-         mew=2)
-
-# find threshold closest to zero
-close_zero = np.argmin(np.abs(thresholds_PRC_test))
-plt.plot(recall_test[close_zero], precision_test[close_zero],
-         'o',
-         markersize=10,
-         label="threshold zero",
-         fillstyle="none",
-         mew=2)
-
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
-plt.xlabel(r'Recall $R=T_p / (T_p+F_n)$')
-plt.ylabel(r'Precision $P=T_p / (T_p+F_p)$')
-plt.title('Precision-Recall Curve')
-plt.legend(loc="lower right")
-#plt.show()
-plt.savefig('temp_output/bdt/precision_recall_test.png')
-
+plot_precision_recall_curve(y_test, y_test_score, 'test', MVAcut_opt)
 
 # Compute confusion matrix
-Ytest_score_labels = (Ytest_score[:,1]>threshold_pos_max) #thresholds[close_optimum]).astype(int)
-cnf_matrix = confusion_matrix(Ytest, Ytest_score_labels)
+y_test_score_labels = (y_test_score[:,1]>MVAcut_opt) #thresholds[close_optimum]).astype(int)
+cnf_matrix = confusion_matrix(y_test, y_test_score_labels)
 np.set_printoptions(precision=2)
 
 
 # Plot normalized confusion matrix
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       normalize=True, title='Normalized confusion matrix', label='test')
 
 # Plot non-normalized confusion matrix
-plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       normalize=False, title='Confusion matrix (non-normalized)', label='test')
 
 
 print('Classification report (test sample):')
-print(classification_report(Ytest, Ytest_score_labels,
+print(classification_report(y_test, y_test_score_labels,
                             target_names=['background','signal']))
