@@ -124,6 +124,8 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRej
         fillstyle='none',
         mew=1,
         linestyle='none')
+print('CombConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['tpr_noPrefilter'],
+                                                                   data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['fpr_noPrefilter']))
 
 
 h_singleConvTrackRejMVA = ax.plot(fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA,
@@ -138,6 +140,8 @@ ax.plot(fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
         fillstyle='none',
         mew=1,
         linestyle='none')
+print('singleTrackConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (tpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
+                                                                          fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA]))
 
 
 h_RPConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
@@ -153,6 +157,8 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMV
         fillstyle='none',
         mew=1,
         linestyle='none')
+print('RPConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['tpr_prefilter'],
+                                                                 data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter']))
 
 
 
