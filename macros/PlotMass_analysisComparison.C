@@ -210,15 +210,14 @@ void PlotMass_analysisComparison() {
   h_eff_RPConv_2->SetMarkerStyle(kMarkerStyle);
   h_eff_RPConv_3->SetMarkerStyle(kMarkerStyle);
   h_eff_RPConv_4->SetMarkerStyle(kMarkerStyle);
-  
 
 
-  h_significance_class_1->SetXTitle("Mass bins");
+  h_significance_class_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_significance_class_1->SetYTitle("S_{class} / #sqrt{S_{class} + B_{class}}");
   h_significance_class_1->GetXaxis()->SetTitleOffset(1.2);
   h_significance_class_1->GetYaxis()->SetTitleOffset(1.4);
 
-  h_SoverB_class_1->SetXTitle("Mass bins");
+  h_SoverB_class_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SoverB_class_1->SetYTitle("S_{class} / B_{class}");
   h_SoverB_class_1->GetXaxis()->SetTitleOffset(1.2);
   h_SoverB_class_1->GetYaxis()->SetTitleOffset(1.4);
@@ -273,6 +272,7 @@ void PlotMass_analysisComparison() {
   
   TCanvas *c_significance_class = new TCanvas("c_significance_class","",1024,768);
   c_significance_class->SetGridy();
+  c_significance_class->SetLogy();
   h_significance_class_1->Draw(drawOptions);
   h_significance_class_2->Draw(drawOptions_same);
   h_significance_class_3->Draw(drawOptions_same);

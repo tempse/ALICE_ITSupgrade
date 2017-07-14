@@ -191,7 +191,7 @@ void PlotMass_cutVarComparison() {
 
   Int_t nBins = h_plot_S_1->GetNbinsX(),
     min = 0,
-    max = h_plot_S_1->GetNbinsX();
+    max = h_plot_S_1->GetXaxis()->GetBinUpEdge(h_plot_S_1->GetNbinsX());
 
   TH1D *h_significance_1 = new TH1D("h_significance_1", "", nBins, min, max);
   TH1D *h_significance_2 = new TH1D("h_significance_2", "", nBins, min, max);
@@ -406,23 +406,23 @@ void PlotMass_cutVarComparison() {
 
 
   
-  h_significance_1->SetXTitle("Mass bins");
+  h_significance_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_significance_1->SetYTitle("S_{class} / #sqrt{S_{class}+B_{class}}");
   h_significance_1->GetXaxis()->SetTitleOffset(1.2);
   h_significance_1->GetYaxis()->SetTitleOffset(1.5);
 
-  h_significance_exp_1->SetXTitle("Mass bins");
+  h_significance_exp_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_significance_exp_1->SetYTitle("S_{exp} / #sqrt{S_{exp}+B_{exp}}");
   h_significance_exp_1->GetXaxis()->SetTitleOffset(1.2);
   h_significance_exp_1->GetYaxis()->SetTitleOffset(1.5);
 
 
-  h_SoverB_1->SetXTitle("Mass bins");
+  h_SoverB_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SoverB_1->SetYTitle("S_{class} / B_{class}");
   h_SoverB_1->GetXaxis()->SetTitleOffset(1.2);
   h_SoverB_1->GetYaxis()->SetTitleOffset(1.5);
 
-  h_SoverB_exp_1->SetXTitle("Mass bins");
+  h_SoverB_exp_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SoverB_exp_1->SetYTitle("S_{exp} / B_{exp}");
   h_SoverB_exp_1->GetXaxis()->SetTitleOffset(1.2);
   h_SoverB_exp_1->GetYaxis()->SetTitleOffset(1.5);
@@ -472,6 +472,7 @@ void PlotMass_cutVarComparison() {
 
   TCanvas *c_significance_exp = new TCanvas("c_significance_exp","",1024,768);
   c_significance_exp->SetGridy();
+  c_significance_exp->SetLogy();
   h_significance_exp_1->Draw("p0 e1 x0");
   h_significance_exp_2->Draw("p0 same");
   h_significance_exp_3->Draw("p0 same");
