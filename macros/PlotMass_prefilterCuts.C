@@ -403,12 +403,12 @@ void PlotMass_prefilterCuts() {
   h_HF_eff->SetLineColor(kOrange);
   h_RPConv_eff->SetLineColor(kMagenta);
 
-  h_SB_eff->SetMarkerStyle(7);
-  h_S_eff->SetMarkerStyle(7);
-  h_CombiWithConvLeg_eff->SetMarkerStyle(7);
-  h_CombiWithoutConvLeg_eff->SetMarkerStyle(7);
-  h_HF_eff->SetMarkerStyle(7);
-  h_RPConv_eff->SetMarkerStyle(7);
+  h_SB_eff->SetMarkerStyle(8);
+  h_S_eff->SetMarkerStyle(8);
+  h_CombiWithConvLeg_eff->SetMarkerStyle(8);
+  h_CombiWithoutConvLeg_eff->SetMarkerStyle(8);
+  h_HF_eff->SetMarkerStyle(8);
+  h_RPConv_eff->SetMarkerStyle(8);
   
   h_SB_eff->SetMarkerColor(kBlack);
   h_S_eff->SetMarkerColor(kGreen+1);
@@ -418,31 +418,36 @@ void PlotMass_prefilterCuts() {
   h_RPConv_eff->SetMarkerColor(kMagenta);
 
 
+  TString drawOptions_mass = "hist e x0";
+  TString drawOptions_mass_same = drawOptions_mass + " same";
+
+  TString drawOptions_mass_cut = "e1 x0 same";
+
   TCanvas *c = new TCanvas("c","",800,600);
   c->SetLogy();
   c->SetGridy();
-  h_SB->Draw("hist e x0");
-  h_S->Draw("hist e x0 same");
-  h_CombiWithConvLeg->Draw("hist e x0 same");
-  h_CombiWithoutConvLeg->Draw("hist e x0 same");
-  h_HF->Draw("hist e x0 same");
-  h_RPConv->Draw("hist e x0 same");
+  h_SB->Draw(drawOptions_mass);
+  h_S->Draw(drawOptions_mass_same);
+  h_CombiWithConvLeg->Draw(drawOptions_mass_same);
+  h_CombiWithoutConvLeg->Draw(drawOptions_mass_same);
+  h_HF->Draw(drawOptions_mass_same);
+  h_RPConv->Draw(drawOptions_mass_same);
 
-  h_SB_prefilterCut->Draw("e1 x0 same");
-  h_S_prefilterCut->Draw("e1 x0 same");
-  h_CombiWithConvLeg_prefilterCut->Draw("e1 x0 same");
-  h_CombiWithoutConvLeg_prefilterCut->Draw("e1 x0 same");
-  h_HF_prefilterCut->Draw("e1 x0 same");
-  h_RPConv_prefilterCut->Draw("e1 x0 same");
+  h_SB_prefilterCut->Draw(drawOptions_mass_cut);
+  h_S_prefilterCut->Draw(drawOptions_mass_cut);
+  h_CombiWithConvLeg_prefilterCut->Draw(drawOptions_mass_cut);
+  h_CombiWithoutConvLeg_prefilterCut->Draw(drawOptions_mass_cut);
+  h_HF_prefilterCut->Draw(drawOptions_mass_cut);
+  h_RPConv_prefilterCut->Draw(drawOptions_mass_cut);
 
   
   TLegend *leg = new TLegend(.6,.8,.95,.95);
-  leg->AddEntry(h_SB,"S+B","l");
-  leg->AddEntry(h_S,"S","l");
-  leg->AddEntry(h_CombiWithConvLeg,"Comb. w. conv. leg","l");
-  leg->AddEntry(h_CombiWithoutConvLeg,"Comb. w/o conv. leg","l");
-  leg->AddEntry(h_HF,"Corr. HF","l");
-  leg->AddEntry(h_RPConv,"RP conv.","l");
+  leg->AddEntry(h_SB_eff,"S+B","p");
+  leg->AddEntry(h_S_eff,"S","p");
+  leg->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
+  leg->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
+  leg->AddEntry(h_HF_eff,"Corr. HF","p");
+  leg->AddEntry(h_RPConv_eff,"RP conv.","p");
   leg->Draw();
 
   TLatex l;
@@ -455,6 +460,9 @@ void PlotMass_prefilterCuts() {
   c->SaveAs("temp_output/mass_prefilterCuts.png");
 
 
+  TString drawOptions_eff = "hist p";
+  TString drawOptions_eff_same = drawOptions_eff + " same";
+  
 
   TCanvas *c_eff = new TCanvas("c_eff","",800,600);
   c_eff->SetGridy();
@@ -463,12 +471,12 @@ void PlotMass_prefilterCuts() {
   h_SB_eff->GetXaxis()->SetTitleOffset(1.2);
   h_SB_eff->GetYaxis()->SetTitleOffset(1.3);
   h_SB_eff->GetYaxis()->SetRangeUser(0,1.1);
-  h_SB_eff->Draw("e1 x0");
-  h_HF_eff->Draw("e1 x0 same");
-  h_S_eff->Draw("e1 x0 same");
-  h_CombiWithConvLeg_eff->Draw("e1 x0 same");
-  h_CombiWithoutConvLeg_eff->Draw("e1 x0 same");
-  h_RPConv_eff->Draw("e1 x0 same");
+  h_SB_eff->Draw(drawOptions_eff);
+  h_HF_eff->Draw(drawOptions_eff_same);
+  h_S_eff->Draw(drawOptions_eff_same);
+  h_CombiWithConvLeg_eff->Draw(drawOptions_eff_same);
+  h_CombiWithoutConvLeg_eff->Draw(drawOptions_eff_same);
+  h_RPConv_eff->Draw(drawOptions_eff_same);
   leg->Draw();
   l.DrawLatex(.1,1.125,h_text);
 

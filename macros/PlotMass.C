@@ -541,12 +541,12 @@ void PlotMass() {
   h_HF_eff->SetLineColor(kOrange);
   h_RPConv_eff->SetLineColor(kMagenta);
 
-  h_SB_eff->SetMarkerStyle(7);
-  h_S_eff->SetMarkerStyle(7);
-  h_CombiWithConvLeg_eff->SetMarkerStyle(7);
-  h_CombiWithoutConvLeg_eff->SetMarkerStyle(7);
-  h_HF_eff->SetMarkerStyle(7);
-  h_RPConv_eff->SetMarkerStyle(7);
+  h_SB_eff->SetMarkerStyle(8);
+  h_S_eff->SetMarkerStyle(8);
+  h_CombiWithConvLeg_eff->SetMarkerStyle(8);
+  h_CombiWithoutConvLeg_eff->SetMarkerStyle(8);
+  h_HF_eff->SetMarkerStyle(8);
+  h_RPConv_eff->SetMarkerStyle(8);
   
   h_SB_eff->SetMarkerColor(kBlack);
   h_S_eff->SetMarkerColor(kGreen+1);
@@ -555,36 +555,49 @@ void PlotMass() {
   h_HF_eff->SetMarkerColor(kOrange);
   h_RPConv_eff->SetMarkerColor(kMagenta);
 
+  h_SB_eff->SetMarkerSize(1.3);
+  h_S_eff->SetMarkerSize(1.3);
+  h_CombiWithConvLeg_eff->SetMarkerSize(1.3);
+  h_CombiWithoutConvLeg_eff->SetMarkerSize(1.3);
+  h_HF_eff->SetMarkerSize(1.3);
+  h_RPConv_eff->SetMarkerSize(1.3);
+  
+
   h_signalOverBackground->SetMarkerStyle(7);
   h_significance->SetMarkerStyle(7);
 
-  
+
+  TString drawOptions_mass_hist = "hist e x0";
+  TString drawOptions_mass_hist_same = drawOptions_mass_hist + " same";
+
+  TString drawOptions_mass_marker = "same";
+  TString drawOptions_mass_marker_same = drawOptions_mass_marker + " same";
 
   TCanvas *c = new TCanvas("c","",1024,768);
   c->SetLogy();
   c->SetGridy();
-  h_SB->Draw("hist e x0");
-  h_S->Draw("hist e x0 same");
-  h_CombiWithConvLeg->Draw("hist e x0 same");
-  h_CombiWithoutConvLeg->Draw("hist e x0 same");
-  h_HF->Draw("hist e x0 same");
-  h_RPConv->Draw("hist e x0 same");
+  h_SB->Draw(drawOptions_mass_hist);
+  h_S->Draw(drawOptions_mass_hist_same);
+  h_CombiWithConvLeg->Draw(drawOptions_mass_hist_same);
+  h_CombiWithoutConvLeg->Draw(drawOptions_mass_hist_same);
+  h_HF->Draw(drawOptions_mass_hist_same);
+  h_RPConv->Draw(drawOptions_mass_hist_same);
 
-  h_SB_MVAcut->Draw("e1 x0 same");
-  h_S_MVAcut->Draw("e1 x0 same");
-  h_CombiWithConvLeg_MVAcut->Draw("e1 x0 same");
-  h_CombiWithoutConvLeg_MVAcut->Draw("e1 x0 same");
-  h_HF_MVAcut->Draw("e1 x0 same");
-  h_RPConv_MVAcut->Draw("e1 x0 same");
+  h_SB_MVAcut->Draw(drawOptions_mass_marker_same);
+  h_S_MVAcut->Draw(drawOptions_mass_marker_same);
+  h_CombiWithConvLeg_MVAcut->Draw(drawOptions_mass_marker_same);
+  h_CombiWithoutConvLeg_MVAcut->Draw(drawOptions_mass_marker_same);
+  h_HF_MVAcut->Draw(drawOptions_mass_marker_same);
+  h_RPConv_MVAcut->Draw(drawOptions_mass_marker_same);
 
   
   TLegend *leg = new TLegend(.6,.8,.95,.95);
-  leg->AddEntry(h_SB,"S+B","l");
-  leg->AddEntry(h_S,"S","l");
-  leg->AddEntry(h_CombiWithConvLeg,"Comb. w. conv. leg","l");
-  leg->AddEntry(h_CombiWithoutConvLeg,"Comb. w/o conv. leg","l");
-  leg->AddEntry(h_HF,"Corr. HF","l");
-  leg->AddEntry(h_RPConv,"RP conv.","l");
+  leg->AddEntry(h_SB_eff,"S+B","p");
+  leg->AddEntry(h_S_eff,"S","p");
+  leg->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
+  leg->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
+  leg->AddEntry(h_HF_eff,"Corr. HF","p");
+  leg->AddEntry(h_RPConv_eff,"RP conv.","p");
   leg->Draw();
 
   TLatex l;
@@ -595,6 +608,10 @@ void PlotMass() {
   c->SaveAs("temp_output/mass.root");
   c->SaveAs("temp_output/mass.png");
 
+
+  TString drawOptions_eff = "hist p";
+  TString drawOptions_eff_same = drawOptions_eff + " same";
+  
   TCanvas *c_eff = new TCanvas("c_eff","",1024,768);
   c_eff->SetGridy();
   h_SB_eff->SetXTitle("M_{ee} / (GeV/c^{2})");
@@ -602,12 +619,12 @@ void PlotMass() {
   h_SB_eff->GetXaxis()->SetTitleOffset(1.2);
   h_SB_eff->GetYaxis()->SetTitleOffset(1.3);
   h_SB_eff->GetYaxis()->SetRangeUser(0,1.1);
-  h_SB_eff->Draw("e1 x0");
-  h_HF_eff->Draw("e1 x0 same");
-  h_S_eff->Draw("e1 x0 same");
-  h_CombiWithConvLeg_eff->Draw("e1 x0 same");
-  h_CombiWithoutConvLeg_eff->Draw("e1 x0 same");
-  h_RPConv_eff->Draw("e1 x0 same");
+  h_SB_eff->Draw(drawOptions_eff);
+  h_HF_eff->Draw(drawOptions_eff_same);
+  h_S_eff->Draw(drawOptions_eff_same);
+  h_CombiWithConvLeg_eff->Draw(drawOptions_eff_same);
+  h_CombiWithoutConvLeg_eff->Draw(drawOptions_eff_same);
+  h_RPConv_eff->Draw(drawOptions_eff_same);
   leg->Draw();
   l.DrawLatex(.1,1.125,h_text);
 
