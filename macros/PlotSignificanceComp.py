@@ -7,7 +7,7 @@ import pandas as pd
 import root_numpy
 
 
-filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/significanceComparisons/significanceData.root"
+filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/significanceComparisons/significance_data.root"
 
 color_RPConvRejMVA = '#dd0000'
 color_singleConvTrackRej = '#4444ff'
@@ -195,3 +195,113 @@ plt.xlim([-.05, 1.05])
 plt.ylim([-.05, 1.05])
 plt.savefig('temp_output/effS_MVAcut.png')
 plt.savefig('temp_output/effS_MVAcut.pdf')
+
+
+
+plt.figure(figsize=(fig_width,fig_height), dpi=fig_dpi)
+
+ax = plt.gca()
+
+ax.plot(data['MVAcut'], data['significance_gain_RPConvRejMVA'],
+        label='RP conv. rej. + prefiltering',
+        color=color_RPConvRejMVA)
+
+ax.plot(data['MVAcut'], data['significance_gain_CombConvRejMVA'],
+        label='comb. conv. rej.',
+        color=color_CombConvRej)
+
+ax.plot(data['MVAcut'], data['significance_gain_singleTrackConvRejMVA'],
+        label='single-track conv. rej.',
+        color=color_singleConvTrackRej)
+
+plt.legend()
+plt.xlabel('MVA cut')
+plt.ylabel('Significance gain')
+plt.savefig('temp_output/significancegain_MVAcut.png')
+plt.savefig('temp_output/significancegain_MVAcut.pdf')
+
+
+
+plt.figure(figsize=(fig_width,fig_height), dpi=fig_dpi)
+
+ax = plt.gca()
+
+ax.plot(data['S_eff_RPConvRejMVA'], data['significance_gain_RPConvRejMVA'],
+        label='RP conv. rej. + prefiltering',
+        color=color_RPConvRejMVA)
+plt.plot(workingpoint_eff_RPConvRejMVA, data.iloc[np.argmin(np.abs(data['S_eff_RPConvRejMVA']-workingpoint_eff_RPConvRejMVA))]['significance_gain_RPConvRejMVA'],
+         color=color_RPConvRejMVA,
+         marker='o',
+         markersize=7,
+         fillstyle='none',
+         mew=1,
+         linestyle='none')
+
+ax.plot(data['S_eff_CombConvRejMVA'], data['significance_gain_CombConvRejMVA'],
+        label='comb. conv. rej.',
+        color=color_CombConvRej)
+plt.plot(workingpoint_eff_CombConvRej, data.iloc[np.argmin(np.abs(data['S_eff_CombConvRejMVA']-workingpoint_eff_CombConvRej))]['significance_gain_CombConvRejMVA'],
+         color=color_CombConvRej,
+         marker='o',
+         markersize=7,
+         fillstyle='none',
+         mew=1,
+         linestyle='none')
+
+ax.plot(data['S_eff_singleTrackConvRejMVA'], data['significance_gain_singleTrackConvRejMVA'],
+        label='single-track conv. rej.',
+        color=color_singleConvTrackRej)
+plt.plot(workingpoint_eff_singleConvTrackRej, data.iloc[np.argmin(np.abs(data['S_eff_singleTrackConvRejMVA']-workingpoint_eff_singleConvTrackRej))]['significance_gain_singleTrackConvRejMVA'],
+         color=color_singleConvTrackRej,
+         marker='o',
+         markersize=7,
+         fillstyle='none',
+         mew=1,
+         linestyle='none')
+
+# plot dummy point
+ax.plot(-99,0,
+        label='optimized working point',
+        color='black',
+        marker='o',
+        markersize=7,
+        fillstyle='none',
+        mew=1,
+        linestyle='none')
+
+# classical-cut points (calculated from a sample with exactly 16.4M pairs)
+ax.plot(.5968, -.2321,#-.0663,
+        label='RP conv. rej. (class. cuts) + prefiltering $\phi_V>\pi/2$, $mass<0.05$',
+        color=color_RPConvRejClass,
+        marker='o',
+        markersize=8,
+        linestyle='none',
+        alpha=.6)
+ax.plot(.7751, -.0659,#.0704,
+        label='     $\phi_V>2$, $mass<0.04$',
+        color=color_RPConvRejClass,
+        marker='o',
+        markersize=6,
+        linestyle='none',
+        alpha=.6)
+ax.plot(.9115, .0400,#.0704,
+        label='     $\phi_V>2.4$, $mass<0.01$',
+        color=color_RPConvRejClass,
+        marker='o',
+        markersize=4,
+        linestyle='none',
+        alpha=.6)
+ax.plot(.9860, .0137,#.0147
+        label='     $\phi_V>2.9$, $mass<0.0035$',
+        color=color_RPConvRejClass,
+        marker='o',
+        markersize=3,
+        linestyle='none',
+        alpha=.6)
+
+plt.legend(fontsize=7)
+plt.xlim([-0.05,1.05])
+plt.xlabel('Signal efficiency')
+plt.ylabel('Significance gain')
+plt.savefig('temp_output/significancegain_effS.png')
+plt.savefig('temp_output/significancegain_effS.pdf')
