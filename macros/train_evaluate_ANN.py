@@ -38,10 +38,10 @@ np.random.seed(seed)
 
 print('Loading data...')
 
-num_entries = 200000
+num_entries = 3000000
 start = 0
 
-inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root"
+inputfilename = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root"
 
 branches_pairTree = [
     'px1','py1','pz1',
@@ -248,9 +248,9 @@ joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
 
 print('Splitting the data in training, validation and test samples...')
 
-X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
+X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=500000, random_state=42)
 
-X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=.5, random_state=43)
+X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=500000, random_state=43)
 
 print('Number of signal events in training sample: %d (%.2f percent)' % (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
 print('Number of backgr events in training sample: %d (%.2f percent)' % (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
@@ -379,8 +379,8 @@ def recall(y_true, y_pred):
 # model definition and training
 
 def create_model(nr_of_layers = 2,
-                 first_layer_size = 10,
-                 layers_slope_coeff = 0.8,
+                 first_layer_size = 100,
+                 layers_slope_coeff = 1.0,
                  dropout = .5,
                  noise = 1.,
                  activation = 'tanh',
@@ -403,7 +403,7 @@ def create_model(nr_of_layers = 2,
     
     for index_of_layer in range(nr_of_layers - 1):
         model.add(Dropout(dropout))
-        if index_of_layer%2==0: model.add(GaussianNoise(noise))
+        #if index_of_layer%2==0: model.add(GaussianNoise(noise))
         model.add(Dense(current_layer_size,
                        activation = activation,
                        kernel_initializer = kernel_initializer,
@@ -425,14 +425,14 @@ def create_model(nr_of_layers = 2,
 
 
 
-model = create_model(nr_of_layers=3,
-                     first_layer_size=50,
+model = create_model(nr_of_layers=8,
+                     first_layer_size=100,
                      layers_slope_coeff=1.,
-                     dropout=.1,
-                     noise=.1,
-                     activation='tanh',
+                     dropout=0.03,
+                     noise=0.,
+                     activation='relu',
                      kernel_initializer='glorot_normal',
-                     bias_initializer='uniform',
+                     bias_initializer='glorot_normal',
                      input_dim= X_train.shape[1])
 
 
@@ -442,8 +442,8 @@ roc_call = ROC()
 
 print('Fitting the model...')
 hist = model.fit(X_train, y_train,
-                 #batch_size=250000,
-                 epochs=3,
+                 batch_size=10000,
+                 epochs=100,
                  callbacks=[roc_call],
                  verbose=0,
                  validation_data=(X_val, y_val))
@@ -454,8 +454,10 @@ hist = model.fit(X_train, y_train,
 
 # evaluation of the trained model
 
-print('Evaluating the model on the validation sample...')
-y_val_score = model.predict_proba(X_val)
+num_process = 500000
+
+print('Evaluating the model on the training sample...')
+y_train_score = model.predict_proba(X_train[0:num_process,:])
 
 # general plotting parameters
 nbins = 100
@@ -467,8 +469,8 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     distributions of the positive and the negative class.
     """
     
-    y_score_truePos = y_score[np.array(y_truth==1)]
-    y_score_trueNeg = y_score[np.array(y_truth==0)]
+    y_score_truePos = y_score[np.array(y_truth[0:num_process]==1)]
+    y_score_trueNeg = y_score[np.array(y_truth[0:num_process]==0)]
     
     plt.figure()
 
@@ -498,13 +500,13 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.xlabel('MVA output')
     plt.ylabel('Entries')
     plt.legend()
-    plt.savefig('temp_output/ann/MVAoutput_distr'+label+'.png')
+    plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'.png')
     
     return n_truePos, n_trueNeg
 
 
 print('Creating MVA output distributions...')
-n_S, n_B = plot_MVAoutput(y_val, y_val_score, 'val', nbins)
+n_S, n_B = plot_MVAoutput(y_train[0:num_process], y_train_score, 'train', nbins)
 
 
 
@@ -551,7 +553,7 @@ lall = l1+l2+l3+l4
 labels = [l.get_label() for l in lall]
 ax2.legend(lall, labels, loc='lower left')
 plt.tight_layout()
-plt.savefig('temp_output/ann/significance_vs_MVAcut_val.png')
+plt.savefig('temp_output/ann/significance_vs_MVAcut_train.png')
 
 
 #Summarise history for accuracy
@@ -565,7 +567,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend()#['train', 'validate'])
 #plt.show()
-plt.savefig('temp_output/ann/learningCurve_acc_val.png')
+plt.savefig('temp_output/ann/learningCurve_acc.png')
 
 
 # summarize history for loss
@@ -578,7 +580,7 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validate'])
 #plt.show()
-plt.savefig('temp_output/ann/learningCurve_loss_val.png')
+plt.savefig('temp_output/ann/learningCurve_loss.png')
 
 
 
@@ -620,7 +622,7 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
 
 
 print('Generating ROC curve...')
-plot_ROCcurve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
+plot_ROCcurve(y_train[0:num_process], y_train_score, sample_weight_train[0:num_process], 'train', MVAcut_opt)
 
 
 
@@ -672,7 +674,7 @@ def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', 
 
 
 print('Generating precision-recall curve...')
-plot_precision_recall_curve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
+plot_precision_recall_curve(y_train[0:num_process], y_train_score, sample_weight_train[0:num_process], 'train', MVAcut_opt)
 
 
 
@@ -682,7 +684,7 @@ def plot_confusion_matrix(cm, classes,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues,
-                          label='val'):
+                          label=''):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
@@ -726,27 +728,74 @@ def plot_confusion_matrix(cm, classes,
 
 # Compute confusion matrix
 
-y_val_score_labels = (y_val_score>MVAcut_opt)
-cnf_matrix = confusion_matrix(y_val, y_val_score_labels, sample_weight=sample_weight_val)
+y_train_score_labels = (y_train_score[0:num_process]>MVAcut_opt)
+cnf_matrix = confusion_matrix(y_train[0:num_process], y_train_score_labels, sample_weight=sample_weight_train[0:num_process])
 np.set_printoptions(precision=2)
 
 
 # Plot non-normalized confusion matrix
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
-                      title='Confusion matrix, without normalization', label='val')
+                      title='Confusion matrix, without normalization', label='train')
 #plt.show()
+
+
+# Plot normalized confusion matrix
+plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
+                      normalize=True, title='Normalized confusion matrix', label='train')
+
+
+# classification report
+print(classification_report(y_train[0:num_process], y_train_score_labels,
+                            target_names=['background','signal']))
+
+
+
+
+################################################################################
+
+
+
+# ## Evaluate model on the validation sample
+
+print('Evaluating the trained model on the validation sample...')
+
+y_val_score = model.predict_proba(X_val)
+
+
+# ### MVA Output Distribution
+plot_MVAoutput(y_val, y_val_score, label='val', nbins=nbins)
+
+
+
+# ### ROC Curve
+
+print('Generating ROC curve...')
+plot_ROCcurve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
+
+
+# ### Precision-Recall Curve
+
+print('Generating precision-recall curve...')
+plot_precision_recall_curve(y_val, y_val_score, sample_weight_val, 'val', MVAcut_opt)
+
+# Compute confusion matrix
+y_val_score_labels = (y_val_score>MVAcut_opt) #thresholds[close_optimum]).astype(int)
+cnf_matrix = confusion_matrix(y_val, y_val_score_labels, sample_weight=sample_weight_val)
+np.set_printoptions(precision=2)
 
 
 # Plot normalized confusion matrix
 plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
                       normalize=True, title='Normalized confusion matrix', label='val')
 
+# Plot non-normalized confusion matrix
+plot_confusion_matrix(cnf_matrix, classes=['background','signal'],
+                      normalize=False, title='Confusion matrix (non-normalized)', label='val')
 
-# classification report
+
+print('Classification report (validation sample):')
 print(classification_report(y_val, y_val_score_labels,
                             target_names=['background','signal']))
-
-
 
 
 ################################################################################
