@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1D.h>
+#include <TEfficiency.h>
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TCanvas.h>
@@ -145,7 +146,8 @@ void PlotMass_prefilterCuts() {
 
 
 
-  Long64_t nEv = TestTree->GetEntries();
+  Long64_t nEv = 100000000; //TestTree->GetEntries();
+  std::cout << "Starting to process " << nEv << " entries..." << std::endl;
 
   
   Float_t passed_seconds_prev = 0.;
@@ -332,36 +334,97 @@ void PlotMass_prefilterCuts() {
   
   //////////////////// SETTING UP THE PLOTS:  
 
+
+  if(!TEfficiency::CheckConsistency(*h_SB_prefilterCut, *h_SB) ||
+     !TEfficiency::CheckConsistency(*h_S_prefilterCut, *h_S) ||
+     !TEfficiency::CheckConsistency(*h_CombiWithConvLeg_prefilterCut, *h_CombiWithConvLeg) ||
+     !TEfficiency::CheckConsistency(*h_CombiWithoutConvLeg_prefilterCut, *h_CombiWithoutConvLeg) ||
+     !TEfficiency::CheckConsistency(*h_HF_prefilterCut, *h_HF) ||
+     !TEfficiency::CheckConsistency(*h_RPConv_prefilterCut, *h_RPConv)) {
+    std::cout << "  ERROR: Histograms are inconsistent for TEfficiency object initialization." << std::endl;
+    gApplication->Terminate();
+  }
+
+  TEfficiency *pEff_SB = new TEfficiency(*h_SB_prefilterCut, *h_SB);
+  TEfficiency *pEff_S = new TEfficiency(*h_S_prefilterCut, *h_S);
+  TEfficiency *pEff_CombiWithConvLeg = new TEfficiency(*h_CombiWithConvLeg_prefilterCut, *h_CombiWithConvLeg);
+  TEfficiency *pEff_CombiWithoutConvLeg = new TEfficiency(*h_CombiWithoutConvLeg_prefilterCut, *h_CombiWithoutConvLeg);
+  TEfficiency *pEff_HF = new TEfficiency(*h_HF_prefilterCut, *h_HF);
+  TEfficiency *pEff_RPConv = new TEfficiency(*h_RPConv_prefilterCut, *h_RPConv);
+  
+  
+  TH1D *h_SB_eff = new TH1D("h_SB_eff","",nBins,min,max);
+  TH1D *h_S_eff = new TH1D("h_S_eff","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg_eff = new TH1D("h_CombiWithConvLeg_eff","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg_eff = new TH1D("h_CombiWithoutConvLeg_eff","",nBins,min,max);
+  TH1D *h_HF_eff = new TH1D("h_HF_eff","",nBins,min,max);
+  TH1D *h_RPConv_eff = new TH1D("h_RPConv_eff","",nBins,min,max);
+  
+  
+  for(unsigned int i=1; i<=nBins; i++) {
+    h_SB_eff->SetBinContent(i, pEff_SB->GetEfficiency(i));
+    h_S_eff->SetBinContent(i, pEff_S->GetEfficiency(i));
+    h_CombiWithConvLeg_eff->SetBinContent(i, pEff_CombiWithConvLeg->GetEfficiency(i));
+    h_CombiWithoutConvLeg_eff->SetBinContent(i, pEff_CombiWithoutConvLeg->GetEfficiency(i));
+    h_HF_eff->SetBinContent(i, pEff_HF->GetEfficiency(i));
+    h_RPConv_eff->SetBinContent(i, pEff_RPConv->GetEfficiency(i));
+
+    if(!TMath::IsNaN(pEff_SB->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_SB->GetEfficiencyErrorUp(i))) {
+      h_SB_eff->SetBinError(i, TMath::Max(pEff_SB->GetEfficiencyErrorLow(i), pEff_SB->GetEfficiencyErrorUp(i)));
+    }else h_SB_eff->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_S->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_S->GetEfficiencyErrorUp(i))) {
+      h_S_eff->SetBinError(i, TMath::Max(pEff_S->GetEfficiencyErrorLow(i), pEff_S->GetEfficiencyErrorUp(i)));
+    }else h_S_eff->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_CombiWithConvLeg->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombiWithConvLeg->GetEfficiencyErrorUp(i))) {
+      h_CombiWithConvLeg_eff->SetBinError(i, TMath::Max(pEff_CombiWithConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithConvLeg->GetEfficiencyErrorUp(i)));
+    }else h_CombiWithConvLeg_eff->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_CombiWithoutConvLeg->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombiWithoutConvLeg->GetEfficiencyErrorUp(i))) {
+      h_CombiWithoutConvLeg_eff->SetBinError(i, TMath::Max(pEff_CombiWithoutConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithoutConvLeg->GetEfficiencyErrorUp(i)));
+    }else h_CombiWithoutConvLeg_eff->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_HF->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_HF->GetEfficiencyErrorUp(i))) {
+      h_HF_eff->SetBinError(i, TMath::Max(pEff_HF->GetEfficiencyErrorLow(i), pEff_HF->GetEfficiencyErrorUp(i)));
+    }else h_HF_eff->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_RPConv->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_RPConv->GetEfficiencyErrorUp(i))) {
+      h_RPConv_eff->SetBinError(i, TMath::Max(pEff_RPConv->GetEfficiencyErrorLow(i), pEff_RPConv->GetEfficiencyErrorUp(i)));
+    }else h_RPConv_eff->SetBinError(i, 0.);
+  }
+  
   
   gStyle->SetOptStat(0);
 
-  TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone("h_SB_eff");
-  TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone("h_S_eff");
-  TH1D *h_CombiWithConvLeg_eff =
+  /*
+    TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone("h_SB_eff");
+    TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone("h_S_eff");
+    TH1D *h_CombiWithConvLeg_eff =
     (TH1D*)h_CombiWithConvLeg_prefilterCut->Clone("h_CombiWithConvLeg_eff");
-  TH1D *h_CombiWithoutConvLeg_eff =
+    TH1D *h_CombiWithoutConvLeg_eff =
     (TH1D*)h_CombiWithoutConvLeg_prefilterCut->Clone("h_CombiWithoutConvLeg_eff");
-  TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone("h_HF_eff");
-  TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone("h_RPConv_eff");
-  h_SB_eff->Sumw2();
-  h_SB->Sumw2();
-  h_SB_eff->Divide(h_SB);
-  h_S_eff->Sumw2();
-  h_S->Sumw2();
-  h_S_eff->Divide(h_S);
-  h_CombiWithConvLeg_eff->Sumw2();
-  h_CombiWithConvLeg->Sumw2();
-  h_CombiWithConvLeg_eff->Divide(h_CombiWithConvLeg);
-  h_CombiWithoutConvLeg_eff->Sumw2();
-  h_CombiWithoutConvLeg->Sumw2();
-  h_CombiWithoutConvLeg_eff->Divide(h_CombiWithoutConvLeg);
-  h_HF_eff->Sumw2();
-  h_HF->Sumw2();
-  h_HF_eff->Divide(h_HF);
-  h_RPConv_eff->Sumw2();
-  h_RPConv->Sumw2();
-  h_RPConv_eff->Divide(h_RPConv);
-
+    TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone("h_HF_eff");
+    TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone("h_RPConv_eff");
+    h_SB_eff->Sumw2();
+    h_SB->Sumw2();
+    h_SB_eff->Divide(h_SB);
+    h_S_eff->Sumw2();
+    h_S->Sumw2();
+    h_S_eff->Divide(h_S);
+    h_CombiWithConvLeg_eff->Sumw2();
+    h_CombiWithConvLeg->Sumw2();
+    h_CombiWithConvLeg_eff->Divide(h_CombiWithConvLeg);
+    h_CombiWithoutConvLeg_eff->Sumw2();
+    h_CombiWithoutConvLeg->Sumw2();
+    h_CombiWithoutConvLeg_eff->Divide(h_CombiWithoutConvLeg);
+    h_HF_eff->Sumw2();
+    h_HF->Sumw2();
+    h_HF_eff->Divide(h_HF);
+    h_RPConv_eff->Sumw2();
+    h_RPConv->Sumw2();
+    h_RPConv_eff->Divide(h_RPConv);
+  */
 
   h_SB->SetLineColor(kBlack);
   h_S->SetLineColor(kGreen+1);
@@ -441,14 +504,14 @@ void PlotMass_prefilterCuts() {
   h_RPConv_prefilterCut->Draw(drawOptions_mass_cut);
 
   
-  TLegend *leg = new TLegend(.6,.8,.95,.95);
-  leg->AddEntry(h_SB_eff,"S+B","p");
-  leg->AddEntry(h_S_eff,"S","p");
-  leg->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
-  leg->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
-  leg->AddEntry(h_HF_eff,"Corr. HF","p");
-  leg->AddEntry(h_RPConv_eff,"RP conv.","p");
-  leg->Draw();
+  TLegend *leg_mass = new TLegend(.6,.7,.88,.88);
+  leg_mass->AddEntry(h_SB_eff,"S+B","p");
+  leg_mass->AddEntry(h_S_eff,"S","p");
+  leg_mass->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
+  leg_mass->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
+  leg_mass->AddEntry(h_HF_eff,"Corr. HF","p");
+  leg_mass->AddEntry(h_RPConv_eff,"RP conv.","p");
+  leg_mass->Draw();
 
   TLatex l;
   l.SetTextSize(.025);
@@ -460,8 +523,17 @@ void PlotMass_prefilterCuts() {
   c->SaveAs("temp_output/mass_prefilterCuts.png");
 
 
-  TString drawOptions_eff = "hist p";
+  TString drawOptions_eff = "hist p x0 e1";
   TString drawOptions_eff_same = drawOptions_eff + " same";
+
+
+  TLegend *leg_eff = new TLegend(.6,.15,.88,.33);
+  leg_eff->AddEntry(h_SB_eff,"S+B","p");
+  leg_eff->AddEntry(h_S_eff,"S","p");
+  leg_eff->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
+  leg_eff->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
+  leg_eff->AddEntry(h_HF_eff,"Corr. HF","p");
+  leg_eff->AddEntry(h_RPConv_eff,"RP conv.","p");
   
 
   TCanvas *c_eff = new TCanvas("c_eff","",800,600);
@@ -477,7 +549,7 @@ void PlotMass_prefilterCuts() {
   h_CombiWithConvLeg_eff->Draw(drawOptions_eff_same);
   h_CombiWithoutConvLeg_eff->Draw(drawOptions_eff_same);
   h_RPConv_eff->Draw(drawOptions_eff_same);
-  leg->Draw();
+  leg_eff->Draw();
   l.DrawLatex(.1,1.125,h_text);
 
   c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.pdf");
