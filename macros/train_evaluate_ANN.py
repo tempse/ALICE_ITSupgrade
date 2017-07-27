@@ -41,7 +41,8 @@ print('Loading data...')
 num_entries = 3000000
 start = 0
 
-inputfilename = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root"
+inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root"
+#inputfilename = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/CA_AnalysisResults_Upgrade_iGeo19_pairtree_us_ls_part1_1-9-split.root"
 
 branches_pairTree = [
     'px1','py1','pz1',
@@ -57,12 +58,14 @@ branches_pairTree = [
     'nITSshared2',
     'nTPC1',
     'nTPC2',
-    'DCAx1','DCAy1',
+    'DCAx1',
+    'DCAy1',
     'DCAz1',
-    'DCAx2','DCAy2',
+    'DCAx2',
+    'DCAy2',
     'DCAz2',
-    'DCAxy1_norm','DCAxy2_norm',
-    'DCAz1_norm','DCAz2_norm',
+    #'DCAxy1_norm','DCAxy2_norm',
+    #'DCAz1_norm','DCAz2_norm',
     'ITSchi21',
     'ITSchi22',
     'TPCchi21',
@@ -77,6 +80,8 @@ branches_pairTree = [
     'PIDeff2',
     'IsRP',
     'IsConv'
+    #'IsCorrHF',
+    #'IsCombHF'
 ]
 
 branches_singleTree = [
@@ -145,17 +150,17 @@ X['nTPC2'] = dataSample_orig['nTPC2']
 #              (dataSample_orig['DCAy1']-dataSample_orig['DCAy2'])*(dataSample_orig['DCAy1']-dataSample_orig['DCAy2']) + \
 #              (dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])*(dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])
 ##X['DCAfeat'] = 1/(dataSample_orig['DCAx1']-dataSample_orig['DCAx2']) + 1/(dataSample_orig['DCAy1']-dataSample_orig['DCAy2']) + 1/(dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])
-#X['DCAx1'] = np.abs(dataSample_orig['DCAx1'])
-#X['DCAx2'] = np.abs(dataSample_orig['DCAx2'])
-#X['DCAy1'] = np.abs(dataSample_orig['DCAy1'])
-#X['DCAy2'] = np.abs(dataSample_orig['DCAy2'])
-#X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
-#X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
-
-X['DCAxy1'] = np.log(np.abs(dataSample_orig['DCAxy1_norm']))
-X['DCAxy2'] = np.log(np.abs(dataSample_orig['DCAxy2_norm']))
+X['DCAx1'] = np.abs(dataSample_orig['DCAx1'])
+X['DCAx2'] = np.abs(dataSample_orig['DCAx2'])
+X['DCAy1'] = np.abs(dataSample_orig['DCAy1'])
+X['DCAy2'] = np.abs(dataSample_orig['DCAy2'])
 X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
 X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
+
+#X['DCAxy1'] = np.log(np.abs(dataSample_orig['DCAxy1_norm']))
+#X['DCAxy2'] = np.log(np.abs(dataSample_orig['DCAxy2_norm']))
+#X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
+#X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
 X['ITSchi21'] = dataSample_orig['ITSchi21']
 X['ITSchi22'] = dataSample_orig['ITSchi22']
 X['TPCchi21'] = dataSample_orig['TPCchi21']
@@ -201,6 +206,7 @@ sample_weight = (dataSample_orig['PIDeff1']*dataSample_orig['PIDeff2']).values.a
 Y = pd.DataFrame()
 #Y = (dataSample_orig['pdgMother']!=22).astype(int)
 Y = (~((dataSample_orig['IsRP']==0) & (dataSample_orig['IsConv']==1))).astype(int)
+#Y = (dataSample_orig['IsCombHF']==1).astype(int)
 
 print('Total number of events in data sample: %d' % X.shape[0])
 print('Number of signal events in data sample: %d (%.2f percent)' % (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
@@ -221,6 +227,7 @@ plt.xticks(rotation=90)
 plt.yticks(rotation=0)
 plt.tight_layout();
 plt.savefig('temp_output/ann/correlation_matrix.png')
+plt.savefig('temp_output/ann/correlation_matrix.pdf')
 
 
 
@@ -248,9 +255,9 @@ joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
 
 print('Splitting the data in training, validation and test samples...')
 
-X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=500000, random_state=42)
+X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
 
-X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=500000, random_state=43)
+X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=1/2., random_state=43)
 
 print('Number of signal events in training sample: %d (%.2f percent)' % (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
 print('Number of backgr events in training sample: %d (%.2f percent)' % (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
@@ -324,6 +331,7 @@ class ROC(keras.callbacks.Callback):
             plt.grid(True)
             plt.ylim(0.5,1.05);
             plt.savefig('temp_output/ann/learningcurve_rocauc_epochs.png')
+            plt.savefig('temp_output/ann/learningcurve_rocauc_epochs.pdf')
 
         current = roc_auc_val
         if current > self.best:
@@ -423,8 +431,8 @@ def create_model(nr_of_layers = 2,
                    activation = 'sigmoid'))
     
     model.compile(loss = 'binary_crossentropy',
-                 optimizer = 'adam',
-                 metrics=[precision])
+                  optimizer = 'adam',
+                  metrics=['accuracy'])
 
     print(model.summary())
     
@@ -432,10 +440,11 @@ def create_model(nr_of_layers = 2,
 
 
 
-model = create_model(nr_of_layers=8,
+model = create_model(nr_of_layers=4,
                      first_layer_size=100,
                      layers_slope_coeff=1.,
-                     dropout=0.03,
+                     dropout=0.2,
+                     normalize_batch=False,
                      noise=0.,
                      activation='relu',
                      kernel_initializer='glorot_normal',
@@ -465,6 +474,7 @@ num_process = 500000
 
 print('Evaluating the model on the training sample...')
 y_train_score = model.predict_proba(X_train[0:num_process,:])
+print('\n')
 
 # general plotting parameters
 nbins = 100
@@ -476,8 +486,8 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     distributions of the positive and the negative class.
     """
     
-    y_score_truePos = y_score[np.array(y_truth[0:num_process]==1)]
-    y_score_trueNeg = y_score[np.array(y_truth[0:num_process]==0)]
+    y_score_truePos = y_score[np.array(y_truth==1)]
+    y_score_trueNeg = y_score[np.array(y_truth==0)]
     
     plt.figure()
 
@@ -508,6 +518,7 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.ylabel('Entries')
     plt.legend()
     plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'.png')
+    plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'.pdf')
     
     return n_truePos, n_trueNeg
 
@@ -561,33 +572,36 @@ labels = [l.get_label() for l in lall]
 ax2.legend(lall, labels, loc='lower left')
 plt.tight_layout()
 plt.savefig('temp_output/ann/significance_vs_MVAcut_train.png')
+plt.savefig('temp_output/ann/significance_vs_MVAcut_train.pdf')
 
 
 #Summarise history for accuracy
 
 #print(hist.history.keys())
 plt.figure()
-plt.plot(hist.history['precision'], label='train')
-plt.plot(hist.history['val_precision'], label='validate')
+plt.plot(hist.history['acc'], label='train')
+plt.plot(hist.history['val_acc'], label='validate')
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend()#['train', 'validate'])
+plt.legend()
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_acc.png')
+plt.savefig('temp_output/ann/learningCurve_acc.pdf')
 
 
 # summarize history for loss
 
 plt.figure()
-plt.plot(hist.history['loss'])
-plt.plot(hist.history['val_loss'])
+plt.plot(hist.history['loss'], label='train')
+plt.plot(hist.history['val_loss'], label='validate')
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'validate'])
+plt.legend()
 #plt.show()
 plt.savefig('temp_output/ann/learningCurve_loss.png')
+plt.savefig('temp_output/ann/learningCurve_loss.pdf')
 
 
 
@@ -626,6 +640,7 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
     
     plt.legend(loc=4)
     plt.savefig('temp_output/ann/roc_curve_'+label+'.png')
+    plt.savefig('temp_output/ann/roc_curve_'+label+'.pdf')
 
 
 print('Generating ROC curve...')
@@ -678,6 +693,7 @@ def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', 
     plt.title('Precision-Recall Curve')
     plt.legend(loc="lower right")
     plt.savefig('temp_output/ann/precision_recall_'+label+'.png')
+    plt.savefig('temp_output/ann/precision_recall_'+label+'.pdf')
 
 
 print('Generating precision-recall curve...')
@@ -727,10 +743,13 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     
     if normalize:
-        outfile_name = 'temp_output/ann/confusion_matrix_%s.png' % label
-        plt.savefig(outfile_name)
+        outfile_name = 'temp_output/ann/confusion_matrix_%s' % label
+        plt.savefig(outfile_name + '.png')
+        plt.savefig(outfile_name + '.pdf')
     else:
-        plt.savefig('temp_output/ann/confusion_matrix_normalized_%s.png' % label)
+        outfile_name = 'temp_output/ann/confusion_matrix_normalized_%s.png' % label
+        plt.savefig(outfile_name + '.png')
+        plt.savefig(outfile_name + '.pdf')
 
 
 # Compute confusion matrix
@@ -767,6 +786,7 @@ print(classification_report(y_train[0:num_process], y_train_score_labels,
 print('Evaluating the trained model on the validation sample...')
 
 y_val_score = model.predict_proba(X_val)
+print('\n')
 
 
 # ### MVA Output Distribution
@@ -814,6 +834,7 @@ print(classification_report(y_val, y_val_score_labels,
 print('Evaluating the trained model on the test sample...')
 
 y_test_score = model.predict_proba(X_test)
+print('\n')
 
 
 # ### MVA Output Distribution

@@ -215,6 +215,7 @@ plt.xticks(rotation=90)
 plt.yticks(rotation=0)
 plt.tight_layout();
 plt.savefig('temp_output/bdt/correlation_matrix.png')
+plt.savefig('temp_output/bdt/correlation_matrix.pdf')
 
 
 
@@ -303,6 +304,7 @@ for i in [1]:# [.1,.25,.4,.55,.7,.85,1]:
              linestyle='none')
     plt.tight_layout()
     plt.savefig('temp_output/bdt/ROCAUC_sampleSize.png')
+    plt.savefig('temp_output/bdt/ROCAUC_sampleSize.pdf')
 
     print("Accuracy on training set:   {:.3f}".format(clf.score(X_train, y_train)))
     print("Accuracy on validation set: {:.3f}".format(clf.score(X_val, y_val)))
@@ -337,6 +339,7 @@ plt.xlim([-1, X_train.shape[1]])
 plt.tight_layout()
 #plt.show()
 plt.savefig('temp_output/bdt/var_importance.png')
+plt.savefig('temp_output/bdt/var_importance.pdf')
 
 
 del X_train, y_train, sample_weight_train
@@ -403,6 +406,7 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.ylabel('Entries')
     plt.legend()
     plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'.png')
+    plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'.pdf')
     
     return n_truePos, n_trueNeg
 
@@ -456,6 +460,7 @@ labels = [l.get_label() for l in lall]
 ax2.legend(lall, labels, loc='lower left')
 plt.tight_layout()
 plt.savefig('temp_output/bdt/significance_vs_MVAcut_val.png')
+plt.savefig('temp_output/bdt/significance_vs_MVAcut_val.pdf')
 
 
 # ### ROC Curve
@@ -494,6 +499,7 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
     
     plt.legend(loc=4)
     plt.savefig('temp_output/bdt/roc_curve_'+label+'.png')
+    plt.savefig('temp_output/bdt/roc_curve_'+label+'.pdf')
 
 
 print('Generating ROC curve...')
@@ -546,6 +552,7 @@ def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', 
     plt.title('Precision-Recall Curve')
     plt.legend(loc="lower right")
     plt.savefig('temp_output/bdt/precision_recall_'+label+'.png')
+    plt.savefig('temp_output/bdt/precision_recall_'+label+'.pdf')
 
 
 print('Generating precision-recall curve...')
@@ -596,10 +603,13 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     
     if normalize:
-        outfile_name = 'temp_output/bdt/confusion_matrix_%s.png' % label
-        plt.savefig(outfile_name)
+        outfile_name = 'temp_output/bdt/confusion_matrix_%s' % label
+        plt.savefig(outfile_name + '.png')
+        plt.savefig(outfile_name + '.pdf')
     else:
-        plt.savefig('temp_output/bdt/confusion_matrix_normalized_%s.png' % label)
+        outfile_name = 'temp_output/bdt/confusion_matrix_normalized_%s' % label
+        plt.savefig(outfile_name + '.png')
+        plt.savefig(outfile_name + '.pdf')
 
 
 # Compute confusion matrix

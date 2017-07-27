@@ -180,7 +180,7 @@ for i in range(0, n_chunks if (Xapp.shape[0]%n_chunks==0) else n_chunks+1):
 
         
 ## tag entries outside the training scope as untrustworthily classified
-#Yscore[np.where(dataSample_orig['mass']<.05),:] = 999
+#Yscore[np.where(dataSample_orig['mass']<.05),:] = 99
 
 
 # export predictions
