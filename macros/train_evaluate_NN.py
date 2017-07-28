@@ -140,8 +140,6 @@ dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.
 
 print('Engineering features...')
 
-
-
 # pairTree features
 X = pd.DataFrame()
 X['p'] = np.sqrt((dataSample_orig['px1']+dataSample_orig['px2'])*(dataSample_orig['px1']+dataSample_orig['px2']) +
@@ -351,9 +349,10 @@ class ROC(keras.callbacks.Callback):
                      marker='o', fillstyle='none', markersize=4, mew=2, linestyle='none', color='C0')
             plt.xlabel("Epochs")
             plt.ylabel("ROC AUC")
-            plt.legend(loc='best')
+            plt.legend(loc='best', fontsize=16)
             plt.grid(True)
-            plt.ylim(0.5,1.05);
+            plt.ylim(0.5,1.05)
+            plt.tight_layout()
             plt.savefig('temp_output/ann/learningcurve_rocauc_epochs.png')
             plt.savefig('temp_output/ann/learningcurve_rocauc_epochs.pdf')
 
@@ -498,7 +497,7 @@ else:
 
 # evaluation of the trained model
 
-num_process = 500000
+num_process = X_train.shape[0] if X_train.shape[0]<=X_val.shape[0] else X_val.shape[0]
 
 print('Evaluating the model on the training sample...')
 y_train_score = model.predict_proba(X_train[0:num_process,:])
@@ -547,6 +546,10 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.legend()
     plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'.png')
     plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'.pdf')
+
+    plt.yscale('log')
+    plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'_log.png')
+    plt.savefig('temp_output/ann/MVAoutput_distr_'+label+'_log.pdf')    
     
     return n_truePos, n_trueNeg
 
