@@ -15,7 +15,7 @@ import numpy as np
 import math
 
 import keras
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, GaussianNoise, BatchNormalization
 from keras.wrappers.scikit_learn import KerasClassifier
 import keras.backend as K
@@ -52,6 +52,10 @@ class Logger(object):
 
 sys.stdout = Logger()
 
+
+# specify loading of a pretrained model
+load_pretrained_model = True
+pretrained_model_filename = 'temp_output/ann/keras_weights/weights_final.hdf5'
 
 
 # ## Data Import
@@ -460,29 +464,33 @@ def create_model(nr_of_layers = 2,
 
 
 
-model = create_model(nr_of_layers=4,
-                     first_layer_size=100,
-                     layers_slope_coeff=1.,
-                     dropout=0.2,
-                     normalize_batch=False,
-                     noise=0.,
-                     activation='relu',
-                     kernel_initializer='glorot_normal',
-                     bias_initializer='glorot_normal',
-                     input_dim= X_train.shape[1])
+if not load_pretrained_model:
+    model = create_model(nr_of_layers=4,
+                         first_layer_size=100,
+                         layers_slope_coeff=1.,
+                         dropout=0.2,
+                         normalize_batch=False,
+                         noise=0.,
+                         activation='relu',
+                         kernel_initializer='glorot_normal',
+                         bias_initializer='glorot_normal',
+                         input_dim= X_train.shape[1])
 
-
-# model training
-
-roc_call = ROC()
-
-print('Fitting the model...')
-hist = model.fit(X_train, y_train,
-                 batch_size=10000,
-                 epochs=100,
-                 callbacks=[roc_call],
-                 verbose=0,
-                 validation_data=(X_val, y_val))
+    # model training
+    
+    roc_call = ROC()
+    
+    print('Fitting the model...')
+    hist = model.fit(X_train, y_train,
+                     batch_size=10000,
+                     epochs=35,
+                     callbacks=[roc_call],
+                     verbose=0,
+                     validation_data=(X_val, y_val))
+else:
+    print('Loading pretrained model from file %s' % pretrained_model_filename)
+    model = load_model(pretrained_model_filename)
+    print(model.summary())
 
 
 ################################################################################
@@ -595,33 +603,31 @@ plt.savefig('temp_output/ann/significance_vs_MVAcut_train.png')
 plt.savefig('temp_output/ann/significance_vs_MVAcut_train.pdf')
 
 
-#Summarise history for accuracy
-
-#print(hist.history.keys())
-plt.figure()
-plt.plot(hist.history['acc'], label='train')
-plt.plot(hist.history['val_acc'], label='validate')
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend()
-#plt.show()
-plt.savefig('temp_output/ann/learningCurve_acc.png')
-plt.savefig('temp_output/ann/learningCurve_acc.pdf')
-
-
-# summarize history for loss
-
-plt.figure()
-plt.plot(hist.history['loss'], label='train')
-plt.plot(hist.history['val_loss'], label='validate')
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend()
-#plt.show()
-plt.savefig('temp_output/ann/learningCurve_loss.png')
-plt.savefig('temp_output/ann/learningCurve_loss.pdf')
+if not load_pretrained_model:
+    #Summarise history for accuracy
+    #print(hist.history.keys())
+    plt.figure()
+    plt.plot(hist.history['acc'], label='train')
+    plt.plot(hist.history['val_acc'], label='validate')
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend()
+    #plt.show()
+    plt.savefig('temp_output/ann/learningCurve_acc.png')
+    plt.savefig('temp_output/ann/learningCurve_acc.pdf')
+        
+    # summarize history for loss
+    plt.figure()
+    plt.plot(hist.history['loss'], label='train')
+    plt.plot(hist.history['val_loss'], label='validate')
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend()
+    #plt.show()
+    plt.savefig('temp_output/ann/learningCurve_loss.png')
+    plt.savefig('temp_output/ann/learningCurve_loss.pdf')
 
 
 
