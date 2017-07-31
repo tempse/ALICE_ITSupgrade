@@ -20,14 +20,13 @@ void addPIDeffBranch(TString filename = "",
     std::cout << "  ERROR: Cannot open file " << filename << std::endl;
     gApplication->Terminate();
   }
-  // if(!file_update->GetListOfKeys()->Contains(treename)) {
-  //   std::cout << "  ERROR: No tree " << treename << " in file "
-  //             << filename << std::endl;
-  //   gApplication->Terminate();
-  // }
+  if(!file_update->GetListOfKeys()->Contains(treename)) {
+    std::cout << "  ERROR: No tree " << treename << " in file "
+              << filename << std::endl;
+    gApplication->Terminate();
+  }
 
   TTree *tree = (TTree*)file_update->Get(treename);
-
   Double_t pt;
   tree->SetBranchAddress("pt", &pt);
 

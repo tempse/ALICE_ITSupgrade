@@ -37,10 +37,15 @@ void calculateHF();
 
 // MVA cut value (for identifying conversion tracks):
 const Bool_t doConsiderMVAinfo_convTrack = kFALSE;
-const Float_t MVAcut_convTrack = -0.4407; // MVA output<MVAcut_convTrack <-> conversion track
+const Float_t MVAcut_convTrack = .31; // MVA output<MVAcut_convTrack <-> conversion track
 
 // // MVA cut value (For identifying real pair conversions):
 // const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
+
+
+// cut values for classical RP conv. cuts:
+Float_t phiv_cutValue = 2.4;  // RP convs. at phiv>phiv_cutValue
+Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
@@ -58,13 +63,14 @@ Int_t EventID1, EventID2;
 Int_t IsRP;                         // real pairs: 1, combinatorial pairs: 0
 Int_t IsUS;                         // pair with unlike sign (regardless of IsRP)
 Int_t IsConv;                       // both mother particles are gammas (can still be comb. pairs)
-Int_t IsHF;                         // HF = "heavy flavor"
+Int_t IsCorrHF;                     // correlated heavy-flavor (HF) pair
 Int_t IsCorrCharm;                  // correlated charmed pair: 1, else: 0
 Int_t IsCorrBottom;                 // correlated bottom pair: 1, else: 0
 Int_t IsCorrCharmFromBottom;        // correlated charmed pair originating from a bottom: 1, else: 0
+Int_t IsCombHF;                     // combinatorial HF pair
 Int_t ChargeSign;                   // unlike sign: 0, like sign (++): 1, like sign (--): -1
 Int_t IsTaggedRPConv_classicalCuts; // tagged as real pair conversion event: 1, otherwise: 0
-//Int_t IsTaggedRPConv_MVAcuts;       // tagged as real pair conversion event: 1, otherwise: 0
+//Int_t IsTaggedRPConv_MVAcuts;     // tagged as real pair conversion event: 1, otherwise: 0
 Int_t IsTaggedConvTrack1;           // tagged as conversion track (by preceding...
 Int_t IsTaggedConvTrack2;           // ...MVA classification): 1, otherwise: 0
 Float_t MVAoutput_convTrack1;       // MVA output values of preceding application of...
@@ -108,14 +114,15 @@ TVector3 temp;
 
 // program control parameters:
 bool isPairTree_rp = false;      // }
-bool isPairTree_us = true;       // } set/unset the
+bool isPairTree_us = false;      // } set/unset the
 bool isPairTree_ls = false;      // } output trees here
-bool isPairTree_us_ls = false;   // }
+bool isPairTree_us_ls = true;    // }
 
 
 
 void GeneratePairTrees() {
-  TFile *infile = TFile::Open("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo20.root","READ");
+  
+  TFile *infile = TFile::Open("~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo19.root", "READ");
   TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
 
   std::cout << std::endl;
@@ -127,9 +134,9 @@ void GeneratePairTrees() {
   }
 
   
-  TString infile_MVAoutputs_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/applicationPhase1/TMVApp_singleConvTrackRejMVAcuts_part2_1-9-split.root";
+  TString infile_MVAoutputs_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/singleTrackConvRej_wPIDeffs/temp_output/bdt/predictions_BDT.root";
   
-  TChain *singleTree_MVAoutputs = new TChain("tracks_MVAoutput");
+  TChain *singleTree_MVAoutputs = new TChain("singleTree_MVAoutput");
   if(doConsiderMVAinfo_convTrack) {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
   }
@@ -231,10 +238,11 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
-    pairTree_rp->Branch("IsHF",&IsHF);
+    pairTree_rp->Branch("IsCorrHF",&IsCorrHF);
     pairTree_rp->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_rp->Branch("IsCombHF",&IsCombHF);
     pairTree_rp->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_rp->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
@@ -304,10 +312,11 @@ void GeneratePairTrees() {
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
-    pairTree_us->Branch("IsHF",&IsHF);
+    pairTree_us->Branch("IsCorrHF",&IsCorrHF);
     pairTree_us->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_us->Branch("IsCombHF",&IsCombHF);
     pairTree_us->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
@@ -377,10 +386,11 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
-    pairTree_ls->Branch("IsHF",&IsHF);
+    pairTree_ls->Branch("IsCorrHF",&IsCorrHF);
     pairTree_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_ls->Branch("IsCombHF",&IsCombHF);
     pairTree_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
@@ -450,10 +460,11 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
-    pairTree_us_ls->Branch("IsHF",&IsHF);
+    pairTree_us_ls->Branch("IsCorrHF",&IsCorrHF);
     pairTree_us_ls->Branch("IsCorrCharm",&IsCorrCharm);
     pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
+    pairTree_us_ls->Branch("IsCombHF",&IsCombHF);
     pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
@@ -741,7 +752,7 @@ void GeneratePairTrees() {
 	}
 
 	// prefilter cuts - tagging RP conversions:
-	if(phiv>TMath::PiOver2() && mass<.05) {
+	if(phiv>phiv_cutValue && mass<mass_cutValue) {
 	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
@@ -785,7 +796,7 @@ void GeneratePairTrees() {
 
 	
 	// prefilter cuts - tagging RP conversions:
-        if(phiv>TMath::PiOver2() && mass<.05) {
+        if(phiv>phiv_cutValue && mass<mass_cutValue) {
 	  IsTaggedRPConv_classicalCuts = 1;
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
@@ -1035,10 +1046,11 @@ void calculateSumz() {
 
 
 void calculateHF() {
-  IsHF = 0;                  // }
-  IsCorrCharm = 0;           // } default
-  IsCorrBottom = 0;          // } values
+  IsCorrHF = 0;              // }
+  IsCorrCharm = 0;           // }
+  IsCorrBottom = 0;          // } default values
   IsCorrCharmFromBottom = 0; // }
+  IsCombHF = 0;              // }
   
   // check heavy flavor of first mothers:
   if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1))
@@ -1047,11 +1059,11 @@ void calculateHF() {
     // // NB: IGNORE LABEL CHECKS FOR IGEO19
     
     // // check whether they are in the same first mother range (i.e., have the same origin):
-    if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
+    // if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
       
-      if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
-    	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
-      }
+    //   if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
+    // 	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
+    //   }
       
       // check heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
@@ -1069,12 +1081,19 @@ void calculateHF() {
 	
       }
       
-    }
+      // }else { // <-> mothers have a different origin
+      
+      // check only heavy flavor of mothers:
+      if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
+	IsCombHF = 1;
+      }
+      
+      //}
     
   }
   
   if(IsCorrCharm==1 || IsCorrBottom==1) {
-    IsHF = 1;
+    IsCorrHF = 1;
   }
   
 }

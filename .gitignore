@@ -6,7 +6,7 @@
 *.so
 *.pcm
 temp_*
-macros/ML/output/
+macros/ML/neuralNets/output/
 __pycache__
 
 

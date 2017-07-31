@@ -23,16 +23,16 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split.root";
+  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/wSampleWeights_PIDeffs/clf_predict/predictions_BDT.root";  
+  TString fileName_MVAoutput = "~/Downloads/CombConvRej_NN_testing/temp_output/ann/predictions_NN.root"; //"~/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/CombConvRej_woPIDeffs_noMassCuts/clf_predict/predictions_BDT.root";
 
   TString h_text = "Comb. conv. rej. via MVA cuts";
 
   // set the used MVA method:
-  const Bool_t isMLP = kFALSE;
-  const Bool_t isBDT = kTRUE;
+  const Bool_t isNN  = kTRUE;
+  const Bool_t isBDT = kFALSE;
 
   // MVA output range in the corresponding input file:
   const Float_t MVAoutputRange_min = 0.;
@@ -49,7 +49,7 @@ void PlotMass() {
   // Output ROOT file name containing all created histograms:
   TString outfileName = "temp_output/mass_histos.root";
   
-  if(isMLP & isBDT) {
+  if(isNN & isBDT) {
     std::cout << "  ERROR: Cannot use both MLP and BDT output." << std::endl;
     exit(1);
   }
@@ -61,11 +61,13 @@ void PlotMass() {
   
 
   // set MVA cut value:
-  float MVAcut = .66;
+  float MVAcut = .21;
   
   const float stepSize = 1;
   const int nSteps = 1; // NB: 1/(nSteps)==stepSize must apply
 
+
+  
   
   TFile *f = new TFile(fileName_testData,"READ");
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
@@ -86,7 +88,7 @@ void PlotMass() {
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
   Float_t MVAoutput;
-  if(isMLP) MVAoutputTree->SetBranchAddress("MLP", &MVAoutput);
+  if(isNN) MVAoutputTree->SetBranchAddress("NN", &MVAoutput);
   if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &MVAoutput);
   
   
@@ -176,7 +178,7 @@ void PlotMass() {
 	      << TestTree->GetEntries() << std::endl;
     std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
 	      << MVAoutputTree->GetEntries() << std::endl;
-    return;
+    // return;
   }
   
   
@@ -212,7 +214,6 @@ void PlotMass() {
       // 0 or 1 (after MVA output transformation)):
       if(MVAoutput < 0 || MVAoutput > 1) continue;
       
-      // if(pt1<1 || pt2<1) continue; //testing
 
       Float_t sample_weight = 1.;
       if(doConsiderPIDefficiencies) {

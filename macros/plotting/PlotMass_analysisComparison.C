@@ -15,16 +15,28 @@
 #include <TLatex.h>
 
 void PlotMass_analysisComparison() {
-  TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejClassicalCuts_prefilter/mass_histos_comparison.root";
-  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/RPConvRejMVAcuts-cutVariations_prefilter/comparisonPlots_cutVariationsBy10Percent/mass_histos_comparison.root";
-  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/singleConvTrackRejMVAcuts-cutVariations/comparisonPlots_cutVariationsBy10Percent/mass_histos_comparison.root";
-  TString infile4_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/comparisonPlots_cutVariationsBy10Percent/mass_histos_comparison.root";
+
+  // RP conv. rej. via classical cuts:
+  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events_correctedErrors/RPConvRejClassicalCuts_veryTightCuts/cutVariations/mass_histos_comparison.root";
+
+  // RP conv. rej. via MVA cuts:
+  TString infile2_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events_correctedErrors/RPConvRejMVAcuts/cutVariations/mass_histos_comparison.root";
+
+  // single conv. track rej. via MVA cuts:
+  TString infile3_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events_correctedErrors/singleTrackConvRejMVA/cutVariations/mass_histos_comparison.root";
+
+  // Comb. conv. rej. via MVA cuts:
+  TString infile4_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events_correctedErrors/CombConvRejMVA/cutVariations/mass_histos_comparison.root";
+
+  TString infile_noMVAcuts_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events/singleTrackConvRejMVA/mass_histos_comparison.root";
 
 
-  TString leg_label1 = "RP conv. rej. via classical cuts";
-  TString leg_label2 = "RP conv. rej. via MVA cuts";
+  TString leg_label1 = "RP conv. rej. via classical cuts + prefiltering";
+  TString leg_label2 = "RP conv. rej. via MVA cuts + prefiltering";
   TString leg_label3 = "Single-track conv. rej. via MVA cuts";
   TString leg_label4 = "Comb. conv. rej. via MVA cuts";
+  TString leg_label_noMVAcuts = "no MVA cuts";
+  TString leg_label_ideal = "ideal backgr. rejection";
 
   const Int_t kMarker_1 = 24;
   const Int_t kMarker_2 = 25;
@@ -35,6 +47,7 @@ void PlotMass_analysisComparison() {
   const Int_t kColor_2 = kRed;
   const Int_t kColor_3 = kBlue;
   const Int_t kColor_4 = kGreen+2;
+  const Int_t kColor_noMVAcuts = kGray+2;
 
 
   //////////////////////////////////////////////////////////////////////////////
@@ -65,11 +78,11 @@ void PlotMass_analysisComparison() {
   TH1D *h_eff_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_eff_1");
   TH1D *h_eff_HF_2                  = (TH1D*)infile2->Get("h_HF_eff_1");
   TH1D *h_eff_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_eff_1");
-  h_significance_class_1->SetName("h_significance_class_2");
-  h_significance_exp_1->SetName("h_significance_exp_2");
-  h_SoverB_class_1->SetName("h_SoverB_class_2");
-  h_SoverB_exp_1->SetName("h_SoverB_exp_2");
-
+  h_significance_class_2->SetName("h_significance_class_2");
+  h_significance_exp_2->SetName("h_significance_exp_2");
+  h_SoverB_class_2->SetName("h_SoverB_class_2");
+  h_SoverB_exp_2->SetName("h_SoverB_exp_2");
+  
   TFile *infile3 = new TFile(infile3_filename, "READ");
   TH1D *h_significance_class_3      = (TH1D*)infile3->Get("h_significance_1");
   TH1D *h_significance_exp_3        = (TH1D*)infile3->Get("h_significance_exp_1");
@@ -80,11 +93,11 @@ void PlotMass_analysisComparison() {
   TH1D *h_eff_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_eff_1");
   TH1D *h_eff_HF_3                  = (TH1D*)infile3->Get("h_HF_eff_1");
   TH1D *h_eff_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_eff_1");
-  h_significance_class_1->SetName("h_significance_class_3");
-  h_significance_exp_1->SetName("h_significance_exp_3");
-  h_SoverB_class_1->SetName("h_SoverB_class_3");
-  h_SoverB_exp_1->SetName("h_SoverB_exp_3");
-
+  h_significance_class_3->SetName("h_significance_class_3");
+  h_significance_exp_3->SetName("h_significance_exp_3");
+  h_SoverB_class_3->SetName("h_SoverB_class_3");
+  h_SoverB_exp_3->SetName("h_SoverB_exp_3");
+  
   TFile *infile4 = new TFile(infile4_filename, "READ");
   TH1D *h_significance_class_4      = (TH1D*)infile4->Get("h_significance_1");
   TH1D *h_significance_exp_4        = (TH1D*)infile4->Get("h_significance_exp_1");
@@ -95,13 +108,31 @@ void PlotMass_analysisComparison() {
   TH1D *h_eff_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoutConvLeg_eff_1");
   TH1D *h_eff_HF_4                  = (TH1D*)infile4->Get("h_HF_eff_1");
   TH1D *h_eff_RPConv_4              = (TH1D*)infile4->Get("h_RPConv_eff_1");
-  h_significance_class_1->SetName("h_significance_class_4");
-  h_significance_exp_1->SetName("h_significance_exp_4");
-  h_SoverB_class_1->SetName("h_SoverB_class_4");
-  h_SoverB_exp_1->SetName("h_SoverB_exp_4");
+  h_significance_class_4->SetName("h_significance_class_4");
+  h_significance_exp_4->SetName("h_significance_exp_4");
+  h_SoverB_class_4->SetName("h_SoverB_class_4");
+  h_SoverB_exp_4->SetName("h_SoverB_exp_4");
+
+  TFile *infile_noMVAcuts = new TFile(infile_noMVAcuts_filename, "READ");
+  TH1D *h_significance_class_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_noMVAcuts");
+  TH1D *h_significance_exp_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_exp_noMVAcuts");
+  TH1D *h_significance_class_ideal = (TH1D*)infile_noMVAcuts->Get("h_significance_ideal");
+  TH1D *h_significance_exp_ideal = (TH1D*)infile_noMVAcuts->Get("h_significance_exp_ideal");
+  h_significance_class_noMVAcuts->SetName("h_significance_class_noMVAcuts");
+  h_significance_exp_noMVAcuts->SetName("h_significance_exp_noMVAcuts");
+  h_significance_class_ideal->SetName("h_significance_class_ideal");
+  h_significance_exp_ideal->SetName("h_significance_exp_ideal");
+
   
-
-
+  
+  h_significance_class_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_significance_class_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
+  h_significance_exp_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_significance_exp_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
+  h_significance_class_ideal->SetLineColor(kColor_noMVAcuts);
+  h_significance_class_ideal->SetMarkerColor(kColor_noMVAcuts);
+  h_significance_exp_ideal->SetLineColor(kColor_noMVAcuts);
+  h_significance_exp_ideal->SetMarkerColor(kColor_noMVAcuts);
 
   h_significance_class_1->SetLineColor(kColor_1);
   h_significance_class_1->SetMarkerColor(kColor_1);
@@ -212,10 +243,16 @@ void PlotMass_analysisComparison() {
   h_eff_RPConv_4->SetMarkerStyle(kMarkerStyle);
 
 
-  h_significance_class_1->SetXTitle("M_{ee} / (GeV/c^{2})");
-  h_significance_class_1->SetYTitle("S_{class} / #sqrt{S_{class} + B_{class}}");
-  h_significance_class_1->GetXaxis()->SetTitleOffset(1.2);
-  h_significance_class_1->GetYaxis()->SetTitleOffset(1.4);
+  h_significance_class_ideal->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_significance_class_ideal->SetYTitle("S_{class} / #sqrt{S_{class} + B_{class}}");
+  h_significance_class_ideal->GetXaxis()->SetTitleOffset(1.2);
+  h_significance_class_ideal->GetYaxis()->SetTitleOffset(1.4);
+
+  h_significance_exp_ideal->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_significance_exp_ideal->SetYTitle("S_{exp} / #sqrt{S_{exp} + B_{exp}}");
+  h_significance_exp_ideal->GetXaxis()->SetTitleOffset(1.2);
+  h_significance_exp_ideal->GetYaxis()->SetTitleOffset(1.4);
+  h_significance_exp_ideal->GetYaxis()->SetRangeUser(1e-2,1e3);
 
   h_SoverB_class_1->SetXTitle("M_{ee} / (GeV/c^{2})");
   h_SoverB_class_1->SetYTitle("S_{class} / B_{class}");
@@ -237,12 +274,16 @@ void PlotMass_analysisComparison() {
   leg1->AddEntry(h_significance_class_2, leg_label2, "p");
   leg1->AddEntry(h_significance_class_3, leg_label3, "p");
   leg1->AddEntry(h_significance_class_4, leg_label4, "p");
+  leg1->AddEntry(h_significance_class_noMVAcuts, leg_label_noMVAcuts, "p");
+  leg1->AddEntry(h_significance_class_ideal, leg_label_ideal, "p");
 
   TLegend *leg2 = new TLegend(.5, .7, .95, .95);
   leg2->AddEntry(h_significance_exp_1, leg_label1, "p");
   leg2->AddEntry(h_significance_exp_2, leg_label2, "p");
   leg2->AddEntry(h_significance_exp_3, leg_label3, "p");
   leg2->AddEntry(h_significance_exp_4, leg_label4, "p");
+  leg2->AddEntry(h_significance_exp_noMVAcuts, leg_label_noMVAcuts, "p");
+  leg2->AddEntry(h_significance_exp_ideal, leg_label_ideal, "p");
 
   TLegend *leg3 = new TLegend(.5, .7, .95, .95);
   leg3->AddEntry(h_SoverB_class_1, leg_label1, "p");
@@ -256,7 +297,6 @@ void PlotMass_analysisComparison() {
   leg4->AddEntry(h_SoverB_exp_3, leg_label3, "p");
   leg4->AddEntry(h_SoverB_exp_4, leg_label4, "p");
 
-
   TLegend *leg5 = new TLegend(.5, .7, .95, .95);
   leg5->AddEntry(h_eff_S_1, "S", "l");
   leg5->AddEntry(h_eff_CombiWithConvLeg_1, "Comb. w. conv. leg", "l");
@@ -264,19 +304,30 @@ void PlotMass_analysisComparison() {
   leg5->AddEntry(h_eff_HF_1, "Corr. HF", "l");
   leg5->AddEntry(h_eff_RPConv_1, "RP Conv.", "l");
 
+  TLegend *leg_eff = new TLegend(.5,.2,.88,.38);
+  leg_eff->AddEntry(h_SoverB_class_1, leg_label1, "p");
+  leg_eff->AddEntry(h_SoverB_class_2, leg_label2, "p");
+  leg_eff->AddEntry(h_SoverB_class_3, leg_label3, "p");
+  leg_eff->AddEntry(h_SoverB_class_4, leg_label4, "p");
 
 
-  TString drawOptions = "p0 e1 x0";
-  TString drawOptions_same = drawOptions;
-  drawOptions_same += " same";
+
+  TString drawOptions = "hist p";
+  TString drawOptions_same = drawOptions + " same";
+
+  TString drawOptions_eff = "hist p x0 e1";
+  TString drawOptions_eff_same = drawOptions_eff + " same";
+  
   
   TCanvas *c_significance_class = new TCanvas("c_significance_class","",1024,768);
   c_significance_class->SetGridy();
   c_significance_class->SetLogy();
-  h_significance_class_1->Draw(drawOptions);
+  h_significance_class_ideal->Draw(drawOptions);
+  h_significance_class_1->Draw(drawOptions_same);
   h_significance_class_2->Draw(drawOptions_same);
   h_significance_class_3->Draw(drawOptions_same);
   h_significance_class_4->Draw(drawOptions_same);
+  h_significance_class_noMVAcuts->Draw(drawOptions_same);
   leg1->Draw();
   c_significance_class->SaveAs("temp_output/c_significance_class.pdf");
   c_significance_class->SaveAs("temp_output/c_significance_class.root");
@@ -285,10 +336,12 @@ void PlotMass_analysisComparison() {
   TCanvas *c_significance_exp = new TCanvas("c_significance_exp","",1024,768);
   c_significance_exp->SetGridy();
   c_significance_exp->SetLogy();
-  h_significance_exp_1->Draw(drawOptions);
+  h_significance_exp_ideal->Draw(drawOptions);
+  h_significance_exp_1->Draw(drawOptions_same);
   h_significance_exp_2->Draw(drawOptions_same);
   h_significance_exp_3->Draw(drawOptions_same);
   h_significance_exp_4->Draw(drawOptions_same);
+  h_significance_exp_noMVAcuts->Draw(drawOptions_same);
   leg2->Draw();
   c_significance_exp->SaveAs("temp_output/c_significance_exp.pdf");
   c_significance_exp->SaveAs("temp_output/c_significance_exp.root");
@@ -357,55 +410,55 @@ void PlotMass_analysisComparison() {
   
   TCanvas *c_effs_S = new TCanvas("c_effs_S","",1024,768);
   c_effs_S->SetGridy();
-  h_eff_S_1->Draw(drawOptions);
-  h_eff_S_2->Draw(drawOptions_same);
-  h_eff_S_3->Draw(drawOptions_same);
-  h_eff_S_4->Draw(drawOptions_same);
-  leg1->Draw();
+  h_eff_S_1->Draw(drawOptions_eff);
+  h_eff_S_2->Draw(drawOptions_eff_same);
+  h_eff_S_3->Draw(drawOptions_eff_same);
+  h_eff_S_4->Draw(drawOptions_eff_same);
+  leg_eff->Draw();
   c_effs_S->SaveAs("temp_output/c_effs_S.pdf");
   c_effs_S->SaveAs("temp_output/c_effs_S.root");
   c_effs_S->SaveAs("temp_output/c_effs_S.png");
 
   TCanvas *c_effs_CombiWithConvLeg = new TCanvas("c_effs_CombiWithConvLeg","",1024,768);
   c_effs_CombiWithConvLeg->SetGridy();
-  h_eff_CombiWithConvLeg_1->Draw(drawOptions);
-  h_eff_CombiWithConvLeg_2->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_3->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_4->Draw(drawOptions_same);
-  leg1->Draw();
+  h_eff_CombiWithConvLeg_1->Draw(drawOptions_eff);
+  h_eff_CombiWithConvLeg_2->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_3->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_4->Draw(drawOptions_eff_same);
+  leg_eff->Draw();
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.pdf");
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.root");
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.png");
 
   TCanvas *c_effs_CombiWithoutConvLeg = new TCanvas("c_effs_CombiWithoutConvLeg","",1024,768);
   c_effs_CombiWithoutConvLeg->SetGridy();
-  h_eff_CombiWithoutConvLeg_1->Draw(drawOptions);
-  h_eff_CombiWithoutConvLeg_2->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_3->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_4->Draw(drawOptions_same);
-  leg1->Draw();
+  h_eff_CombiWithoutConvLeg_1->Draw(drawOptions_eff);
+  h_eff_CombiWithoutConvLeg_2->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_3->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_4->Draw(drawOptions_eff_same);
+  leg_eff->Draw();
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.pdf");
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.root");
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.png");
 
   TCanvas *c_effs_HF = new TCanvas("c_effs_HF","",1024,768);
   c_effs_HF->SetGridy();
-  h_eff_HF_1->Draw(drawOptions);
-  h_eff_HF_2->Draw(drawOptions_same);
-  h_eff_HF_3->Draw(drawOptions_same);
-  h_eff_HF_4->Draw(drawOptions_same);
-  leg1->Draw();
+  h_eff_HF_1->Draw(drawOptions_eff);
+  h_eff_HF_2->Draw(drawOptions_eff_same);
+  h_eff_HF_3->Draw(drawOptions_eff_same);
+  h_eff_HF_4->Draw(drawOptions_eff_same);
+  leg_eff->Draw();
   c_effs_HF->SaveAs("temp_output/c_effs_HF.pdf");
   c_effs_HF->SaveAs("temp_output/c_effs_HF.root");
   c_effs_HF->SaveAs("temp_output/c_effs_HF.png");
 
   TCanvas *c_effs_RPConv = new TCanvas("c_effs_RPConv","",1024,768);
   c_effs_RPConv->SetGridy();
-  h_eff_RPConv_1->Draw(drawOptions);
-  h_eff_RPConv_2->Draw(drawOptions_same);
-  h_eff_RPConv_3->Draw(drawOptions_same);
-  h_eff_RPConv_4->Draw(drawOptions_same);
-  leg1->Draw();
+  h_eff_RPConv_1->Draw(drawOptions_eff);
+  h_eff_RPConv_2->Draw(drawOptions_eff_same);
+  h_eff_RPConv_3->Draw(drawOptions_eff_same);
+  h_eff_RPConv_4->Draw(drawOptions_eff_same);
+  leg_eff->Draw();
   c_effs_RPConv->SaveAs("temp_output/c_effs_RPConv.pdf");
   c_effs_RPConv->SaveAs("temp_output/c_effs_RPConv.root");
   c_effs_RPConv->SaveAs("temp_output/c_effs_RPConv.png");    
@@ -481,26 +534,26 @@ void PlotMass_analysisComparison() {
   
   TCanvas *c_effs_all = new TCanvas("c_effs","",1024,768);
   c_effs_all->SetGridy();
-  h_eff_S_1->Draw(drawOptions);
-  h_eff_S_2->Draw(drawOptions_same);
-  h_eff_S_3->Draw(drawOptions_same);
-  h_eff_S_4->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_1->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_2->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_3->Draw(drawOptions_same);
-  h_eff_CombiWithConvLeg_4->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_1->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_2->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_3->Draw(drawOptions_same);
-  h_eff_CombiWithoutConvLeg_4->Draw(drawOptions_same);
-  h_eff_HF_1->Draw(drawOptions_same);
-  h_eff_HF_2->Draw(drawOptions_same);
-  h_eff_HF_3->Draw(drawOptions_same);
-  h_eff_HF_4->Draw(drawOptions_same);
-  h_eff_RPConv_1->Draw(drawOptions_same);
-  h_eff_RPConv_2->Draw(drawOptions_same);
-  h_eff_RPConv_3->Draw(drawOptions_same);
-  h_eff_RPConv_4->Draw(drawOptions_same);
+  h_eff_S_1->Draw(drawOptions_eff);
+  h_eff_S_2->Draw(drawOptions_eff_same);
+  h_eff_S_3->Draw(drawOptions_eff_same);
+  h_eff_S_4->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_1->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_2->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_3->Draw(drawOptions_eff_same);
+  h_eff_CombiWithConvLeg_4->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_1->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_2->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_3->Draw(drawOptions_eff_same);
+  h_eff_CombiWithoutConvLeg_4->Draw(drawOptions_eff_same);
+  h_eff_HF_1->Draw(drawOptions_eff_same);
+  h_eff_HF_2->Draw(drawOptions_eff_same);
+  h_eff_HF_3->Draw(drawOptions_eff_same);
+  h_eff_HF_4->Draw(drawOptions_eff_same);
+  h_eff_RPConv_1->Draw(drawOptions_eff_same);
+  h_eff_RPConv_2->Draw(drawOptions_eff_same);
+  h_eff_RPConv_3->Draw(drawOptions_eff_same);
+  h_eff_RPConv_4->Draw(drawOptions_eff_same);
   leg5->Draw();
   c_effs_all->SaveAs("temp_output/c_effs_all.pdf");
   c_effs_all->SaveAs("temp_output/c_effs_all.root");

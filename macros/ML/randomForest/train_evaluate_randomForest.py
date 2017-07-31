@@ -50,7 +50,7 @@ sys.stdout = Logger()
 
 print('Loading data...')
 
-num_entries = 4000000
+num_entries = 3000000
 start = 0
 
 inputfilename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root"
@@ -59,7 +59,7 @@ branches_pairTree = [
     #'px1','py1','pz1',
     #'px2','py2','pz2',
     #'phiv',
-    'mass',
+    #'mass',
     #'sumz',
     #'diffz',
     'opang',
@@ -120,8 +120,8 @@ dataSample_orig = pd.DataFrame(root_numpy.root2array(inputfilename,
 ))
 
 
-print('Setting initial mass cuts...')
-dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
+#print('Setting initial mass cuts...')
+#dataSample_orig = dataSample_orig.drop(dataSample_orig[dataSample_orig['mass']<.05].index)
 
 
 print('Engineering features...')
@@ -159,17 +159,17 @@ X['nITSshared2'] = dataSample_orig['nITSshared2']
 #              (dataSample_orig['DCAy1']-dataSample_orig['DCAy2'])*(dataSample_orig['DCAy1']-dataSample_orig['DCAy2']) + \
 #              (dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])*(dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])
 ##X['DCAfeat'] = 1/(dataSample_orig['DCAx1']-dataSample_orig['DCAx2']) + 1/(dataSample_orig['DCAy1']-dataSample_orig['DCAy2']) + 1/(dataSample_orig['DCAz1']-dataSample_orig['DCAz2'])
-#X['DCAx1'] = np.abs(dataSample_orig['DCAx1'])
-#X['DCAx2'] = np.abs(dataSample_orig['DCAx2'])
-#X['DCAy1'] = np.abs(dataSample_orig['DCAy1'])
-#X['DCAy2'] = np.abs(dataSample_orig['DCAy2'])
-#X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
-#X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
+X['DCAx1'] = np.abs(dataSample_orig['DCAx1'])
+X['DCAx2'] = np.abs(dataSample_orig['DCAx2'])
+X['DCAy1'] = np.abs(dataSample_orig['DCAy1'])
+X['DCAy2'] = np.abs(dataSample_orig['DCAy2'])
+X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
+X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
 
 #X['DCAxy1'] = np.log(np.abs(dataSample_orig['DCAxy1'])) #dataSample_orig['DCAxy1_norm']))
 #X['DCAxy2'] = np.log(np.abs(dataSample_orig['DCAxy2'])) #dataSample_orig['DCAxy2_norm']))
-X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
-X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
+#X['DCAz1'] = np.abs(dataSample_orig['DCAz1'])
+#X['DCAz2'] = np.abs(dataSample_orig['DCAz2'])
 #X['ITSchi21'] = dataSample_orig['ITSchi21']
 X['ITSchi22'] = dataSample_orig['ITSchi22']
 #X['TPCchi21'] = dataSample_orig['TPCchi21']
@@ -262,7 +262,7 @@ joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
 
 print('Splitting the data in training, validation and test samples...')
 
-X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=3000000, random_state=42)
+X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
 
 X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=.5, random_state=43)
 
@@ -284,7 +284,7 @@ print('Creating random forest classifier...')
 clf = RandomForestClassifier(n_jobs=-1,
                              n_estimators=300,
                              max_depth=None,
-                             min_samples_split=50,
+                             min_samples_split=100,
                              class_weight='balanced',
                              criterion='gini',
                              max_features=None

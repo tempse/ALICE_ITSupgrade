@@ -10,7 +10,7 @@ from sklearn.externals import joblib
 
 weights_filename = 'temp_output/bdt/clf_weights.pkl'
 
-data_filename = '~/ITSup_testing_data/FT2_AnalysisResults_Upgrade_addFeat_part2_1-9-split.root'
+data_filename = '~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root'
 
 scaler_attributes_filename = 'temp_output/bdt/StandardScaler_attributes.pkl'
 

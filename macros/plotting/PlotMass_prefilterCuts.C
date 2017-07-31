@@ -24,23 +24,23 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root";
+  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split_sklearnTrainingSingleTrackConvRej-wPIDeffs.root";
   
-  TString h_text = "RP conv. rej. via MVA cuts";
+  TString h_text = "Single-track conv. rejection via MVA cuts";
 
   // two variables are combined, e.g., via
   // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoVars = kFALSE;
+  Bool_t useTwoVars = kTRUE;
 
-  Bool_t useTags = kTRUE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
-  Int_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
+  Bool_t useTags = kFALSE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
+  Float_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
-  Float_t MVAcut = 0.47;
+  Float_t MVAcut = 0.31;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "IsTaggedRPConv_MVAcuts_prefilter_wPIDeffs";
+  TString variableName1 = "MVAoutput_convTrack1";
   TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):

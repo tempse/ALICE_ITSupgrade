@@ -20,13 +20,17 @@ void PlotMass_cutVarComparison() {
   //////////////////////////////////////////////////////////////////////////////
 
   // core labels for plot legends:
-  TString leg_baselabel_1 = "TMVA-optimized MVA cut";
-  TString leg_baselabel_2 = "MVA cut: +10%";
-  TString leg_baselabel_3 = "MVA cut: -10%";
+  TString leg_baselabel_1 = "optimized MVA cut";
+  TString leg_baselabel_2 = "optimized MVA cut";
+  TString leg_baselabel_3 = "optimized MVA cut";
+  TString leg_baselabel_noMVAcuts = "no MVA cuts";
+  TString leg_baselabel_ideal = "ideal backgr. rejection";
 
   TString leg_baselabel_exp_1 = leg_baselabel_1;
   TString leg_baselabel_exp_2 = leg_baselabel_2;
   TString leg_baselabel_exp_3 = leg_baselabel_3;
+  TString leg_baselabel_exp_noMVAcuts = leg_baselabel_noMVAcuts;
+  TString leg_baselabel_exp_ideal = leg_baselabel_ideal;
 
   TString leg_baselabel_eff_2 = leg_baselabel_2;
   TString leg_baselabel_eff_3 = leg_baselabel_3;
@@ -39,11 +43,13 @@ void PlotMass_cutVarComparison() {
   TString leg_baselabel_SoverB_exp_2 = leg_baselabel_2;
   TString leg_baselabel_SoverB_exp_3 = leg_baselabel_3;
 
+  
   // !!! Don't forget to change the below signal/background definitions accordingly !!!
     
-  TString infile1_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts/mass_histos.root";
-  TString infile2_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcutPlus10Percent/mass_histos.root";
-  TString infile3_filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/analysis_singleConvTrackRejMVAcuts/plots/CombConvRejMVAcuts-cutVariations/MVAcutMinus10Percent/mass_histos.root";
+  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/plots_100M-events_correctedErrors/RPConvRejClassicalCuts_veryTightCuts/mass_histos_prefilterCuts.root";
+  TString infile2_filename = infile1_filename;
+  TString infile3_filename = infile1_filename;
+  TString infile_noMVAcuts_filename = infile1_filename;
   
   TString infile1_eff_filename = infile1_filename;
   TString infile2_eff_filename = infile2_filename;
@@ -57,12 +63,12 @@ void PlotMass_cutVarComparison() {
   
   // optimized MVA cut
   TFile *infile1 = new TFile(infile1_filename, "READ");
-  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_MVAcut");
-  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_prefilterCut");
+  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_prefilterCut");
 
   h_SB_1->SetName("h_SB_1");
   h_S_1->SetName("h_S_1");
@@ -73,12 +79,12 @@ void PlotMass_cutVarComparison() {
   
   // MVA cut +10%
   TFile *infile2 = new TFile(infile2_filename, "READ");
-  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_MVAcut");
-  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_prefilterCut");
+  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_prefilterCut");
 
   h_SB_2->SetName("h_SB_2");
   h_S_2->SetName("h_S_2");
@@ -90,12 +96,12 @@ void PlotMass_cutVarComparison() {
 
   // MVA cut -10%
   TFile *infile3 = new TFile(infile3_filename, "READ");
-  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_MVAcut");
-  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_prefilterCut");
+  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_prefilterCut");
 
   h_SB_3->SetName("h_SB_3");
   h_S_3->SetName("h_S_3");
@@ -104,6 +110,16 @@ void PlotMass_cutVarComparison() {
   h_HF_3->SetName("h_HF_3");
   h_RPConv_3->SetName("h_RPConv_3");
 
+
+  // no MVA cuts:
+  TFile *infile_noMVAcuts = new TFile(infile_noMVAcuts_filename, "READ");
+  TH1D *h_SB_noMVAcuts                  = (TH1D*)infile_noMVAcuts->Get("h_SB");
+  TH1D *h_S_noMVAcuts                   = (TH1D*)infile_noMVAcuts->Get("h_S");
+  TH1D *h_CombiWithConvLeg_noMVAcuts    = (TH1D*)infile_noMVAcuts->Get("h_CombiWithConvLeg");
+  TH1D *h_CombiWithoutConvLeg_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_CombiWithoutConvLeg");
+  TH1D *h_HF_noMVAcuts                  = (TH1D*)infile_noMVAcuts->Get("h_HF");
+  TH1D *h_RPConv_noMVAcuts              = (TH1D*)infile_noMVAcuts->Get("h_RPConv");
+  
 
   std::cout << "All files read successfully..." << std::endl;
   
@@ -118,38 +134,56 @@ void PlotMass_cutVarComparison() {
   h_plot_S_1 = (TH1D*)h_S_1->Clone("h_plot_S_1");
   h_plot_S_1->Add(h_CombiWithoutConvLeg_1);
   h_plot_S_1->Add(h_HF_1);
-  h_plot_S_1->Add(h_RPConv_1);
+  // h_plot_S_1->Add(h_RPConv_1);
   h_plot_S_1->Sumw2();
     
   TH1D *h_plot_B_1 = new TH1D();
   h_plot_B_1 = (TH1D*)h_CombiWithConvLeg_1->Clone("h_plot_B_1");
-  // h_plot_B_1->Add(h_RPConv_1);
+  h_plot_B_1->Add(h_RPConv_1);
   h_plot_B_1->Sumw2();
 
   TH1D *h_plot_S_2 = new TH1D();
   h_plot_S_2 = (TH1D*)h_S_2->Clone("h_plot_S_2");
   h_plot_S_2->Add(h_CombiWithoutConvLeg_2);
   h_plot_S_2->Add(h_HF_2);
-  h_plot_S_2->Add(h_RPConv_2);
+  // h_plot_S_2->Add(h_RPConv_2);
   h_plot_S_2->Sumw2();
     
   TH1D *h_plot_B_2 = new TH1D();
   h_plot_B_2 = (TH1D*)h_CombiWithConvLeg_2->Clone("h_plot_B_2");
-  // h_plot_B_2->Add(h_RPConv_2);
+  h_plot_B_2->Add(h_RPConv_2);
   h_plot_B_2->Sumw2();
 
   TH1D *h_plot_S_3 = new TH1D();
   h_plot_S_3 = (TH1D*)h_S_3->Clone("h_plot_S_3");
   h_plot_S_3->Add(h_CombiWithoutConvLeg_3);
   h_plot_S_3->Add(h_HF_3);
-  h_plot_S_3->Add(h_RPConv_3);
+  // h_plot_S_3->Add(h_RPConv_3);
   h_plot_S_3->Sumw2();
     
   TH1D *h_plot_B_3 = new TH1D();
   h_plot_B_3 = (TH1D*)h_CombiWithConvLeg_3->Clone("h_plot_B_3");
-  // h_plot_B_3->Add(h_RPConv_3);
+  h_plot_B_3->Add(h_RPConv_3);
   h_plot_B_3->Sumw2();
-  
+
+  TH1D *h_plot_S_noMVAcuts = new TH1D();
+  h_plot_S_noMVAcuts = (TH1D*)h_S_noMVAcuts->Clone("h_plot_S_noMVAcuts");
+  h_plot_S_noMVAcuts->Add(h_CombiWithoutConvLeg_noMVAcuts);
+  h_plot_S_noMVAcuts->Add(h_HF_noMVAcuts);
+  // h_plot_S_noMVAcuts->Add(h_RPConv_noMVAcuts);
+  h_plot_S_noMVAcuts->Sumw2();
+
+  TH1D *h_plot_B_noMVAcuts = new TH1D();
+  h_plot_B_noMVAcuts = (TH1D*)h_CombiWithConvLeg_noMVAcuts->Clone("h_plot_B_noMVAcuts");
+  h_plot_B_noMVAcuts->Add(h_RPConv_noMVAcuts);
+  h_plot_B_noMVAcuts->Sumw2();
+
+  TH1D *h_plot_S_ideal = new TH1D(); // ideal background rej. <-> signal only
+  h_plot_S_ideal = (TH1D*)h_S_noMVAcuts->Clone("h_plot_S_ideal");
+  h_plot_S_ideal->Add(h_CombiWithoutConvLeg_noMVAcuts);
+  h_plot_S_ideal->Add(h_HF_noMVAcuts);
+  // h_plot_S_ideal->Add(h_RPConv_noMVAcuts);
+  h_plot_S_ideal->Sumw2();
 
 
 
@@ -186,6 +220,21 @@ void PlotMass_cutVarComparison() {
   h_plot_B_exp_3->Add(h_RPConv_3);
   h_plot_B_exp_3->Sumw2();
 
+  TH1D *h_plot_S_exp_noMVAcuts = new TH1D();
+  h_plot_S_exp_noMVAcuts = (TH1D*)h_S_noMVAcuts->Clone("h_plot_S_exp_noMVAcuts");
+  h_plot_S_exp_noMVAcuts->Add(h_HF_noMVAcuts);
+  h_plot_S_exp_noMVAcuts->Sumw2();
+
+  TH1D *h_plot_B_exp_noMVAcuts = new TH1D();
+  h_plot_B_exp_noMVAcuts = (TH1D*)h_CombiWithConvLeg_noMVAcuts->Clone("h_plot_B_exp_noMVAcuts");
+  h_plot_B_exp_noMVAcuts->Add(h_CombiWithoutConvLeg_noMVAcuts);
+  h_plot_B_exp_noMVAcuts->Add(h_RPConv_noMVAcuts);
+  h_plot_B_exp_noMVAcuts->Sumw2();
+
+  TH1D *h_plot_S_exp_ideal = new TH1D();
+  h_plot_S_exp_ideal = (TH1D*)h_S_noMVAcuts->Clone("h_plot_S_exp_ideal");
+  h_plot_S_exp_ideal->Add(h_HF_noMVAcuts);
+  h_plot_S_exp_ideal->Sumw2();
 
   
 
@@ -196,6 +245,8 @@ void PlotMass_cutVarComparison() {
   TH1D *h_significance_1 = new TH1D("h_significance_1", "", nBins, min, max);
   TH1D *h_significance_2 = new TH1D("h_significance_2", "", nBins, min, max);
   TH1D *h_significance_3 = new TH1D("h_significance_3", "", nBins, min, max);
+  TH1D *h_significance_noMVAcuts = new TH1D("h_significance_noMVAcuts", "", nBins, min, max);
+  TH1D *h_significance_ideal = new TH1D("h_significance_ideal", "", nBins, min, max);
 
   
   TH1D *h_SoverB_1 = new TH1D("h_SoverB_1", "", nBins, min, max);
@@ -206,6 +257,8 @@ void PlotMass_cutVarComparison() {
   TH1D *h_significance_exp_1 = new TH1D("h_significance_exp_1", "", nBins, min, max);
   TH1D *h_significance_exp_2 = new TH1D("h_significance_exp_2", "", nBins, min, max);
   TH1D *h_significance_exp_3 = new TH1D("h_significance_exp_3", "", nBins, min, max);
+  TH1D *h_significance_exp_noMVAcuts = new TH1D("h_significance_exp_noMVAcuts", "", nBins, min, max);
+  TH1D *h_significance_exp_ideal = new TH1D("h_significance_exp_ideal", "", nBins, min, max);
 
   TH1D *h_SoverB_exp_1 = new TH1D("h_SoverB_exp_1", "", nBins, min, max);
   TH1D *h_SoverB_exp_2 = new TH1D("h_SoverB_exp_2", "", nBins, min, max);
@@ -213,19 +266,23 @@ void PlotMass_cutVarComparison() {
 
   
 
-  Double_t significance_int_1 = 0,
-    significance_int_2 = 0,
-    significance_int_3 = 0;
+  Double_t significance_int_1 = 0.,
+    significance_int_2 = 0.,
+    significance_int_3 = 0.,
+    significance_int_noMVAcuts = 0.,
+    significance_int_ideal = 0.;
 
-  Double_t significance_exp_int_1 = 0,
-    significance_exp_int_2 = 0,
-    significance_exp_int_3 = 0;
+  Double_t significance_exp_int_1 = 0.,
+    significance_exp_int_2 = 0.,
+    significance_exp_int_3 = 0.,
+    significance_exp_int_noMVAcuts = 0.,
+    significance_exp_int_ideal = 0.;
   
   
   
   for(Int_t i=0; i<nBins; i++) {
 
-    // significance:
+    // significance (class.):
     if(h_plot_S_1->GetBinContent(i) != 0) {
       h_significance_1->SetBinContent(i,
 				      h_plot_S_1->GetBinContent(i) /
@@ -255,8 +312,20 @@ void PlotMass_cutVarComparison() {
     }else {
       h_significance_3->SetBinContent(i, 0.);
     }
+    if(h_plot_S_noMVAcuts->GetBinContent(i) != 0) {
+      h_significance_noMVAcuts->SetBinContent(i,
+					      h_plot_S_noMVAcuts->GetBinContent(i) /
+					      TMath::Sqrt(h_plot_S_noMVAcuts->GetBinContent(i) +
+							  h_plot_B_noMVAcuts->GetBinContent(i)));
+      significance_int_noMVAcuts += h_significance_noMVAcuts->GetBinContent(i);
+    }else {
+      h_significance_noMVAcuts->SetBinContent(i, 0.);
+    }
 
+    h_significance_ideal->SetBinContent(i, TMath::Sqrt(h_plot_S_ideal->GetBinContent(i)));
+    significance_int_ideal += h_significance_ideal->GetBinContent(i);
 
+    
     // significance (exp.):
     if(h_plot_S_exp_1->GetBinContent(i) != 0) {
       h_significance_exp_1->SetBinContent(i,
@@ -287,6 +356,18 @@ void PlotMass_cutVarComparison() {
     }else {
       h_significance_exp_3->SetBinContent(i, 0.);
     }
+    if(h_plot_S_exp_noMVAcuts->GetBinContent(i) != 0) {
+      h_significance_exp_noMVAcuts->SetBinContent(i,
+						  h_plot_S_exp_noMVAcuts->GetBinContent(i) /
+						  TMath::Sqrt(h_plot_S_exp_noMVAcuts->GetBinContent(i) +
+							      h_plot_B_exp_noMVAcuts->GetBinContent(i)));
+      significance_exp_int_noMVAcuts += h_significance_exp_noMVAcuts->GetBinContent(i);
+    }else {
+      h_significance_exp_noMVAcuts->SetBinContent(i, 0.);
+    }
+
+    h_significance_exp_ideal->SetBinContent(i, TMath::Sqrt(h_plot_S_exp_ideal->GetBinContent(i)));
+    significance_exp_int_ideal += h_significance_exp_ideal->GetBinContent(i);
     
 
     // signal over background:
@@ -350,6 +431,10 @@ void PlotMass_cutVarComparison() {
   h_significance_2->SetMarkerColor(kGreen+2);
   h_significance_3->SetLineColor(kRed);
   h_significance_3->SetMarkerColor(kRed);
+  h_significance_noMVAcuts->SetLineColor(kGray+2);
+  h_significance_noMVAcuts->SetMarkerColor(kGray+2);
+  h_significance_ideal->SetLineColor(kGray+2);
+  h_significance_ideal->SetMarkerColor(kGray+2);
 
   h_significance_exp_1->SetLineColor(kBlack);
   h_significance_exp_1->SetMarkerColor(kBlack);
@@ -357,6 +442,10 @@ void PlotMass_cutVarComparison() {
   h_significance_exp_2->SetMarkerColor(kGreen+2);
   h_significance_exp_3->SetLineColor(kRed);
   h_significance_exp_3->SetMarkerColor(kRed);
+  h_significance_exp_noMVAcuts->SetLineColor(kGray+2);
+  h_significance_exp_noMVAcuts->SetMarkerColor(kGray+2);
+  h_significance_exp_ideal->SetLineColor(kGray+2);
+  h_significance_exp_ideal->SetMarkerColor(kGray+2);
 
 
   h_significance_1->SetMarkerStyle(20);
@@ -365,6 +454,10 @@ void PlotMass_cutVarComparison() {
   h_significance_2->SetMarkerSize(1);
   h_significance_3->SetMarkerStyle(32);
   h_significance_3->SetMarkerSize(1);
+  h_significance_noMVAcuts->SetMarkerStyle(24);
+  h_significance_noMVAcuts->SetMarkerSize(1);
+  h_significance_ideal->SetMarkerStyle(5);
+  h_significance_ideal->SetMarkerSize(1);
 
   h_significance_exp_1->SetMarkerStyle(20);
   h_significance_exp_1->SetMarkerSize(1);
@@ -372,6 +465,10 @@ void PlotMass_cutVarComparison() {
   h_significance_exp_2->SetMarkerSize(1);
   h_significance_exp_3->SetMarkerStyle(32);
   h_significance_exp_3->SetMarkerSize(1);
+  h_significance_exp_noMVAcuts->SetMarkerStyle(24);
+  h_significance_exp_noMVAcuts->SetMarkerSize(1);
+  h_significance_exp_ideal->SetMarkerStyle(5);
+  h_significance_exp_ideal->SetMarkerSize(1);
   
   
 
@@ -436,6 +533,8 @@ void PlotMass_cutVarComparison() {
   h_significance_1->Draw("p0");
   h_significance_2->Draw("p0 same");
   h_significance_3->Draw("p0 same");
+  h_significance_noMVAcuts->Draw("p0 same");
+  h_significance_ideal->Draw("p0 same");
 
 
   TString leg_label_1 = leg_baselabel_1;
@@ -453,12 +552,24 @@ void PlotMass_cutVarComparison() {
   leg_label_3 += significance_int_3;
   leg_label_3 += ")";
 
+  TString leg_label_noMVAcuts = leg_baselabel_noMVAcuts;
+  leg_label_noMVAcuts += " (sign. int. = ";
+  leg_label_noMVAcuts += significance_int_noMVAcuts;
+  leg_label_noMVAcuts += ")";
+
+  TString leg_label_ideal = leg_baselabel_ideal;
+  leg_label_ideal += " (sign. int. = ";
+  leg_label_ideal += significance_int_ideal;
+  leg_label_ideal += ")";
+
   
 
   TLegend *leg_significance = new TLegend(.5,.7,.95,.95);
   leg_significance->AddEntry(h_significance_1, leg_label_1, "p");
   leg_significance->AddEntry(h_significance_2, leg_label_2, "p");
   leg_significance->AddEntry(h_significance_3, leg_label_3, "p");
+  leg_significance->AddEntry(h_significance_noMVAcuts, leg_label_noMVAcuts, "p");
+  leg_significance->AddEntry(h_significance_ideal, leg_label_ideal, "p");
   leg_significance->Draw();
 
 
@@ -476,6 +587,8 @@ void PlotMass_cutVarComparison() {
   h_significance_exp_1->Draw("p0 e1 x0");
   h_significance_exp_2->Draw("p0 same");
   h_significance_exp_3->Draw("p0 same");
+  h_significance_exp_noMVAcuts->Draw("p0 same");
+  h_significance_exp_noMVAcuts->Draw("p0 same");
 
 
   TString leg_label_exp_1 = leg_baselabel_exp_1;
@@ -493,12 +606,24 @@ void PlotMass_cutVarComparison() {
   leg_label_exp_3 += significance_exp_int_3;
   leg_label_exp_3 += ")";
 
+  TString leg_label_exp_noMVAcuts = leg_baselabel_exp_noMVAcuts;
+  leg_label_exp_noMVAcuts += " (sign. int. = ";
+  leg_label_exp_noMVAcuts += significance_exp_int_noMVAcuts;
+  leg_label_exp_noMVAcuts += ")";
+
+  TString leg_label_exp_ideal = leg_baselabel_exp_ideal;
+  leg_label_exp_ideal += " (sign. int. = ";
+  leg_label_exp_ideal += significance_exp_int_ideal;
+  leg_label_exp_ideal += ")";
+
   
 
   TLegend *leg_significance_exp = new TLegend(.5,.7,.95,.95);
   leg_significance_exp->AddEntry(h_significance_exp_1, leg_label_exp_1, "p");
   leg_significance_exp->AddEntry(h_significance_exp_2, leg_label_exp_2, "p");
   leg_significance_exp->AddEntry(h_significance_exp_3, leg_label_exp_3, "p");
+  leg_significance_exp->AddEntry(h_significance_exp_noMVAcuts, leg_label_exp_noMVAcuts, "p");
+  leg_significance_exp->AddEntry(h_significance_exp_ideal, leg_label_exp_ideal, "p");
   leg_significance_exp->Draw();
 
 
@@ -762,9 +887,13 @@ void PlotMass_cutVarComparison() {
   h_plot_B_exp_1->Write(0, TObject::kOverwrite);
 
   h_significance_1->Write(0, TObject::kOverwrite);
+  h_significance_noMVAcuts->Write(0, TObject::kOverwrite);
+  h_significance_ideal->Write(0, TObject::kOverwrite);
   h_SoverB_1->Write(0, TObject::kOverwrite);
 
   h_significance_exp_1->Write(0, TObject::kOverwrite);
+  h_significance_exp_noMVAcuts->Write(0, TObject::kOverwrite);
+  h_significance_exp_ideal->Write(0, TObject::kOverwrite);
   h_SoverB_exp_1->Write(0, TObject::kOverwrite);
 
   

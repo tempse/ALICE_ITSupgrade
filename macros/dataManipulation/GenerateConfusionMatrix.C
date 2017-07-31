@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <TROOT.h>
+#include <TMath.h>
 #include <TApplication.h>
 #include <TString.h>
 #include <TFile.h>
@@ -45,7 +46,7 @@ void GenerateConfusionMatrix() {
   // true positives, false positives, true negatives, false negatives
   Double_t TP = 0., FP = 0., TN = 0., FN = 0.;
   
-  Long64_t nentries = tree->GetEntries();
+  Long64_t nentries = 16400000;//tree->GetEntries();
   
   
   for(Long64_t i=0; i<nentries; i++) {
@@ -84,6 +85,8 @@ void GenerateConfusionMatrix() {
 
   std::cout << "TPR = TP/(TP+FN) = " << TP/((Float_t)(TP+FN)) << std::endl;
   std::cout << "FPR = FP/(FP+TN) = " << FP/((Float_t)(FP+TN)) << std::endl;
+  std::cout << "significance = " << TP/TMath::Sqrt(TP+FP) <<std::endl;
+  std::cout << "significance gain = " << (TP/TMath::Sqrt(TP+FP)-(TP+FN)/TMath::Sqrt(TP+FN+FP+TN)) / (TMath::Sqrt(TP+FN)-(TP+FN)/TMath::Sqrt(TP+FN+FP+TN)) << std::endl;
   
   std::cout << std::endl;
   std::cout << "TP + FN = " << TP+FN << std::endl
