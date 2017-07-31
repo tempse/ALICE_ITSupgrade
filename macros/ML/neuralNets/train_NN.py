@@ -50,7 +50,7 @@ def preprocess_data(X, load_fitted_attributes=False, output_prefix=None):
         print('Error: Cannot load fitted attributes during data preprocessing. Variable "output_prefix" is not defined.')
         sys.exit()
     
-    scaler_attributes_filename = output_prefix + 'StandardScaler_attributes.pkl'
+    scaler_attributes_filename = str(output_prefix) + 'StandardScaler_attributes.pkl'
     
     if load_fitted_attributes:
         print('Loading previously determined scaler attributes...')
