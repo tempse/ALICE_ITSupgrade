@@ -6,6 +6,8 @@
 *.so
 *.pcm
 temp_*
+macros/ML/output/
+__pycache__
 
 
 
