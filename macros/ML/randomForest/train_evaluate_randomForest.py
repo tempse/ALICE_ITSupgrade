@@ -50,7 +50,7 @@ sys.stdout = Logger()
 
 print('Loading data...')
 
-num_entries = 3000000
+num_entries = 1000000
 start = 0
 
 inputfilename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root"
@@ -340,12 +340,9 @@ indices = np.argsort(importances)[::-1]
 # Print the feature ranking
 print("Feature ranking:")
 
-indices_featureNames = np.empty([X_train.shape[1]], dtype=object)
-
 for f in range(X_train.shape[1]):
-    indices_featureNames[f] = X_featureNames[indices[f]]
     print("\t%d. %s \t(%f)" % (f + 1,
-                               indices_featureNames[f],
+                               X_featureNames[indices[f]],
                                importances[indices[f]]))
     
 # Plot the feature importances of the forest
@@ -353,7 +350,9 @@ plt.figure()
 plt.title("Feature importances")
 plt.bar(range(X_train.shape[1]), importances[indices],
         color="r", yerr=std[indices], align="center")
-plt.xticks(range(X_train.shape[1]), indices_featureNames, rotation=90)
+plt.xticks(range(X_train.shape[1]),
+           [X_featureNames[indices[f]] for f in range(X_train.shape[1])],
+           rotation=90)
 plt.xlim([-1, X_train.shape[1]])
 plt.tight_layout()
 #plt.show()
@@ -426,6 +425,10 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
     plt.legend()
     plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'.png')
     plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'.pdf')
+
+    plt.yscale('log')
+    plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'_log.png')
+    plt.savefig('temp_output/bdt/MVAoutput_distr_'+label+'_log.pdf')
     
     return n_truePos, n_trueNeg
 
