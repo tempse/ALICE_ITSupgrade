@@ -5,8 +5,7 @@ import root_numpy
 import pandas as pd
 
 
-def load_data(filename, branches=None, start=None, stop=None, selection=None,
-              num_val_samples=0.2, num_test_samples=0.2):
+def load_data(filename, branches=None, start=None, stop=None, selection=None):
     """
     Loads data and returns pandas dataframes in form of train/val/test splits.
     """

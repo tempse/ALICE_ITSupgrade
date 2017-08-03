@@ -79,7 +79,6 @@ def plot_cut_efficiencies(num_signal, num_background):
 
     output_prefix = get_output_paths()[0]
     nbins = num_signal.shape[0]
-    print('nbins', nbins)
     
     print('Creating cut efficiencies plot...')
 
@@ -94,13 +93,13 @@ def plot_cut_efficiencies(num_signal, num_background):
     for i in range(nbins):
         signal_efficiency = np.append(signal_efficiency, \
                                       np.sum(num_signal[i:num_signal.shape[0]]) / \
-                                      np.sum(num_signal))
+                                      (np.sum(num_signal)*1.0))
         backgr_efficiency = np.append(backgr_efficiency, \
                                       np.sum(num_background[i:num_background.shape[0]]) / \
-                                      np.sum(num_background))
+                                      (np.sum(num_background)*1.0))
         MVAcut = np.append(MVAcut, i/(nbins*1.0))
 
-    l1 = ax1.plot(MVAcut, signal_efficiency, label='signal efficiency', color='blue')
+    l1 = ax1.plot(MVAcut, signal_efficiency, label='signal efficiency', color='green')
     l2 = ax1.plot(MVAcut, backgr_efficiency, label='background efficiency', color='red')
     ax1.set_xlabel('MVA cut')
     ax1.set_ylabel('Efficiency')
@@ -114,7 +113,7 @@ def plot_cut_efficiencies(num_signal, num_background):
                                             math.sqrt(np.sum(num_signal[i:num_signal.shape[0]] + \
                                                              num_background[i:num_background.shape[0]])))
 
-    l3 = ax2.plot(MVAcut, significance_per_MVAcut, label='significance', color='green')
+    l3 = ax2.plot(MVAcut, significance_per_MVAcut, label='significance', color='blue', alpha=.65)
 
     pos_max = np.argmax(significance_per_MVAcut)
     MVAcut_opt = pos_max/(nbins*1.0)
@@ -123,15 +122,15 @@ def plot_cut_efficiencies(num_signal, num_background):
     l4 = ax2.plot(MVAcut_opt, significance_per_MVAcut[pos_max],
                   label='max. significance for cut at %.2f' % MVAcut_opt,
                   marker='o', markersize=10, fillstyle='none', mew=2, linestyle='none',
-                  color='#005500')
-    ax2.set_ylabel('Significance', color='green')
-    ax2.tick_params('y', colors='green')
+                  color='#0000aa', alpha=.8)
+    ax2.set_ylabel('Significance', color='blue')
+    ax2.tick_params('y', colors='blue')
 
-    plt.title('MVA cut efficiencies')
+    #plt.title('MVA cut efficiencies')
 
     lall = l1+l2+l3+l4
     labels = [l.get_label() for l in lall]
-    ax2.legend(lall, labels, loc='lower left')
+    ax2.legend(lall, labels)
 
     plt.tight_layout()
 
@@ -149,9 +148,9 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
     print('Creating ROC curve plot...')
 
     output_prefix = get_output_paths()[0]
-    
-    #if not defined, do not use sample weights
-    if(sample_weight==None):
+
+    if sample_weight is None:
+        print('  No sample weights are used for ROC calculation...')
         sample_weight = np.ones(y_truth.shape[0])
     
     fpr, tpr, thresholds = roc_curve(y_truth, y_score, sample_weight=sample_weight,

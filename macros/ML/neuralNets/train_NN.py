@@ -39,7 +39,7 @@ def calculate_pair_sample_weight(weight_1, weight_2):
     return (weight_1 * weight_2).values.astype(np.float32)
 
 
-def preprocess_data(X, load_fitted_attributes=False, output_prefix=None):
+def preprocess_data(X, output_prefix, load_fitted_attributes=False):
     """
     Performs preprocessing steps on the data and returns it as a numpy array.
     """
@@ -86,6 +86,7 @@ class callback_ROC(keras.callbacks.Callback):
         self.aucs_train = []
         self.losses = []
         plt.figure(figsize=(15, 8.44), dpi=150)
+        self.interval_evaluate_trainAUC = int(10)
  
     def on_train_end(self, logs={}):
         return
@@ -99,7 +100,7 @@ class callback_ROC(keras.callbacks.Callback):
         loss = logs.get('val_loss')
         self.losses.append(loss)
         global roc_auc_val
-        if(epoch%10 != 0):
+        if(epoch%self.interval_evaluate_trainAUC != 0):
         
             y_pred_val = self.model.predict(X_val)
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
@@ -110,7 +111,7 @@ class callback_ROC(keras.callbacks.Callback):
             print("   LogLoss: {:.4f}".format(loss)),
             print("   VAL AUC: {:.3f} %".format( roc_auc_val * 100))    
             
-        if(epoch%10 == 0):
+        if(epoch%self.interval_evaluate_trainAUC == 0):
             y_pred_val = self.model.predict(X_val)
             
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
@@ -287,7 +288,7 @@ if __name__ == '__main__':
     data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root",
                           branches=branches_pairTree,
                           start=0,
-                          stop=1000000,
+                          stop=500000,
                           selection='mass>0.05')
     
     # target vector setup
@@ -367,7 +368,7 @@ if __name__ == '__main__':
     del data_orig
 
     
-    X = preprocess_data(X) # X is a numpy array from now on
+    X = preprocess_data(X, output_prefix) # X is a numpy array from now on
 
     
     # Data Split in Training, Validation and Test Samples
@@ -386,7 +387,11 @@ if __name__ == '__main__':
           (y_val[y_val==1].shape[0], y_val[y_val==1].shape[0]*100/y_val.shape[0]))
     print('Number of backgr events in validation sample: %d (%.2f percent)' %
           (y_val[y_val==0].shape[0], y_val[y_val==0].shape[0]*100/y_val.shape[0]))
-
+    print('Number of signal events in test sample: %d (%.2f percent)' %
+          (y_test[y_test==1].shape[0], y_test[y_test==1].shape[0]*100/y_test.shape[0]))
+    print('Number of backgr events in test sample: %d (%.2f percent)' %
+          (y_test[y_test==0].shape[0], y_test[y_test==0].shape[0]*100/y_test.shape[0]))
+    
     
 
     if load_pretrained_model:
@@ -413,12 +418,13 @@ if __name__ == '__main__':
         print('Fitting the model...')
         hist = model.fit(X_train, y_train,
                          batch_size=1000,
-                         epochs=51,
+                         epochs=11,
                          callbacks=[callback_ROC()],
                          verbose=0,
                          validation_data=(X_val, y_val))
 
         plot_metrics_history(hist)
+        print('Finished training.')
 
         print('Loading model with the highest VAL AUC...')
         model = load_model(output_prefix + keras_models_prefix + 'weights_final.hdf5')
@@ -441,6 +447,8 @@ if __name__ == '__main__':
     plot_ROCcurve(y_train[0:num_process], y_train_score, sample_weight_train[0:num_process],
                   label='train', workingpoint=MVAcut_opt)
 
+    del y_train_score, num_trueSignal, num_trueBackgr
+    
     
     # model evaluation (validation sample)
 
@@ -450,7 +458,9 @@ if __name__ == '__main__':
 
     plot_ROCcurve(y_val, y_val_score, sample_weight_val, label='val')
 
+    del y_val_score
 
+    
     # model evaluation (test sample)
 
     print('Evaluating the model on the test sample...')
@@ -458,3 +468,5 @@ if __name__ == '__main__':
     print('\n')
 
     plot_ROCcurve(y_test, y_test_score, sample_weight_test, label='test')
+
+    del y_test_score
