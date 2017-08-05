@@ -88,10 +88,12 @@ if __name__ == '__main__':
 
 
     Yscore = np.empty((0,1))
+
+    num_steps = num_datasplits if (num_entries%num_datasplits)==0 else num_datasplits+1
     
-    for split_step in range(num_datasplits):
+    for split_step in range(num_steps):
         start = split_step*int(num_entries/(num_datasplits*1.0))
-        stop = (split_step+1)*int(num_entries/(num_datasplits*1.0)) if (split_step+1)*int(num_entries/(num_datasplits*1.0))<num_entries else num_entries
+        stop = (split_step+1)*int(num_entries/(num_datasplits*1.0)) if (split_step+1)*int(num_entries/(num_datasplits*1.0))<=num_entries else num_entries
 
         print('\n------------------------- PART %d of %d -------------------------' % (split_step+1, num_datasplits))
         print('Reading file %s...' % data_filename)
