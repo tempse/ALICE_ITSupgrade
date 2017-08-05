@@ -1,6 +1,7 @@
 from __future__ import division
 
 import sys
+from select import select
 import os
 import time
 
@@ -403,31 +404,43 @@ if __name__ == '__main__':
         model = load_model(pretrained_model_filename)
         print(model.summary())
     else:
-        print('Creating the model...')
-        model = create_model(nr_of_layers=4,
-                             first_layer_size=100,
-                             layers_slope_coeff=1.,
-                             dropout=0.4,
-                             normalize_batch=False,
-                             noise=0.,
-                             activation='relu',
-                             kernel_initializer='glorot_normal',
-                             bias_initializer='glorot_normal',
-                             input_dim=X_train.shape[1])
         
-        print('Fitting the model...')
-        hist = model.fit(X_train, y_train,
-                         batch_size=1000,
-                         epochs=11,
-                         callbacks=[callback_ROC()],
-                         verbose=0,
-                         validation_data=(X_val, y_val))
+        timeout = 15
+        print('\nInfo: The model will be trained anew. Existing saves will be overwritten.')
+        print('      (Program paused for %d seconds. Enter an arbitrary string to abort the training.)' % timeout)
+        rlist = select([sys.stdin], [], [], timeout)[0]
 
-        plot_metrics_history(hist)
-        print('Finished training.')
-
-        print('Loading model with the highest VAL AUC...')
-        model = load_model(output_prefix + keras_models_prefix + 'weights_final.hdf5')
+        if rlist:
+            print('Input received. Exit the program...')
+            sys.exit()
+        else:
+            print('No input received. Continue running the program...')
+        
+            print('Creating the model...')
+            model = create_model(nr_of_layers=4,
+                                 first_layer_size=100,
+                                 layers_slope_coeff=1.,
+                                 dropout=0.4,
+                                 normalize_batch=False,
+                                 noise=0.,
+                                 activation='relu',
+                                 kernel_initializer='glorot_normal',
+                                 bias_initializer='glorot_normal',
+                                 input_dim=X_train.shape[1])
+            
+            print('Fitting the model...')
+            hist = model.fit(X_train, y_train,
+                             batch_size=1000,
+                             epochs=11,
+                             callbacks=[callback_ROC()],
+                             verbose=0,
+                             validation_data=(X_val, y_val))
+            
+            plot_metrics_history(hist)
+            print('Finished training.')
+            
+            print('Loading model with the highest VAL AUC...')
+            model = load_model(output_prefix + keras_models_prefix + 'weights_final.hdf5')
 
 
         
