@@ -24,23 +24,23 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_addFeat_pairtree_us_part2_1-9-split_sklearnTrainingSingleTrackConvRej-wPIDeffs.root";
+  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
   
-  TString h_text = "Single-track conv. rejection via MVA cuts";
+  TString h_text = "";//Single-track conv. rejection via MVA cuts";
 
   // two variables are combined, e.g., via
   // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoVars = kTRUE;
+  Bool_t useTwoVars = kFALSE;
 
-  Bool_t useTags = kFALSE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
-  Float_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
+  Bool_t useTags = kTRUE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
+  Int_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
-  Float_t MVAcut = 0.31;
+  Float_t MVAcut = 0.41;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "MVAoutput_convTrack1";
+  TString variableName1 = "IsTaggedRPConv_classicalCuts_prefilter";
   TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
@@ -48,8 +48,8 @@ void PlotMass_prefilterCuts() {
   const Int_t wantedPrefilterTagValue2 = 0.;
   
   // set the used MVA method:
-  const Bool_t isMLP = kFALSE;
-  const Bool_t isBDT = kTRUE;
+  const Bool_t isMLP = kTRUE;
+  const Bool_t isBDT = kFALSE;
 
   const Bool_t doConsiderPIDefficiencies = kTRUE;
   
@@ -84,7 +84,7 @@ void PlotMass_prefilterCuts() {
   TestTree->SetBranchAddress("pt2", &pt2);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
-  TestTree->SetBranchAddress("IsHF", &IsHF);
+  TestTree->SetBranchAddress("IsCorrHF", &IsHF);
   if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
     TestTree->SetBranchAddress(variableName1, &variable1);
   }else {
@@ -146,7 +146,7 @@ void PlotMass_prefilterCuts() {
 
 
 
-  Long64_t nEv = 100000000; //TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries();
   std::cout << "Starting to process " << nEv << " entries..." << std::endl;
 
   

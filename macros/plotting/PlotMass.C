@@ -23,12 +23,12 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 void PlotMass() {
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part2_1-9-split_correctedPIDeffs.root";
+  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "~/Downloads/CombConvRej_NN_testing/temp_output/ann/predictions_NN.root"; //"~/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/CombConvRej_woPIDeffs_noMassCuts/clf_predict/predictions_BDT.root";
+  TString fileName_MVAoutput = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/CombConvRejMVA_DNN_0.05mass/output/predictions_DNN.root";
 
-  TString h_text = "Comb. conv. rej. via MVA cuts";
+  TString h_text = "";//Comb. conv. rej. (MVA 1)";
 
   // set the used MVA method:
   const Bool_t isNN  = kTRUE;
@@ -73,10 +73,10 @@ void PlotMass() {
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
   Float_t mass;
   Float_t pt1, pt2;
-  Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
+  Int_t IsRP, IsConv, IsCorrHF, motherPdg1, motherPdg2;
   TestTree->SetBranchAddress("IsRP",&IsRP);
   TestTree->SetBranchAddress("IsConv",&IsConv);
-  TestTree->SetBranchAddress("IsHF",&IsHF);
+  TestTree->SetBranchAddress("IsCorrHF",&IsCorrHF);
   TestTree->SetBranchAddress("motherPdg1",&motherPdg1);
   TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("mass",&mass);
@@ -88,7 +88,7 @@ void PlotMass() {
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get("pairTree_MVAoutput");
   Float_t MVAoutput;
-  if(isNN) MVAoutputTree->SetBranchAddress("NN", &MVAoutput);
+  if(isNN) MVAoutputTree->SetBranchAddress("DNN", &MVAoutput);
   if(isBDT) MVAoutputTree->SetBranchAddress("BDT", &MVAoutput);
   
   
@@ -182,7 +182,7 @@ void PlotMass() {
   }
   
   
-  Long64_t nEv = 100000000; //TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries();
   std::cout << "Starting to process " << nEv << " entries..." << std::endl;
 
   Float_t passed_seconds_prev = 0.;
@@ -233,7 +233,7 @@ void PlotMass() {
 	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithoutConvLeg_currentMVAcut->Fill(mass, sample_weight);
 	}
-	if(IsRP==0 && IsHF==1) {
+	if(IsRP==0 && IsCorrHF==1) {
 	  h_HF_currentMVAcut->Fill(mass, sample_weight);
 	}
 	if(IsRP==1 && IsConv==1) {
@@ -254,7 +254,7 @@ void PlotMass() {
 	if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	  h_CombiWithoutConvLeg->Fill(mass, sample_weight);
 	}
-	if(IsRP==0 && IsHF==1) {
+	if(IsRP==0 && IsCorrHF==1) {
 	  h_HF->Fill(mass, sample_weight);
 	}
 	if(IsRP==1 && IsConv==1) {
@@ -273,7 +273,7 @@ void PlotMass() {
 	  if(IsRP==0 && !(motherPdg1==22 || motherPdg2==22)) {
 	    h_CombiWithoutConvLeg_MVAcut->Fill(mass, sample_weight);
 	  }
-	  if(IsRP==0 && IsHF==1) {
+	  if(IsRP==0 && IsCorrHF==1) {
 	    h_HF_MVAcut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
