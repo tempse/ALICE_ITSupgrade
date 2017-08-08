@@ -7,10 +7,10 @@ import pandas as pd
 import root_numpy
 
 
-filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/plots/significanceComparisons/significance_data.root"
+filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/significance_data.root"
 
-color_RPConvRejMVA = '#dd0000'
-color_singleConvTrackRej = '#4444ff'
+color_RPConvRejMVA = '#4444ff'
+color_singleConvTrackRej = '#dd0000'
 color_CombConvRej = 'green'
 color_RPConvRejClass = 'black'
 
@@ -19,9 +19,9 @@ fig_height = 5.12
 fig_dpi = 150
 
 # working point efficiencies:
-workingpoint_eff_RPConvRejMVA = .9265
-workingpoint_eff_singleConvTrackRej = .9703
-workingpoint_eff_CombConvRej = .9823
+workingpoint_eff_RPConvRejMVA = .9303
+workingpoint_eff_singleConvTrackRej = .9851
+workingpoint_eff_CombConvRej = .9915
 
 
 data = pd.DataFrame(root_numpy.root2array(filename))
@@ -66,7 +66,7 @@ plt.plot(workingpoint_eff_singleConvTrackRej, data.iloc[np.argmin(np.abs(data['S
 
 # plot dummy point
 ax.plot(-99,0,
-        label='optimized working point',
+        label='optimized working points',
         color='black',
         marker='o',
         markersize=7,
