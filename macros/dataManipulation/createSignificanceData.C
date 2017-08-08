@@ -23,10 +23,6 @@ struct particlePair {
   Int_t    IsTrueRP;
   Float_t  pt1;
   Float_t  pt2;
-  Int_t    IsTrueConv_singleTrackConvRejMVA; //testing
-  Int_t    IsTrueRP_singleTrackConvRejMVA; //testing
-  Float_t  pt1_singleTrackConvRejMVA; //testing
-  Float_t  pt2_singleTrackConvRejMVA; //testing
   Long64_t originalPosition;
 };
 
@@ -79,7 +75,7 @@ void createSignificanceData(TString MCdatafilename,
 
 
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 16400000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = -1; // process this number of entries (if "-1", all entries are selected)
   
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleTrackConvRejMVA_1, MVAout_singleTrackConvRejMVA_2;
@@ -115,7 +111,7 @@ void createSignificanceData(TString MCdatafilename,
 	      << "    Size of tree " << treename_MVAoutput_RPConvRejMVA_file << " in "
 	      << MVAoutput_RPConvRejMVA_filename << ": " << tree_MVAoutput_RPConvRejMVA_file->GetEntries()
 	      << std::endl << std::endl;
-    // gApplication->Terminate(); //testing
+    gApplication->Terminate();
   }
 
 
@@ -131,7 +127,7 @@ void createSignificanceData(TString MCdatafilename,
 	      << std::endl
 	      << "    Size of tree " << tree_MVAoutput_CombConvRejMVA_file->GetEntries()
 	      << std::endl << std::endl;
-    // gApplication->Terminate(); //testing
+    gApplication->Terminate();
   }
 
   
@@ -142,12 +138,6 @@ void createSignificanceData(TString MCdatafilename,
    							      &MVAout_singleTrackConvRejMVA_1);
   tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleTrackConvRejMVA_file_2,
 							      &MVAout_singleTrackConvRejMVA_2);
-  Int_t IsConv_singleTrackConvRejMVA, IsRP_singleTrackConvRejMVA; //testing
-  Float_t pt1_singleTrackConvRejMVA, pt2_singleTrackConvRejMVA; //testing
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress("IsConv", &IsConv_singleTrackConvRejMVA); //testing
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress("IsRP", &IsRP_singleTrackConvRejMVA); //testing
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress("pt1", &pt1_singleTrackConvRejMVA); //testing
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress("pt2", &pt2_singleTrackConvRejMVA); //testing
   
 
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_singleTrackConvRejMVA_file->GetEntries()) {
@@ -156,7 +146,7 @@ void createSignificanceData(TString MCdatafilename,
   	      << std::endl
   	      << "    Size of tree " << tree_MVAoutput_singleTrackConvRejMVA_file->GetEntries()
   	      << std::endl << std::endl;
-    // gApplication->Terminate(); //testing
+    gApplication->Terminate();
   }
 
   std::cout << " DONE." << std::endl;
@@ -209,7 +199,6 @@ void createSignificanceData(TString MCdatafilename,
 
   // significances in case of (1) ideal and (2) no background rejection:
   Float_t significance_ideal;
-  Float_t significance_ideal_singleTrackConvRejMVA; //testing
   Float_t significance_RPConvRejMVA_all;
   Float_t significance_CombConvRejMVA_all;
   Float_t significance_singleTrackConvRejMVA_all;
@@ -263,10 +252,6 @@ void createSignificanceData(TString MCdatafilename,
       currentPair.IsTrueRP = IsRP;
       currentPair.pt1 = pt1;
       currentPair.pt2 = pt2;
-      currentPair.IsTrueConv_singleTrackConvRejMVA = IsConv_singleTrackConvRejMVA; //testing
-      currentPair.IsTrueRP_singleTrackConvRejMVA = IsRP_singleTrackConvRejMVA; //testing
-      currentPair.pt1_singleTrackConvRejMVA = pt1_singleTrackConvRejMVA; //testing
-      currentPair.pt2_singleTrackConvRejMVA = pt2_singleTrackConvRejMVA; //testing
       currentPair.originalPosition = j;
     
       if(signalRegion == "+") {
@@ -407,13 +392,9 @@ void createSignificanceData(TString MCdatafilename,
       for(Long64_t i=0; i<nentries; i++) {
 	
 	Float_t pairweight_temp = getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
-	Float_t pairweight_singleTrackConvRejMVA_temp = getPairPIDefficiency(allPairs[i].pt1_singleTrackConvRejMVA, allPairs[i].pt2_singleTrackConvRejMVA, *h_PIDeffs); //testing
 
 	if(!allPairs[i].IsTrueConv) num_S_ideal_temp += pairweight_temp;
 	if(allPairs[i].IsTrueConv) num_B_ideal_temp += pairweight_temp;
-
-	if(!allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_S_ideal_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
-	if(allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_B_ideal_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
 	
 	if(signalRegion == "+") {
 	  if(allPairs[i].IsTaggedAccepted_RPConvRejMVA && !allPairs[i].IsTrueConv) num_S_RPConvRejMVA_temp += pairweight_temp;
@@ -422,8 +403,8 @@ void createSignificanceData(TString MCdatafilename,
 	  if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA_temp += pairweight_temp;
 	  if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA_temp += pairweight_temp;
 
-	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
-	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
+	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_temp;
+	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_temp;
 	}
 	
 	if(signalRegion == "-") {
@@ -433,19 +414,15 @@ void createSignificanceData(TString MCdatafilename,
 	  if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA_temp += pairweight_temp;
 	  if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA_temp += pairweight_temp;
 
-	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
-	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_singleTrackConvRejMVA_temp; //testing
+	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_temp;
+	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_temp;
 	}
       }
       
 
-      if(num_S_ideal_temp!=0 || num_B_ideal_temp!=0) {
+      if(num_S_ideal_temp!=0) {
 	significance_ideal = num_S_ideal_temp/TMath::Sqrt(num_S_ideal_temp);
       }else significance_ideal = 0.;
-
-      if(num_S_ideal_singleTrackConvRejMVA_temp!=0 || num_B_ideal_singleTrackConvRejMVA_temp!=0) {
-	significance_ideal_singleTrackConvRejMVA = num_S_ideal_singleTrackConvRejMVA_temp/TMath::Sqrt(num_S_ideal_singleTrackConvRejMVA_temp); //testing
-      }else significance_ideal_singleTrackConvRejMVA = 0.; //testing
 	
       if(num_S_RPConvRejMVA_temp!=0 || num_B_RPConvRejMVA_temp!=0) {
 	significance_RPConvRejMVA_all = num_S_RPConvRejMVA_temp/TMath::Sqrt(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp);
@@ -482,7 +459,6 @@ void createSignificanceData(TString MCdatafilename,
     for(Long64_t i=0; i<nentries; i++) {
 
       Float_t pairweight = getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
-      Float_t pairweight_singleTrackConvRejMVA = getPairPIDefficiency(allPairs[i].pt1_singleTrackConvRejMVA, allPairs[i].pt2_singleTrackConvRejMVA, *h_PIDeffs); //testing
 	
       if(signalRegion == "+") {
 	
@@ -492,8 +468,8 @@ void createSignificanceData(TString MCdatafilename,
 	if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA += pairweight;
 	if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA += pairweight;
 
-	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_S_singleTrackConvRejMVA += pairweight_singleTrackConvRejMVA; //testing
-	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_B_singleTrackConvRejMVA += pairweight_singleTrackConvRejMVA; //testing
+	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA += pairweight;
+	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA += pairweight;
 	
       }else if(signalRegion == "-") {
 	
@@ -503,8 +479,8 @@ void createSignificanceData(TString MCdatafilename,
 	if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA += pairweight;
 	if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA += pairweight;
 
-	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_S_singleTrackConvRejMVA += pairweight_singleTrackConvRejMVA; //testing
-	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv_singleTrackConvRejMVA) num_B_singleTrackConvRejMVA += pairweight_singleTrackConvRejMVA; //testing
+	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA += pairweight;
+	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA += pairweight;
 	
       }
     }
@@ -536,8 +512,8 @@ void createSignificanceData(TString MCdatafilename,
       significance_gain_CombConvRejMVA = (significance_CombConvRejMVA-significance_CombConvRejMVA_all) / (significance_ideal-significance_CombConvRejMVA_all);
     }else significance_gain_CombConvRejMVA = 0.;
 
-    if(significance_ideal_singleTrackConvRejMVA-significance_singleTrackConvRejMVA_all != 0) {
-      significance_gain_singleTrackConvRejMVA = (significance_singleTrackConvRejMVA-significance_singleTrackConvRejMVA_all) / (significance_ideal_singleTrackConvRejMVA-significance_singleTrackConvRejMVA_all); //testing
+    if(significance_ideal-significance_singleTrackConvRejMVA_all != 0) {
+      significance_gain_singleTrackConvRejMVA = (significance_singleTrackConvRejMVA-significance_singleTrackConvRejMVA_all) / (significance_ideal-significance_singleTrackConvRejMVA_all);
     }else significance_gain_singleTrackConvRejMVA = 0.;
 
 
