@@ -14,8 +14,12 @@
 #include <TLegend.h>
 #include <TLatex.h>
 
-void PlotMass_analysisComparison() {
 
+void SetStyle(Bool_t graypalette=kFALSE);
+
+
+void PlotMass_analysisComparison() {
+  
   // RP conv. rej. via classical cuts:
   TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejClassicalCuts-prefilter_DNN/cutVariations/mass_histos_comparison.root";
 
@@ -52,6 +56,8 @@ void PlotMass_analysisComparison() {
 
   //////////////////////////////////////////////////////////////////////////////
   
+  SetStyle();
+  gROOT->ForceStyle();
 
   TFile *infile1 = new TFile(infile1_filename, "READ");
   TH1D *h_significance_class_1      = (TH1D*)infile1->Get("h_significance_1");
@@ -131,131 +137,183 @@ void PlotMass_analysisComparison() {
   
 
 
-  
-
   const Int_t kMarkerStyle_1 = 25;
   const Int_t kMarkerStyle_2 = 20;
   const Int_t kMarkerStyle_3 = 23;
   const Int_t kMarkerStyle_4 = 26;
   const Int_t kMarkerStyle_ideal = 7;
   const Int_t kMarkerStyle_noMVAcuts = 5;
+
+  const Float_t kLineWidth_1 = 3;
+  const Float_t kLineWidth_2 = kLineWidth_1;
+  const Float_t kLineWidth_3 = kLineWidth_1;
+  const Float_t kLineWidth_4 = kLineWidth_1;
+  const Float_t kLineWidth_ideal = kLineWidth_1;
+  const Float_t kLineWidth_noMVAcuts = kLineWidth_1;
   
   
   h_significance_class_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_significance_class_noMVAcuts->SetLineWidth(kLineWidth_noMVAcuts);
   h_significance_class_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
   h_significance_class_noMVAcuts->SetMarkerStyle(kMarkerStyle_noMVAcuts);
   h_significance_exp_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_significance_exp_noMVAcuts->SetLineWidth(kLineWidth_noMVAcuts);
   h_significance_exp_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
   h_significance_exp_noMVAcuts->SetMarkerStyle(kMarkerStyle_noMVAcuts);
   h_significance_class_ideal->SetLineColor(kColor_noMVAcuts);
+  h_significance_class_ideal->SetLineWidth(kLineWidth_ideal);
   h_significance_class_ideal->SetMarkerColor(kColor_noMVAcuts);
   h_significance_class_ideal->SetMarkerStyle(kMarkerStyle_ideal);
   h_significance_exp_ideal->SetLineColor(kColor_noMVAcuts);
+  h_significance_exp_ideal->SetLineWidth(kLineWidth_ideal);
   h_significance_exp_ideal->SetMarkerColor(kColor_noMVAcuts);
   h_significance_exp_ideal->SetMarkerStyle(kMarkerStyle_ideal);
   
   h_SoverB_class_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_SoverB_class_noMVAcuts->SetLineWidth(kLineWidth_noMVAcuts);
   h_SoverB_class_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
   h_SoverB_class_noMVAcuts->SetMarkerStyle(kMarkerStyle_noMVAcuts);
   h_SoverB_exp_noMVAcuts->SetLineColor(kColor_noMVAcuts);
+  h_SoverB_exp_noMVAcuts->SetLineWidth(kLineWidth_noMVAcuts);
   h_SoverB_exp_noMVAcuts->SetMarkerColor(kColor_noMVAcuts);
   h_SoverB_exp_noMVAcuts->SetMarkerStyle(kMarkerStyle_noMVAcuts);
   h_SoverB_exp_ideal->SetLineColor(kColor_noMVAcuts);
+  h_SoverB_exp_ideal->SetLineWidth(kLineWidth_noMVAcuts);
   h_SoverB_exp_ideal->SetMarkerColor(kColor_noMVAcuts);
   h_SoverB_exp_ideal->SetMarkerStyle(kMarkerStyle_ideal);
 
   
   h_significance_class_1->SetLineColor(kColor_1);
+  h_significance_class_1->SetLineWidth(kLineWidth_1);
   h_significance_class_1->SetMarkerColor(kColor_1);
   h_significance_class_1->SetMarkerStyle(kMarkerStyle_1);
   h_significance_exp_1->SetLineColor(kColor_1);
+  h_significance_exp_1->SetLineWidth(kLineWidth_1);
   h_significance_exp_1->SetMarkerColor(kColor_1);
   h_significance_exp_1->SetMarkerStyle(kMarkerStyle_1);
   h_SoverB_class_1->SetLineColor(kColor_1);
+  h_SoverB_class_1->SetLineWidth(kLineWidth_1);
   h_SoverB_class_1->SetMarkerColor(kColor_1);
   h_SoverB_class_1->SetMarkerStyle(kMarkerStyle_1);
   h_SoverB_exp_1->SetLineColor(kColor_1);
+  h_SoverB_exp_1->SetLineWidth(kLineWidth_1);
   h_SoverB_exp_1->SetMarkerColor(kColor_1);
   h_SoverB_exp_1->SetMarkerStyle(kMarkerStyle_1);
   
   h_significance_class_2->SetLineColor(kColor_2);
+  h_significance_class_2->SetLineWidth(kLineWidth_2);
   h_significance_class_2->SetMarkerColor(kColor_2);
+  h_significance_class_2->SetMarkerStyle(kMarkerStyle_2);
   h_significance_exp_2->SetLineColor(kColor_2);
+  h_significance_exp_2->SetLineWidth(kLineWidth_2);
   h_significance_exp_2->SetMarkerColor(kColor_2);
+  h_significance_exp_2->SetMarkerStyle(kMarkerStyle_2);
   h_SoverB_class_2->SetLineColor(kColor_2);
+  h_SoverB_class_2->SetLineWidth(kLineWidth_2);
   h_SoverB_class_2->SetMarkerColor(kColor_2);
+  h_SoverB_class_2->SetMarkerStyle(kMarkerStyle_2);
   h_SoverB_exp_2->SetLineColor(kColor_2);
+  h_SoverB_exp_2->SetLineWidth(kLineWidth_2);
   h_SoverB_exp_2->SetMarkerColor(kColor_2);
+  h_SoverB_exp_2->SetMarkerStyle(kMarkerStyle_2);
 
   h_significance_class_3->SetLineColor(kColor_3);
+  h_significance_class_3->SetLineWidth(kLineWidth_3);
   h_significance_class_3->SetMarkerColor(kColor_3);
   h_significance_class_3->SetMarkerStyle(kMarkerStyle_3);
   h_significance_exp_3->SetLineColor(kColor_3);
+  h_significance_exp_3->SetLineWidth(kLineWidth_3);
   h_significance_exp_3->SetMarkerColor(kColor_3);
   h_significance_exp_3->SetMarkerStyle(kMarkerStyle_3);
   h_SoverB_class_3->SetLineColor(kColor_3);
+  h_SoverB_class_3->SetLineWidth(kLineWidth_3);
   h_SoverB_class_3->SetMarkerColor(kColor_3);
   h_SoverB_class_3->SetMarkerStyle(kMarkerStyle_3);
   h_SoverB_exp_3->SetLineColor(kColor_3);
+  h_SoverB_exp_3->SetLineWidth(kLineWidth_3);
   h_SoverB_exp_3->SetMarkerColor(kColor_3);
   h_SoverB_exp_3->SetMarkerStyle(kMarkerStyle_3);
 
   h_significance_class_4->SetLineColor(kColor_4);
+  h_significance_class_4->SetLineWidth(kLineWidth_4);
   h_significance_class_4->SetMarkerColor(kColor_4);
   h_significance_class_4->SetMarkerStyle(kMarkerStyle_4);
   h_significance_exp_4->SetLineColor(kColor_4);
+  h_significance_exp_4->SetLineWidth(kLineWidth_4);
   h_significance_exp_4->SetMarkerColor(kColor_4);
   h_significance_exp_4->SetMarkerStyle(kMarkerStyle_4);
   h_SoverB_class_4->SetLineColor(kColor_4);
+  h_SoverB_class_4->SetLineWidth(kLineWidth_4);
   h_SoverB_class_4->SetMarkerColor(kColor_4);
   h_SoverB_class_4->SetMarkerStyle(kMarkerStyle_4);
   h_SoverB_exp_4->SetLineColor(kColor_4);
+  h_SoverB_exp_4->SetLineWidth(kLineWidth_4);
   h_SoverB_exp_4->SetMarkerColor(kColor_4);
   h_SoverB_exp_4->SetMarkerStyle(kMarkerStyle_4);
 
   h_eff_S_1->SetLineColor(kColor_1);
+  h_eff_S_1->SetLineWidth(kLineWidth_1);
   h_eff_S_1->SetMarkerColor(kColor_1);
   h_eff_S_2->SetMarkerColor(kColor_2);
   h_eff_S_2->SetLineColor(kColor_2);
+  h_eff_S_2->SetLineWidth(kLineWidth_2);
   h_eff_S_3->SetMarkerColor(kColor_3);
   h_eff_S_3->SetLineColor(kColor_3);
+  h_eff_S_3->SetLineWidth(kLineWidth_3);
   h_eff_S_4->SetMarkerColor(kColor_4);
   h_eff_S_4->SetLineColor(kColor_4);
+  h_eff_S_4->SetLineWidth(kLineWidth_4);
 
   h_eff_CombiWithConvLeg_1->SetLineColor(kColor_1);
+  h_eff_CombiWithConvLeg_1->SetLineWidth(kLineWidth_1);
   h_eff_CombiWithConvLeg_1->SetMarkerColor(kColor_1);
   h_eff_CombiWithConvLeg_2->SetLineColor(kColor_2);
+  h_eff_CombiWithConvLeg_2->SetLineWidth(kLineWidth_2);
   h_eff_CombiWithConvLeg_2->SetMarkerColor(kColor_2);
   h_eff_CombiWithConvLeg_3->SetLineColor(kColor_3);
+  h_eff_CombiWithConvLeg_3->SetLineWidth(kLineWidth_3);
   h_eff_CombiWithConvLeg_3->SetMarkerColor(kColor_3);
   h_eff_CombiWithConvLeg_4->SetLineColor(kColor_4);
+  h_eff_CombiWithConvLeg_4->SetLineWidth(kLineWidth_4);
   h_eff_CombiWithConvLeg_4->SetMarkerColor(kColor_4);
 
   h_eff_CombiWithoutConvLeg_1->SetLineColor(kColor_1);
+  h_eff_CombiWithoutConvLeg_1->SetLineWidth(kLineWidth_1);
   h_eff_CombiWithoutConvLeg_1->SetMarkerColor(kColor_1);
   h_eff_CombiWithoutConvLeg_2->SetLineColor(kColor_2);
+  h_eff_CombiWithoutConvLeg_2->SetLineWidth(kLineWidth_2);
   h_eff_CombiWithoutConvLeg_2->SetMarkerColor(kColor_2);
   h_eff_CombiWithoutConvLeg_3->SetLineColor(kColor_3);
+  h_eff_CombiWithoutConvLeg_3->SetLineWidth(kLineWidth_3);
   h_eff_CombiWithoutConvLeg_3->SetMarkerColor(kColor_3);
   h_eff_CombiWithoutConvLeg_4->SetLineColor(kColor_4);
+  h_eff_CombiWithoutConvLeg_4->SetLineWidth(kLineWidth_4);
   h_eff_CombiWithoutConvLeg_4->SetMarkerColor(kColor_4);
 
   h_eff_HF_1->SetLineColor(kColor_1);
+  h_eff_HF_1->SetLineWidth(kLineWidth_1);
   h_eff_HF_1->SetMarkerColor(kColor_1);
   h_eff_HF_2->SetLineColor(kColor_2);
+  h_eff_HF_2->SetLineWidth(kLineWidth_2);
   h_eff_HF_2->SetMarkerColor(kColor_2);
   h_eff_HF_3->SetLineColor(kColor_3);
+  h_eff_HF_3->SetLineWidth(kLineWidth_3);
   h_eff_HF_3->SetMarkerColor(kColor_3);
   h_eff_HF_4->SetLineColor(kColor_4);
+  h_eff_HF_4->SetLineWidth(kLineWidth_4);
   h_eff_HF_4->SetMarkerColor(kColor_4);
 
   h_eff_RPConv_1->SetLineColor(kColor_1);
+  h_eff_RPConv_1->SetLineWidth(kLineWidth_1);
   h_eff_RPConv_1->SetMarkerColor(kColor_1);
   h_eff_RPConv_2->SetLineColor(kColor_2);
+  h_eff_RPConv_2->SetLineWidth(kLineWidth_2);
   h_eff_RPConv_2->SetMarkerColor(kColor_2);
   h_eff_RPConv_3->SetLineColor(kColor_3);
+  h_eff_RPConv_3->SetLineWidth(kLineWidth_3);
   h_eff_RPConv_3->SetMarkerColor(kColor_3);
   h_eff_RPConv_4->SetLineColor(kColor_4);
+  h_eff_RPConv_4->SetLineWidth(kLineWidth_4);
   h_eff_RPConv_4->SetMarkerColor(kColor_4);
   
   h_eff_S_1->SetMarkerStyle(kMarkerStyle_1);
@@ -283,34 +341,43 @@ void PlotMass_analysisComparison() {
   h_eff_RPConv_3->SetMarkerStyle(kMarkerStyle_3);
   h_eff_RPConv_4->SetMarkerStyle(kMarkerStyle_4);
 
+  
+  const Float_t axisTitleSize = .05;
 
-  h_significance_class_ideal->SetXTitle("M_{ee} / (GeV/c^{2})");
-  h_significance_class_ideal->SetYTitle("S_{class} / #sqrt{S_{class} + B_{class}}");
-  h_significance_class_ideal->GetXaxis()->SetTitleOffset(1.2);
-  h_significance_class_ideal->GetYaxis()->SetTitleOffset(1.4);
+  h_significance_class_ideal->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
+  h_significance_class_ideal->SetYTitle("#it{S}_{class} / #sqrt{#it{S}_{class} + #it{B}_{class}}");
+  h_significance_class_ideal->SetTitleSize(axisTitleSize,"xyz");  
+  // h_significance_class_ideal->GetXaxis()->SetTitleOffset(1.2);
+  // h_significance_class_ideal->GetYaxis()->SetTitleOffset(1.4);
 
-  h_significance_exp_ideal->SetXTitle("M_{ee} / (GeV/c^{2})");
-  h_significance_exp_ideal->SetYTitle("S_{exp} / #sqrt{S_{exp} + B_{exp}}");
-  h_significance_exp_ideal->GetXaxis()->SetTitleOffset(1.2);
-  h_significance_exp_ideal->GetYaxis()->SetTitleOffset(1.4);
+  h_significance_exp_ideal->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
+  h_significance_exp_ideal->SetYTitle("#it{S}_{exp} / #sqrt{#it{S}_{exp} + #it{B}_{exp}}");
+  // h_significance_exp_ideal->GetXaxis()->SetTitleOffset(1.2);
+  // h_significance_exp_ideal->GetYaxis()->SetTitleOffset(1.4);
+  h_significance_exp_ideal->SetTitleSize(axisTitleSize,"xyz");
   h_significance_exp_ideal->GetYaxis()->SetRangeUser(1e-2,1e3);
 
-  h_SoverB_class_1->SetXTitle("M_{ee} / (GeV/c^{2})");
-  h_SoverB_class_1->SetYTitle("S_{class} / B_{class}");
-  h_SoverB_class_1->GetXaxis()->SetTitleOffset(1.2);
-  h_SoverB_class_1->GetYaxis()->SetTitleOffset(1.4);
+  h_SoverB_class_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
+  h_SoverB_class_1->SetYTitle("#it{S}_{class} / #it{B}_{class}");
+  h_SoverB_class_1->SetTitleSize(axisTitleSize,"xyz");
+  // h_SoverB_class_1->GetXaxis()->SetTitleOffset(1.2);
+  // h_SoverB_class_1->GetYaxis()->SetTitleOffset(1.4);
+
+  h_SoverB_exp_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
+  h_SoverB_exp_1->SetYTitle("#it{S}_{exp} / #it{B}_{exp}");
+  h_SoverB_exp_1->SetTitleSize(axisTitleSize,"xyz");
+  // h_SoverB_exp_1->GetXaxis()->SetTitleOffset(1.2);
+  // h_SoverB_exp_1->GetYaxis()->SetTitleOffset(1.4);
 
 
-  h_eff_CombiWithConvLeg_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_CombiWithConvLeg_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_CombiWithConvLeg_1->SetYTitle("Efficiency");
-  h_eff_CombiWithConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
-  h_eff_CombiWithConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
-
-  
-  gStyle->SetOptStat(0);
+  h_eff_CombiWithConvLeg_1->SetTitleSize(axisTitleSize,"xyz");
+  // h_eff_CombiWithConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
+  // h_eff_CombiWithConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
 
 
-  TLegend *leg1 = new TLegend(.65, .7, .95, .95);
+  TLegend *leg1 = new TLegend(.57, .62, .88, .88);
   leg1->AddEntry(h_significance_class_1, leg_label1, "p");
   leg1->AddEntry(h_significance_class_4, leg_label4, "p");
   leg1->AddEntry(h_significance_class_3, leg_label3, "p");
@@ -318,7 +385,7 @@ void PlotMass_analysisComparison() {
   leg1->AddEntry(h_significance_class_noMVAcuts, leg_label_noMVAcuts, "p");
   leg1->AddEntry(h_significance_class_ideal, leg_label_ideal, "p");
 
-  TLegend *leg2 = new TLegend(.65, .7, .95, .95);
+  TLegend *leg2 = new TLegend(.57, .62, .88, .88);
   leg2->AddEntry(h_significance_exp_1, leg_label1, "p");
   leg2->AddEntry(h_significance_exp_4, leg_label4, "p");
   leg2->AddEntry(h_significance_exp_3, leg_label3, "p");
@@ -326,14 +393,14 @@ void PlotMass_analysisComparison() {
   leg2->AddEntry(h_significance_exp_noMVAcuts, leg_label_noMVAcuts, "p");
   leg2->AddEntry(h_significance_exp_ideal, leg_label_ideal, "p");
 
-  TLegend *leg3 = new TLegend(.65, .7, .95, .95);
+  TLegend *leg3 = new TLegend(.19, .49, .5, .75);
   leg3->AddEntry(h_SoverB_class_1, leg_label1, "p");
   leg3->AddEntry(h_SoverB_class_4, leg_label4, "p");
   leg3->AddEntry(h_SoverB_class_3, leg_label3, "p");
   leg3->AddEntry(h_SoverB_class_2, leg_label2, "p");
   leg3->AddEntry(h_SoverB_class_noMVAcuts, leg_label_noMVAcuts, "p");
 
-  TLegend *leg4 = new TLegend(.65, .7, .95, .95);
+  TLegend *leg4 = new TLegend(.57, .62, .88, .88);
   leg4->AddEntry(h_SoverB_exp_1, leg_label1, "p");
   leg4->AddEntry(h_SoverB_exp_4, leg_label4, "p");
   leg4->AddEntry(h_SoverB_exp_3, leg_label3, "p");
@@ -353,7 +420,15 @@ void PlotMass_analysisComparison() {
   leg_eff->AddEntry(h_eff_S_3, leg_label3, "p");
   leg_eff->AddEntry(h_eff_S_2, leg_label2, "p");
 
+  TLatex *l_ALICE = new TLatex();
+  l_ALICE->SetTextSize(0.035);
+  l_ALICE->SetTextFont(42);
+  l_ALICE->SetNDC();
 
+  TLatex *l_info = new TLatex();
+  l_info->SetTextSize(.03);
+  l_info->SetTextFont(42);
+  l_info->SetNDC();
 
   TString drawOptions = "hist p e1 x0";
   TString drawOptions_same = drawOptions + " same";
@@ -363,7 +438,7 @@ void PlotMass_analysisComparison() {
   
   
   TCanvas *c_significance_class = new TCanvas("c_significance_class","",1024,768);
-  c_significance_class->SetGridy();
+  // c_significance_class->SetGridy();
   c_significance_class->SetLogy();
   h_significance_class_ideal->Draw(drawOptions);
   h_significance_class_1->Draw(drawOptions_same);
@@ -371,13 +446,15 @@ void PlotMass_analysisComparison() {
   h_significance_class_3->Draw(drawOptions_same);
   h_significance_class_4->Draw(drawOptions_same);
   h_significance_class_noMVAcuts->Draw(drawOptions_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg1->Draw();
   c_significance_class->SaveAs("temp_output/c_significance_class.pdf");
   c_significance_class->SaveAs("temp_output/c_significance_class.root");
   c_significance_class->SaveAs("temp_output/c_significance_class.png");
 
   TCanvas *c_significance_exp = new TCanvas("c_significance_exp","",1024,768);
-  c_significance_exp->SetGridy();
+  // c_significance_exp->SetGridy();
   c_significance_exp->SetLogy();
   h_significance_exp_ideal->Draw(drawOptions);
   h_significance_exp_1->Draw(drawOptions_same);
@@ -385,6 +462,8 @@ void PlotMass_analysisComparison() {
   h_significance_exp_3->Draw(drawOptions_same);
   h_significance_exp_4->Draw(drawOptions_same);
   h_significance_exp_noMVAcuts->Draw(drawOptions_same);
+  l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
+  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg2->Draw();
   c_significance_exp->SaveAs("temp_output/c_significance_exp.pdf");
   c_significance_exp->SaveAs("temp_output/c_significance_exp.root");
@@ -392,12 +471,14 @@ void PlotMass_analysisComparison() {
 
 
   TCanvas *c_SoverB_class = new TCanvas("c_SoverB_class","",1024,768);
-  c_SoverB_class->SetGridy();
+  // c_SoverB_class->SetGridy();
   h_SoverB_class_1->Draw(drawOptions);
   h_SoverB_class_2->Draw(drawOptions_same);
   h_SoverB_class_3->Draw(drawOptions_same);
   h_SoverB_class_4->Draw(drawOptions_same);
   h_SoverB_class_noMVAcuts->Draw(drawOptions_same);
+  l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
+  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg3->Draw();
   c_SoverB_class->SaveAs("temp_output/c_SoverB_class.pdf");
   c_SoverB_class->SaveAs("temp_output/c_SoverB_class.root");
@@ -405,7 +486,7 @@ void PlotMass_analysisComparison() {
 
 
   TCanvas *c_SoverB_exp = new TCanvas("c_SoverB_exp","",1024,768);
-  c_SoverB_exp->SetGridy();
+  // c_SoverB_exp->SetGridy();
   c_SoverB_exp->SetLogy();
   h_SoverB_exp_1->Draw(drawOptions);
   h_SoverB_exp_2->Draw(drawOptions_same);
@@ -413,97 +494,112 @@ void PlotMass_analysisComparison() {
   h_SoverB_exp_4->Draw(drawOptions_same);
   h_SoverB_exp_noMVAcuts->Draw(drawOptions_same);
   h_SoverB_exp_ideal->Draw(drawOptions_same);
+  l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
+  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg4->Draw();
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.pdf");
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.root");
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.png");
   
 
-
-  h_eff_S_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_S_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_S_1->SetYTitle("Efficiency (S)");
   h_eff_S_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_S_1->GetYaxis()->SetTitleOffset(1.4);
   h_eff_S_1->GetYaxis()->SetRangeUser(0, 1.2);
+  h_eff_S_1->SetTitleSize(axisTitleSize,"xyz");
 
-
-  h_eff_CombiWithConvLeg_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_CombiWithConvLeg_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_CombiWithConvLeg_1->SetYTitle("Efficiency (Comb. w. conv. leg)");
   h_eff_CombiWithConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_CombiWithConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
   h_eff_CombiWithConvLeg_1->GetYaxis()->SetRangeUser(0, 1.2);
+  h_eff_CombiWithConvLeg_1->SetTitleSize(axisTitleSize,"xyz");
 
-  h_eff_CombiWithoutConvLeg_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_CombiWithoutConvLeg_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_CombiWithoutConvLeg_1->SetYTitle("Efficiency (Comb. w/o conv. leg)");
   h_eff_CombiWithoutConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_CombiWithoutConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
   h_eff_CombiWithoutConvLeg_1->GetYaxis()->SetRangeUser(0, 1.2);
+  h_eff_CombiWithoutConvLeg_1->SetTitleSize(axisTitleSize,"xyz");
 
-  h_eff_HF_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_HF_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_HF_1->SetYTitle("Efficiency (corr. HF)");
   h_eff_HF_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_HF_1->GetYaxis()->SetTitleOffset(1.4);
   h_eff_HF_1->GetYaxis()->SetRangeUser(0, 1.2);
+  h_eff_HF_1->SetTitleSize(axisTitleSize,"xyz");
 
-  h_eff_RPConv_1->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_eff_RPConv_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_RPConv_1->SetYTitle("Efficiency (RP conv.)");
   h_eff_RPConv_1->GetXaxis()->SetTitleOffset(1.2);
   h_eff_RPConv_1->GetYaxis()->SetTitleOffset(1.4);
   h_eff_RPConv_1->GetYaxis()->SetRangeUser(0, 1.2);
+  h_eff_RPConv_1->SetTitleSize(axisTitleSize,"xyz");
 
 
   
   
   TCanvas *c_effs_S = new TCanvas("c_effs_S","",1024,768);
-  c_effs_S->SetGridy();
+  // c_effs_S->SetGridy();
   h_eff_S_1->Draw(drawOptions_eff);
   h_eff_S_2->Draw(drawOptions_eff_same);
   h_eff_S_3->Draw(drawOptions_eff_same);
   h_eff_S_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg_eff->Draw();
   c_effs_S->SaveAs("temp_output/c_effs_S.pdf");
   c_effs_S->SaveAs("temp_output/c_effs_S.root");
   c_effs_S->SaveAs("temp_output/c_effs_S.png");
 
   TCanvas *c_effs_CombiWithConvLeg = new TCanvas("c_effs_CombiWithConvLeg","",1024,768);
-  c_effs_CombiWithConvLeg->SetGridy();
+  // c_effs_CombiWithConvLeg->SetGridy();
   h_eff_CombiWithConvLeg_1->Draw(drawOptions_eff);
   h_eff_CombiWithConvLeg_2->Draw(drawOptions_eff_same);
   h_eff_CombiWithConvLeg_3->Draw(drawOptions_eff_same);
   h_eff_CombiWithConvLeg_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg_eff->Draw();
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.pdf");
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.root");
   c_effs_CombiWithConvLeg->SaveAs("temp_output/c_effs_CombiWithConvLeg.png");
 
   TCanvas *c_effs_CombiWithoutConvLeg = new TCanvas("c_effs_CombiWithoutConvLeg","",1024,768);
-  c_effs_CombiWithoutConvLeg->SetGridy();
+  // c_effs_CombiWithoutConvLeg->SetGridy();
   h_eff_CombiWithoutConvLeg_1->Draw(drawOptions_eff);
   h_eff_CombiWithoutConvLeg_2->Draw(drawOptions_eff_same);
   h_eff_CombiWithoutConvLeg_3->Draw(drawOptions_eff_same);
   h_eff_CombiWithoutConvLeg_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg_eff->Draw();
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.pdf");
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.root");
   c_effs_CombiWithoutConvLeg->SaveAs("temp_output/c_effs_CombiWithoutConvLeg.png");
 
   TCanvas *c_effs_HF = new TCanvas("c_effs_HF","",1024,768);
-  c_effs_HF->SetGridy();
+  // c_effs_HF->SetGridy();
   h_eff_HF_1->Draw(drawOptions_eff);
   h_eff_HF_2->Draw(drawOptions_eff_same);
   h_eff_HF_3->Draw(drawOptions_eff_same);
   h_eff_HF_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg_eff->Draw();
   c_effs_HF->SaveAs("temp_output/c_effs_HF.pdf");
   c_effs_HF->SaveAs("temp_output/c_effs_HF.root");
   c_effs_HF->SaveAs("temp_output/c_effs_HF.png");
 
   TCanvas *c_effs_RPConv = new TCanvas("c_effs_RPConv","",1024,768);
-  c_effs_RPConv->SetGridy();
+  // c_effs_RPConv->SetGridy();
   h_eff_RPConv_1->Draw(drawOptions_eff);
   h_eff_RPConv_2->Draw(drawOptions_eff_same);
   h_eff_RPConv_3->Draw(drawOptions_eff_same);
   h_eff_RPConv_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg_eff->Draw();
   c_effs_RPConv->SaveAs("temp_output/c_effs_RPConv.pdf");
   c_effs_RPConv->SaveAs("temp_output/c_effs_RPConv.root");
@@ -579,7 +675,7 @@ void PlotMass_analysisComparison() {
   h_eff_S_1->SetYTitle("Efficiency");
   
   TCanvas *c_effs_all = new TCanvas("c_effs","",1024,768);
-  c_effs_all->SetGridy();
+  // c_effs_all->SetGridy();
   h_eff_S_1->Draw(drawOptions_eff);
   h_eff_S_2->Draw(drawOptions_eff_same);
   h_eff_S_3->Draw(drawOptions_eff_same);
@@ -600,6 +696,8 @@ void PlotMass_analysisComparison() {
   h_eff_RPConv_2->Draw(drawOptions_eff_same);
   h_eff_RPConv_3->Draw(drawOptions_eff_same);
   h_eff_RPConv_4->Draw(drawOptions_eff_same);
+  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
+  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg5->Draw();
   c_effs_all->SaveAs("temp_output/c_effs_all.pdf");
   c_effs_all->SaveAs("temp_output/c_effs_all.root");
@@ -607,4 +705,47 @@ void PlotMass_analysisComparison() {
 
 
   gApplication->Terminate();
+}
+
+
+
+void SetStyle(Bool_t graypalette) {
+  
+  gStyle->Reset("Plain");
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  if(graypalette) gStyle->SetPalette(8,0);
+  else gStyle->SetPalette(1);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetFrameLineWidth(1);
+  gStyle->SetFrameFillColor(kWhite);
+  gStyle->SetPadColor(10);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetPadBottomMargin(0.15);
+  gStyle->SetPadLeftMargin(0.15);
+  gStyle->SetHistLineWidth(1);
+  gStyle->SetHistLineColor(kRed);
+  gStyle->SetFuncWidth(2);
+  gStyle->SetFuncColor(kGreen);
+  gStyle->SetLineWidth(2);
+  gStyle->SetLabelSize(0.045,"xyz");
+  gStyle->SetLabelOffset(0.01,"y");
+  gStyle->SetLabelOffset(0.01,"x");
+  gStyle->SetLabelColor(kBlack,"xyz");
+  gStyle->SetTitleSize(0.05,"xyz");
+  gStyle->SetTitleOffset(1.25,"y");
+  gStyle->SetTitleOffset(1.2,"x");
+  gStyle->SetTitleFillColor(kWhite);
+  gStyle->SetTextSizePixels(26);
+  gStyle->SetTextFont(42);
+  gStyle->SetTitleXSize(7);
+  //  gStyle->SetTickLength(0.04,"X");  gStyle->SetTickLength(0.04,"Y"); 
+
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(kWhite);
+  //  gStyle->SetFillColor(kWhite);
+  gStyle->SetLegendFont(42);
+
 }

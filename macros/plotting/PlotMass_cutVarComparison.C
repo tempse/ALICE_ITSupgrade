@@ -59,10 +59,10 @@ void PlotMass_cutVarComparison() {
   
   // !!! Don't forget to change the below signal/background definitions accordingly !!!
     
-  //TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejClassicalCuts-prefilter_DNN/mass_histos_prefilterCuts.root";
+  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejClassicalCuts-prefilter_DNN/mass_histos_prefilterCuts.root";
   //TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejMVA-prefilter_DNN_mass0.05/mass_histos_prefilterCuts.root";
-  //TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/mass_histos_prefilterCuts.root";
-  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/CombConvRejMVA_DNN_0.05mass/mass_histos.root";
+  // TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/mass_histos_prefilterCuts.root";
+  // TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/CombConvRejMVA_DNN_0.05mass/mass_histos.root";
   TString infile2_filename = infile1_filename;
   TString infile3_filename = infile1_filename;
   TString infile_noMVAcuts_filename = infile1_filename;
@@ -79,12 +79,12 @@ void PlotMass_cutVarComparison() {
   
   // optimized MVA cut
   TFile *infile1 = new TFile(infile1_filename, "READ");
-  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_MVAcut");
-  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_1                  = (TH1D*)infile1->Get("h_SB_prefilterCut");
+  TH1D *h_S_1                   = (TH1D*)infile1->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_1                  = (TH1D*)infile1->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_1              = (TH1D*)infile1->Get("h_RPConv_prefilterCut");
 
   h_SB_1->SetName("h_SB_1");
   h_S_1->SetName("h_S_1");
@@ -95,12 +95,12 @@ void PlotMass_cutVarComparison() {
   
   // MVA cut +10%
   TFile *infile2 = new TFile(infile2_filename, "READ");
-  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_MVAcut");
-  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_2                  = (TH1D*)infile2->Get("h_SB_prefilterCut");
+  TH1D *h_S_2                   = (TH1D*)infile2->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_2                  = (TH1D*)infile2->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_2              = (TH1D*)infile2->Get("h_RPConv_prefilterCut");
 
   h_SB_2->SetName("h_SB_2");
   h_S_2->SetName("h_S_2");
@@ -112,12 +112,12 @@ void PlotMass_cutVarComparison() {
 
   // MVA cut -10%
   TFile *infile3 = new TFile(infile3_filename, "READ");
-  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_MVAcut");
-  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_MVAcut");
-  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_MVAcut");
-  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_MVAcut");
-  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_MVAcut");
-  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_MVAcut");
+  TH1D *h_SB_3                  = (TH1D*)infile3->Get("h_SB_prefilterCut");
+  TH1D *h_S_3                   = (TH1D*)infile3->Get("h_S_prefilterCut");
+  TH1D *h_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_prefilterCut");
+  TH1D *h_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_prefilterCut");
+  TH1D *h_HF_3                  = (TH1D*)infile3->Get("h_HF_prefilterCut");
+  TH1D *h_RPConv_3              = (TH1D*)infile3->Get("h_RPConv_prefilterCut");
 
   h_SB_3->SetName("h_SB_3");
   h_S_3->SetName("h_S_3");
@@ -251,6 +251,10 @@ void PlotMass_cutVarComparison() {
   h_plot_S_exp_ideal = (TH1D*)h_S_noMVAcuts->Clone("h_plot_S_exp_ideal");
   h_plot_S_exp_ideal->Add(h_HF_noMVAcuts);
   h_plot_S_exp_ideal->Sumw2();
+
+  TH1D *h_plot_B_exp_ideal = new TH1D();
+  h_plot_B_exp_ideal = (TH1D*)h_CombiWithoutConvLeg_noMVAcuts->Clone("h_CombiWithoutConvLeg_noMVAcuts");
+  h_plot_B_exp_ideal->Sumw2();
 
   
 
@@ -410,8 +414,17 @@ void PlotMass_cutVarComparison() {
       h_significance_exp_noMVAcuts->SetBinError(i, 0.);
     }
 
-    h_significance_exp_ideal->SetBinContent(i, TMath::Sqrt(h_plot_S_exp_ideal->GetBinContent(i)));
-    h_significance_exp_ideal->SetBinError(i, 0.5);
+    if(h_plot_S_exp_ideal->GetBinContent(i) != 0) {
+      h_significance_exp_ideal->SetBinContent(i,
+					      h_plot_S_exp_ideal->GetBinContent(i) /
+					      TMath::Sqrt(h_plot_S_exp_ideal->GetBinContent(i) +
+							  h_plot_B_exp_ideal->GetBinContent(i)));
+      h_significance_exp_ideal->SetBinError(i, significanceError(h_plot_S_exp_ideal->GetBinContent(i),
+								 h_plot_B_exp_ideal->GetBinContent(i)));
+    }else {
+      h_significance_exp_ideal->SetBinContent(i, 0.);
+      h_significance_exp_ideal->SetBinError(i, 0.);
+    }
     significance_exp_int_ideal += h_significance_exp_ideal->GetBinContent(i);
     
 
@@ -509,7 +522,15 @@ void PlotMass_cutVarComparison() {
       h_SoverB_exp_noMVAcuts->SetBinError(i, 0.);
     }
 
-    h_SoverB_exp_ideal->SetBinContent(i, h_plot_S_exp_ideal->GetBinContent(i));
+    if(h_plot_B_exp_ideal->GetBinContent(i)!=0) {
+      h_SoverB_exp_ideal->SetBinContent(i,
+					h_plot_S_exp_ideal->GetBinContent(i) /
+					h_plot_B_exp_ideal->GetBinContent(i));
+      h_SoverB_exp_ideal->SetBinError(i, SoverBError(h_plot_S_exp_ideal->GetBinContent(i),
+						     h_plot_B_exp_ideal->GetBinContent(i)));
+    }else {
+      h_SoverB_exp_ideal->SetBinContent(i, 0.);
+    }
     h_plot_S_exp_ideal->SetBinError(i, 0.);
     
   }
