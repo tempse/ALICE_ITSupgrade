@@ -16,6 +16,7 @@
 #include <TLatex.h>
 
 
+void SetStyle(Bool_t graypalette=kFALSE);
 
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
@@ -72,6 +73,10 @@ void PlotMass_prefilterCuts() {
     exit(1);
   }
 
+
+  gROOT->ForceStyle();
+  SetStyle();
+  
 
   TFile *f = new TFile(fileName_testData,"READ");
   TTree *TestTree = (TTree*)f->Get("pairTree_us");
@@ -146,7 +151,7 @@ void PlotMass_prefilterCuts() {
 
 
 
-  Long64_t nEv = TestTree->GetEntries();
+  Long64_t nEv = TestTree->GetEntries()/100;
   std::cout << "Starting to process " << nEv << " entries..." << std::endl;
 
   
@@ -433,6 +438,21 @@ void PlotMass_prefilterCuts() {
   h_HF->SetLineColor(kOrange);
   h_RPConv->SetLineColor(kMagenta);
 
+  Int_t lineWidth = 3;
+  h_SB->SetLineWidth(lineWidth);
+  h_S->SetLineWidth(lineWidth);
+  h_CombiWithConvLeg->SetLineWidth(lineWidth);
+  h_CombiWithoutConvLeg->SetLineWidth(lineWidth);
+  h_HF->SetLineWidth(lineWidth);
+  h_RPConv->SetLineWidth(lineWidth);
+
+  h_SB_prefilterCut->SetLineWidth(lineWidth);
+  h_S_prefilterCut->SetLineWidth(lineWidth);
+  h_CombiWithConvLeg_prefilterCut->SetLineWidth(lineWidth);
+  h_CombiWithoutConvLeg_prefilterCut->SetLineWidth(lineWidth);
+  h_HF_prefilterCut->SetLineWidth(lineWidth);
+  h_RPConv_prefilterCut->SetLineWidth(lineWidth);
+
   h_SB_prefilterCut->SetLineColor(kBlack);
   h_SB_prefilterCut->SetMarkerColor(kBlack);
   h_S_prefilterCut->SetLineColor(kGreen+1);
@@ -445,16 +465,25 @@ void PlotMass_prefilterCuts() {
   h_HF_prefilterCut->SetMarkerColor(kOrange);
   h_RPConv_prefilterCut->SetLineColor(kMagenta);
   h_RPConv_prefilterCut->SetMarkerColor(kMagenta);
-  
-  h_SB_prefilterCut->SetMarkerStyle(7);
-  h_S_prefilterCut->SetMarkerStyle(7);
-  h_CombiWithConvLeg_prefilterCut->SetMarkerStyle(7);
-  h_CombiWithoutConvLeg_prefilterCut->SetMarkerStyle(7);
-  h_HF_prefilterCut->SetMarkerStyle(7);
-  h_RPConv_prefilterCut->SetMarkerStyle(7);
+
+  Int_t markerStyle = 20;
+  h_SB_prefilterCut->SetMarkerStyle(markerStyle);
+  h_S_prefilterCut->SetMarkerStyle(markerStyle);
+  h_CombiWithConvLeg_prefilterCut->SetMarkerStyle(markerStyle);
+  h_CombiWithoutConvLeg_prefilterCut->SetMarkerStyle(markerStyle);
+  h_HF_prefilterCut->SetMarkerStyle(markerStyle);
+  h_RPConv_prefilterCut->SetMarkerStyle(markerStyle);
+
+  Float_t markerSize = 1;
+  h_SB_prefilterCut->SetMarkerSize(markerSize);
+  h_S_prefilterCut->SetMarkerSize(markerSize);
+  h_CombiWithConvLeg_prefilterCut->SetMarkerSize(markerSize);
+  h_CombiWithoutConvLeg_prefilterCut->SetMarkerSize(markerSize);
+  h_HF->SetMarkerSize(markerSize);
+  h_RPConv_prefilterCut->SetMarkerSize(markerSize);
 
   h_SB->GetYaxis()->SetRangeUser(1e-1,1e8);
-  h_SB->SetXTitle("M_{ee} / (GeV/c^{2})");
+  h_SB->SetXTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
   h_SB->SetYTitle("Entries");
   h_SB->GetXaxis()->SetTitleOffset(1.2);
   h_SB->GetYaxis()->SetTitleOffset(1.3);
@@ -486,9 +515,8 @@ void PlotMass_prefilterCuts() {
 
   TString drawOptions_mass_cut = "e1 x0 same";
 
-  TCanvas *c = new TCanvas("c","",800,600);
+  TCanvas *c = new TCanvas("c","",1024,768);
   c->SetLogy();
-  c->SetGridy();
   h_SB->Draw(drawOptions_mass);
   h_S->Draw(drawOptions_mass_same);
   h_CombiWithConvLeg->Draw(drawOptions_mass_same);
@@ -504,19 +532,46 @@ void PlotMass_prefilterCuts() {
   h_RPConv_prefilterCut->Draw(drawOptions_mass_cut);
 
   
-  TLegend *leg_mass = new TLegend(.6,.7,.88,.88);
+  TLegend *leg_mass_nocuts = new TLegend(.575,.6,.67,.83, "w/o,");
+  leg_mass_nocuts->AddEntry(h_SB,"","l");
+  leg_mass_nocuts->AddEntry(h_S,"","l");
+  leg_mass_nocuts->AddEntry(h_CombiWithConvLeg,"","l");
+  leg_mass_nocuts->AddEntry(h_CombiWithoutConvLeg,"","l");
+  leg_mass_nocuts->AddEntry(h_HF,"","l");
+  leg_mass_nocuts->AddEntry(h_RPConv,"","l");
+  TLegendEntry *leg_mass_nocuts_header =
+    (TLegendEntry*)leg_mass_nocuts->GetListOfPrimitives()->First();
+  leg_mass_nocuts_header->SetTextSize(.033);
+  leg_mass_nocuts->Draw();
+
+  TLegend *leg_mass = new TLegend(.62,.6,.88,.83, "with MVA cuts");
   leg_mass->AddEntry(h_SB_eff,"S+B","p");
   leg_mass->AddEntry(h_S_eff,"S","p");
   leg_mass->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
   leg_mass->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
   leg_mass->AddEntry(h_HF_eff,"Corr. HF","p");
   leg_mass->AddEntry(h_RPConv_eff,"RP conv.","p");
+  TLegendEntry *leg_mass_header =
+    (TLegendEntry*)leg_mass->GetListOfPrimitives()->First();
+  leg_mass_header->SetTextSize(.033);
   leg_mass->Draw();
+  
 
   TLatex l;
   l.SetTextSize(.025);
   l.DrawLatex(.1,1.5e7,h_text);
 
+  TLatex *l_ALICE = new TLatex(.19,.82,"ALICE work in progress");
+  l_ALICE->SetTextSize(.035);
+  l_ALICE->SetTextFont(42);
+  l_ALICE->SetNDC();
+  l_ALICE->Draw();
+
+  TLatex *l_info = new TLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_info->SetTextSize(.03);
+  l_info->SetTextFont(42);
+  l_info->SetNDC();
+  l_info->Draw();
 
   c->SaveAs("temp_output/mass_prefilterCuts.pdf");
   c->SaveAs("temp_output/mass_prefilterCuts.root");
@@ -527,18 +582,17 @@ void PlotMass_prefilterCuts() {
   TString drawOptions_eff_same = drawOptions_eff + " same";
 
 
-  TLegend *leg_eff = new TLegend(.6,.15,.88,.33);
+  TLegend *leg_eff = new TLegend(.55,.2,.88,.43);
   leg_eff->AddEntry(h_SB_eff,"S+B","p");
   leg_eff->AddEntry(h_S_eff,"S","p");
   leg_eff->AddEntry(h_CombiWithConvLeg_eff,"Comb. w. conv. leg","p");
   leg_eff->AddEntry(h_CombiWithoutConvLeg_eff,"Comb. w/o conv. leg","p");
-  leg_eff->AddEntry(h_HF_eff,"Corr. HF","p");
+  leg_eff->AddEntry(h_HF_eff,"Corr. heavy flavor","p");
   leg_eff->AddEntry(h_RPConv_eff,"RP conv.","p");
   
 
-  TCanvas *c_eff = new TCanvas("c_eff","",800,600);
-  c_eff->SetGridy();
-  h_SB_eff->SetXTitle("M_{ee} / (GeV/c^{2})");
+  TCanvas *c_eff = new TCanvas("c_eff","",1024,768);
+  h_SB_eff->SetXTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
   h_SB_eff->SetYTitle("Efficiency");
   h_SB_eff->GetXaxis()->SetTitleOffset(1.2);
   h_SB_eff->GetYaxis()->SetTitleOffset(1.3);
@@ -551,6 +605,18 @@ void PlotMass_prefilterCuts() {
   h_RPConv_eff->Draw(drawOptions_eff_same);
   leg_eff->Draw();
   l.DrawLatex(.1,1.125,h_text);
+
+  TLatex *l_eff_ALICE = new TLatex(.2,.26,"ALICE work in progress");
+  l_eff_ALICE->SetTextSize(.035);
+  l_eff_ALICE->SetTextFont(42);
+  l_eff_ALICE->SetNDC();
+  l_eff_ALICE->Draw();
+
+  TLatex *l_eff_info = new TLatex(.2,.22,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_eff_info->SetTextSize(.03);
+  l_eff_info->SetTextFont(42);
+  l_eff_info->SetNDC();
+  l_eff_info->Draw();
 
   c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.pdf");
   c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.root");
@@ -598,4 +664,46 @@ Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
 
   return PIDeff1 * PIDeff2;
   
+}
+
+
+
+void SetStyle(Bool_t graypalette) {
+  
+  gStyle->Reset("Plain");
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  if(graypalette) gStyle->SetPalette(8,0);
+  else gStyle->SetPalette(1);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetFrameLineWidth(1);
+  gStyle->SetFrameFillColor(kWhite);
+  gStyle->SetPadColor(10);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetPadBottomMargin(0.15);
+  gStyle->SetPadLeftMargin(0.15);
+  gStyle->SetHistLineWidth(1);
+  gStyle->SetHistLineColor(kRed);
+  gStyle->SetFuncWidth(2);
+  gStyle->SetFuncColor(kGreen);
+  gStyle->SetLineWidth(2);
+  gStyle->SetLabelSize(0.045,"xyz");
+  gStyle->SetLabelOffset(0.01,"y");
+  gStyle->SetLabelOffset(0.01,"x");
+  gStyle->SetLabelColor(kBlack,"xyz");
+  gStyle->SetTitleSize(0.05,"xyz");
+  gStyle->SetTitleOffset(1.25,"y");
+  gStyle->SetTitleOffset(1.2,"x");
+  gStyle->SetTitleFillColor(kWhite);
+  gStyle->SetTextSizePixels(26);
+  gStyle->SetTextFont(42);
+  //  gStyle->SetTickLength(0.04,"X");  gStyle->SetTickLength(0.04,"Y"); 
+
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(kWhite);
+  //  gStyle->SetFillColor(kWhite);
+  gStyle->SetLegendFont(42);
+
 }
