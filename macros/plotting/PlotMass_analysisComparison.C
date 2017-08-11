@@ -11,6 +11,7 @@
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TCanvas.h>
+#include <TPad.h>
 #include <TLegend.h>
 #include <TLatex.h>
 
@@ -21,18 +22,18 @@ void SetStyle(Bool_t graypalette=kFALSE);
 void PlotMass_analysisComparison() {
   
   // RP conv. rej. via classical cuts:
-  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejClassicalCuts-prefilter_DNN/cutVariations/mass_histos_comparison.root";
+  TString infile1_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejClassicalCuts-prefilter_DNN/cutVariations/wRatios/mass_histos_comparison.root";
 
   // RP conv. rej. via MVA cuts:
-  TString infile2_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejMVA-prefilter_DNN_mass0.05/cutVariations/mass_histos_comparison.root";
+  TString infile2_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/RPConvRejMVA-prefilter_DNN_mass0.05/cutVariations/wRatios/mass_histos_comparison.root";
 
   // single conv. track rej. via MVA cuts:
-  TString infile3_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/cutVariations/mass_histos_comparison.root";
+  TString infile3_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/cutVariations/wRatios/mass_histos_comparison.root";
 
   // Comb. conv. rej. via MVA cuts:
-  TString infile4_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/CombConvRejMVA_DNN_0.05mass/cutVariations/mass_histos_comparison.root";
+  TString infile4_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/CombConvRejMVA_DNN_0.05mass/cutVariations/wRatios/mass_histos_comparison.root";
 
-  TString infile_noMVAcuts_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/cutVariations/mass_histos_comparison.root";
+  TString infile_noMVAcuts_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/cutVariations/wRatios/mass_histos_comparison.root";
 
 
   TString leg_label1 = "classical cuts";
@@ -61,9 +62,13 @@ void PlotMass_analysisComparison() {
 
   TFile *infile1 = new TFile(infile1_filename, "READ");
   TH1D *h_significance_class_1      = (TH1D*)infile1->Get("h_significance_1");
+  TH1D *h_significance_class_1_norm = (TH1D*)infile1->Get("h_significance_1_norm");
   TH1D *h_significance_exp_1        = (TH1D*)infile1->Get("h_significance_exp_1");
+  TH1D *h_significance_exp_1_norm   = (TH1D*)infile1->Get("h_significance_exp_1_norm");
   TH1D *h_SoverB_class_1            = (TH1D*)infile1->Get("h_SoverB_1");
+  TH1D *h_SoverB_class_1_norm       = (TH1D*)infile1->Get("h_SoverB_1_norm");
   TH1D *h_SoverB_exp_1              = (TH1D*)infile1->Get("h_SoverB_exp_1");
+  TH1D *h_SoverB_exp_1_norm         = (TH1D*)infile1->Get("h_SoverB_exp_1_norm");
   TH1D *h_eff_S_1                   = (TH1D*)infile1->Get("h_S_eff_1");
   TH1D *h_eff_CombiWithConvLeg_1    = (TH1D*)infile1->Get("h_CombiWithConvLeg_eff_1");
   TH1D *h_eff_CombiWithoutConvLeg_1 = (TH1D*)infile1->Get("h_CombiWithoutConvLeg_eff_1");
@@ -76,9 +81,13 @@ void PlotMass_analysisComparison() {
 
   TFile *infile2 = new TFile(infile2_filename, "READ");
   TH1D *h_significance_class_2      = (TH1D*)infile2->Get("h_significance_1");
+  TH1D *h_significance_class_2_norm = (TH1D*)infile2->Get("h_significance_1_norm");
   TH1D *h_significance_exp_2        = (TH1D*)infile2->Get("h_significance_exp_1");
+  TH1D *h_significance_exp_2_norm   = (TH1D*)infile2->Get("h_significance_exp_1_norm");
   TH1D *h_SoverB_class_2            = (TH1D*)infile2->Get("h_SoverB_1");
+  TH1D *h_SoverB_class_2_norm       = (TH1D*)infile2->Get("h_SoverB_1_norm");
   TH1D *h_SoverB_exp_2              = (TH1D*)infile2->Get("h_SoverB_exp_1");
+  TH1D *h_SoverB_exp_2_norm         = (TH1D*)infile2->Get("h_SoverB_exp_1_norm");
   TH1D *h_eff_S_2                   = (TH1D*)infile2->Get("h_S_eff_1");
   TH1D *h_eff_CombiWithConvLeg_2    = (TH1D*)infile2->Get("h_CombiWithConvLeg_eff_1");
   TH1D *h_eff_CombiWithoutConvLeg_2 = (TH1D*)infile2->Get("h_CombiWithoutConvLeg_eff_1");
@@ -91,9 +100,13 @@ void PlotMass_analysisComparison() {
   
   TFile *infile3 = new TFile(infile3_filename, "READ");
   TH1D *h_significance_class_3      = (TH1D*)infile3->Get("h_significance_1");
+  TH1D *h_significance_class_3_norm = (TH1D*)infile3->Get("h_significance_1_norm");
   TH1D *h_significance_exp_3        = (TH1D*)infile3->Get("h_significance_exp_1");
+  TH1D *h_significance_exp_3_norm   = (TH1D*)infile3->Get("h_significance_exp_1_norm");
   TH1D *h_SoverB_class_3            = (TH1D*)infile3->Get("h_SoverB_1");
+  TH1D *h_SoverB_class_3_norm       = (TH1D*)infile3->Get("h_SoverB_1_norm");
   TH1D *h_SoverB_exp_3              = (TH1D*)infile3->Get("h_SoverB_exp_1");
+  TH1D *h_SoverB_exp_3_norm         = (TH1D*)infile3->Get("h_SoverB_exp_1_norm");
   TH1D *h_eff_S_3                   = (TH1D*)infile3->Get("h_S_eff_1");
   TH1D *h_eff_CombiWithConvLeg_3    = (TH1D*)infile3->Get("h_CombiWithConvLeg_eff_1");
   TH1D *h_eff_CombiWithoutConvLeg_3 = (TH1D*)infile3->Get("h_CombiWithoutConvLeg_eff_1");
@@ -106,9 +119,13 @@ void PlotMass_analysisComparison() {
   
   TFile *infile4 = new TFile(infile4_filename, "READ");
   TH1D *h_significance_class_4      = (TH1D*)infile4->Get("h_significance_1");
+  TH1D *h_significance_class_4_norm = (TH1D*)infile4->Get("h_significance_1_norm");
   TH1D *h_significance_exp_4        = (TH1D*)infile4->Get("h_significance_exp_1");
+  TH1D *h_significance_exp_4_norm   = (TH1D*)infile4->Get("h_significance_exp_1_norm");
   TH1D *h_SoverB_class_4            = (TH1D*)infile4->Get("h_SoverB_1");
+  TH1D *h_SoverB_class_4_norm       = (TH1D*)infile4->Get("h_SoverB_1_norm");
   TH1D *h_SoverB_exp_4              = (TH1D*)infile4->Get("h_SoverB_exp_1");
+  TH1D *h_SoverB_exp_4_norm         = (TH1D*)infile4->Get("h_SoverB_exp_1_norm");
   TH1D *h_eff_S_4                   = (TH1D*)infile4->Get("h_S_eff_1");
   TH1D *h_eff_CombiWithConvLeg_4    = (TH1D*)infile4->Get("h_CombiWithConvLeg_eff_1");
   TH1D *h_eff_CombiWithoutConvLeg_4 = (TH1D*)infile4->Get("h_CombiWithoutConvLeg_eff_1");
@@ -346,38 +363,37 @@ void PlotMass_analysisComparison() {
 
   h_significance_class_ideal->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_significance_class_ideal->SetYTitle("#it{S}_{class} / #sqrt{#it{S}_{class} + #it{B}_{class}}");
+  h_significance_class_ideal->SetTitleSize(axisTitleSize,"xyz");
+
+  h_significance_class_1_norm->SetYTitle("Sign. / sign._{no cuts}");
   h_significance_class_ideal->SetTitleSize(axisTitleSize,"xyz");  
-  // h_significance_class_ideal->GetXaxis()->SetTitleOffset(1.2);
-  // h_significance_class_ideal->GetYaxis()->SetTitleOffset(1.4);
 
   h_significance_exp_ideal->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_significance_exp_ideal->SetYTitle("#it{S}_{exp} / #sqrt{#it{S}_{exp} + #it{B}_{exp}}");
-  // h_significance_exp_ideal->GetXaxis()->SetTitleOffset(1.2);
-  // h_significance_exp_ideal->GetYaxis()->SetTitleOffset(1.4);
   h_significance_exp_ideal->SetTitleSize(axisTitleSize,"xyz");
   h_significance_exp_ideal->GetYaxis()->SetRangeUser(1e-2,1e3);
+
+  h_significance_exp_1_norm->SetYTitle("Sign. / sign._{no cuts}");
 
   h_SoverB_class_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_SoverB_class_1->SetYTitle("#it{S}_{class} / #it{B}_{class}");
   h_SoverB_class_1->SetTitleSize(axisTitleSize,"xyz");
-  // h_SoverB_class_1->GetXaxis()->SetTitleOffset(1.2);
-  // h_SoverB_class_1->GetYaxis()->SetTitleOffset(1.4);
+
+  h_SoverB_class_1_norm->SetYTitle("(S/B) / (S/B)_{no cuts}");
 
   h_SoverB_exp_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_SoverB_exp_1->SetYTitle("#it{S}_{exp} / #it{B}_{exp}");
   h_SoverB_exp_1->SetTitleSize(axisTitleSize,"xyz");
-  // h_SoverB_exp_1->GetXaxis()->SetTitleOffset(1.2);
-  // h_SoverB_exp_1->GetYaxis()->SetTitleOffset(1.4);
+
+  h_SoverB_exp_1_norm->SetYTitle("(S/B) / (S/B)_{no cuts}");
 
 
   h_eff_CombiWithConvLeg_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_CombiWithConvLeg_1->SetYTitle("Efficiency");
   h_eff_CombiWithConvLeg_1->SetTitleSize(axisTitleSize,"xyz");
-  // h_eff_CombiWithConvLeg_1->GetXaxis()->SetTitleOffset(1.2);
-  // h_eff_CombiWithConvLeg_1->GetYaxis()->SetTitleOffset(1.4);
 
 
-  TLegend *leg1 = new TLegend(.57, .62, .88, .88);
+  TLegend *leg1 = new TLegend(.5, .5, .88, .85);
   leg1->AddEntry(h_significance_class_1, leg_label1, "p");
   leg1->AddEntry(h_significance_class_4, leg_label4, "p");
   leg1->AddEntry(h_significance_class_3, leg_label3, "p");
@@ -385,7 +401,7 @@ void PlotMass_analysisComparison() {
   leg1->AddEntry(h_significance_class_noMVAcuts, leg_label_noMVAcuts, "p");
   leg1->AddEntry(h_significance_class_ideal, leg_label_ideal, "p");
 
-  TLegend *leg2 = new TLegend(.57, .62, .88, .88);
+  TLegend *leg2 = new TLegend(.54, .5, .88, .85);
   leg2->AddEntry(h_significance_exp_1, leg_label1, "p");
   leg2->AddEntry(h_significance_exp_4, leg_label4, "p");
   leg2->AddEntry(h_significance_exp_3, leg_label3, "p");
@@ -393,14 +409,14 @@ void PlotMass_analysisComparison() {
   leg2->AddEntry(h_significance_exp_noMVAcuts, leg_label_noMVAcuts, "p");
   leg2->AddEntry(h_significance_exp_ideal, leg_label_ideal, "p");
 
-  TLegend *leg3 = new TLegend(.19, .49, .5, .75);
+  TLegend *leg3 = new TLegend(.21, .4, .39, .75);
   leg3->AddEntry(h_SoverB_class_1, leg_label1, "p");
   leg3->AddEntry(h_SoverB_class_4, leg_label4, "p");
   leg3->AddEntry(h_SoverB_class_3, leg_label3, "p");
   leg3->AddEntry(h_SoverB_class_2, leg_label2, "p");
   leg3->AddEntry(h_SoverB_class_noMVAcuts, leg_label_noMVAcuts, "p");
 
-  TLegend *leg4 = new TLegend(.57, .62, .88, .88);
+  TLegend *leg4 = new TLegend(.54, .5, .88, .85);
   leg4->AddEntry(h_SoverB_exp_1, leg_label1, "p");
   leg4->AddEntry(h_SoverB_exp_4, leg_label4, "p");
   leg4->AddEntry(h_SoverB_exp_3, leg_label3, "p");
@@ -421,41 +437,105 @@ void PlotMass_analysisComparison() {
   leg_eff->AddEntry(h_eff_S_2, leg_label2, "p");
 
   TLatex *l_ALICE = new TLatex();
-  l_ALICE->SetTextSize(0.035);
+  l_ALICE->SetTextSize(0.055);
   l_ALICE->SetTextFont(42);
   l_ALICE->SetNDC();
 
   TLatex *l_info = new TLatex();
-  l_info->SetTextSize(.03);
+  l_info->SetTextSize(.05);
   l_info->SetTextFont(42);
   l_info->SetNDC();
 
-  TString drawOptions = "hist p e1 x0";
+  TString drawOptions = "hist p x0";
   TString drawOptions_same = drawOptions + " same";
 
   TString drawOptions_eff = "hist p x0 e1";
   TString drawOptions_eff_same = drawOptions_eff + " same";
-  
+
+  TString drawOptions_ratio = "hist p";
+  TString drawOptions_ratio_same = drawOptions_ratio + " same";
   
   TCanvas *c_significance_class = new TCanvas("c_significance_class","",1024,768);
-  // c_significance_class->SetGridy();
-  c_significance_class->SetLogy();
+  
+  TPad *p_significance_class = new TPad("p_significance_class","p_significance_class",0,.4,1,1);
+  p_significance_class->SetBottomMargin(0);
+  p_significance_class->SetLogy();
+  p_significance_class->Draw();
+  p_significance_class->cd();
+
+  h_significance_class_ideal->GetYaxis()->SetTitleSize(.065);
+  h_significance_class_ideal->GetYaxis()->SetTitleOffset(.9);
+  
   h_significance_class_ideal->Draw(drawOptions);
   h_significance_class_1->Draw(drawOptions_same);
   h_significance_class_2->Draw(drawOptions_same);
   h_significance_class_3->Draw(drawOptions_same);
   h_significance_class_4->Draw(drawOptions_same);
   h_significance_class_noMVAcuts->Draw(drawOptions_same);
-  l_ALICE->DrawLatex(.19,.24,"ALICE work in progress");
-  l_info->DrawLatex(.19,.2,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_ALICE->DrawLatex(.19,.12,"ALICE work in progress");
+  l_info->DrawLatex(.19,.05,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg1->Draw();
+  
+  c_significance_class->cd();
+  TPad *p_significance_class_norm = new TPad("p_significance_class_norm","p_significance_class_norm", 0,.05,1,.4);
+  p_significance_class_norm->SetTopMargin(0);
+  p_significance_class_norm->SetBottomMargin(.3);
+  p_significance_class_norm->Draw();
+  p_significance_class_norm->cd();
+
+  h_significance_class_1_norm->SetMinimum(.8);
+  h_significance_class_1_norm->SetMaximum(1.35);
+  h_significance_class_1_norm->SetTitle("");
+  
+  h_significance_class_1_norm->SetMarkerStyle(kMarkerStyle_1);
+  h_significance_class_2_norm->SetMarkerStyle(kMarkerStyle_2);
+  h_significance_class_3_norm->SetMarkerStyle(kMarkerStyle_3);
+  h_significance_class_4_norm->SetMarkerStyle(kMarkerStyle_4);
+
+  h_significance_class_1_norm->SetMarkerColor(kColor_1);
+  h_significance_class_2_norm->SetMarkerColor(kColor_2);
+  h_significance_class_3_norm->SetMarkerColor(kColor_3);
+  h_significance_class_4_norm->SetMarkerColor(kColor_4);
+
+  h_significance_class_1_norm->SetLineColor(kColor_1);
+  h_significance_class_2_norm->SetLineColor(kColor_2);
+  h_significance_class_3_norm->SetLineColor(kColor_3);
+  h_significance_class_4_norm->SetLineColor(kColor_4);
+  
+  h_significance_class_1_norm->GetYaxis()->SetLabelSize(.07);
+  h_significance_class_1_norm->GetYaxis()->SetTitleOffset(.5);
+  h_significance_class_1_norm->GetYaxis()->SetTitleSize(.1);
+  h_significance_class_1_norm->GetXaxis()->SetTitleOffset(.9);
+  h_significance_class_1_norm->GetXaxis()->SetLabelSize(.1);
+  h_significance_class_1_norm->GetXaxis()->SetTitleSize(.14);
+  h_significance_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+
+  h_significance_class_1_norm->Draw(drawOptions_ratio);
+  h_significance_class_2_norm->Draw(drawOptions_ratio_same);
+  h_significance_class_3_norm->Draw(drawOptions_ratio_same);
+  h_significance_class_4_norm->Draw(drawOptions_ratio_same);
+
+  gPad->Update();
+  gPad->Modified();
+
   c_significance_class->SaveAs("temp_output/c_significance_class.pdf");
   c_significance_class->SaveAs("temp_output/c_significance_class.root");
   c_significance_class->SaveAs("temp_output/c_significance_class.png");
 
+
+  
   TCanvas *c_significance_exp = new TCanvas("c_significance_exp","",1024,768);
-  // c_significance_exp->SetGridy();
-  c_significance_exp->SetLogy();
+
+  TPad *p_significance_exp = new TPad("p_significance_exp","p_significance_exp",0,.4,1,1);
+  p_significance_exp->SetBottomMargin(0);
+  p_significance_exp->SetLogy();
+  p_significance_exp->Draw();
+  p_significance_exp->cd();
+
+  h_significance_exp_ideal->GetYaxis()->SetTitleSize(.065);
+  h_significance_exp_ideal->GetYaxis()->SetTitleOffset(.9);
+  h_significance_exp_ideal->SetMinimum(1.2e-2);
+  
   h_significance_exp_ideal->Draw(drawOptions);
   h_significance_exp_1->Draw(drawOptions_same);
   h_significance_exp_2->Draw(drawOptions_same);
@@ -463,31 +543,135 @@ void PlotMass_analysisComparison() {
   h_significance_exp_4->Draw(drawOptions_same);
   h_significance_exp_noMVAcuts->Draw(drawOptions_same);
   l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
-  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_info->DrawLatex(.19,.76,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg2->Draw();
+
+  c_significance_exp->cd();
+  TPad *p_significance_exp_norm = new TPad("p_significance_exp_norm","p_significance_exp_norm",0,.05,1,.4);
+  p_significance_exp_norm->SetTopMargin(0);
+  p_significance_exp_norm->SetBottomMargin(.3);
+  p_significance_exp_norm->Draw();
+  p_significance_exp_norm->cd();
+
+  h_significance_exp_1_norm->SetMinimum(.8);
+  h_significance_exp_1_norm->SetMaximum(1.35);
+  h_significance_exp_1_norm->SetTitle("");
+
+  h_significance_exp_1_norm->SetMarkerStyle(kMarkerStyle_1);
+  h_significance_exp_2_norm->SetMarkerStyle(kMarkerStyle_2);
+  h_significance_exp_3_norm->SetMarkerStyle(kMarkerStyle_3);
+  h_significance_exp_4_norm->SetMarkerStyle(kMarkerStyle_4);
+
+  h_significance_exp_1_norm->SetMarkerColor(kColor_1);
+  h_significance_exp_2_norm->SetMarkerColor(kColor_2);
+  h_significance_exp_3_norm->SetMarkerColor(kColor_3);
+  h_significance_exp_4_norm->SetMarkerColor(kColor_4);
+
+  h_significance_exp_1_norm->SetLineColor(kColor_1);
+  h_significance_exp_2_norm->SetLineColor(kColor_2);
+  h_significance_exp_3_norm->SetLineColor(kColor_3);
+  h_significance_exp_4_norm->SetLineColor(kColor_4);
+
+  h_significance_exp_1_norm->GetYaxis()->SetLabelSize(.07);
+  h_significance_exp_1_norm->GetYaxis()->SetTitleOffset(.5);
+  h_significance_exp_1_norm->GetYaxis()->SetTitleSize(.1);
+  h_significance_exp_1_norm->GetXaxis()->SetTitleOffset(.9);
+  h_significance_exp_1_norm->GetXaxis()->SetLabelSize(.1);
+  h_significance_exp_1_norm->GetXaxis()->SetTitleSize(.14);
+  h_significance_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+
+  h_significance_exp_1_norm->Draw(drawOptions_ratio);
+  h_significance_exp_2_norm->Draw(drawOptions_ratio_same);
+  h_significance_exp_3_norm->Draw(drawOptions_ratio_same);
+  h_significance_exp_4_norm->Draw(drawOptions_ratio_same);
+
+  gPad->Update();
+  gPad->Modified();
+  
   c_significance_exp->SaveAs("temp_output/c_significance_exp.pdf");
   c_significance_exp->SaveAs("temp_output/c_significance_exp.root");
   c_significance_exp->SaveAs("temp_output/c_significance_exp.png");
 
 
   TCanvas *c_SoverB_class = new TCanvas("c_SoverB_class","",1024,768);
-  // c_SoverB_class->SetGridy();
+
+  TPad *p_SoverB_class = new TPad("p_SoverB_class","p_SoverB_class",0,.4,1,1);
+  p_SoverB_class->SetBottomMargin(0);
+  p_SoverB_class->SetLogy();
+  p_SoverB_class->Draw();
+  p_SoverB_class->cd();
+
+  h_SoverB_class_1->GetYaxis()->SetTitleSize(.065);
+  h_SoverB_class_1->GetYaxis()->SetTitleOffset(.9);
+  
   h_SoverB_class_1->Draw(drawOptions);
   h_SoverB_class_2->Draw(drawOptions_same);
   h_SoverB_class_3->Draw(drawOptions_same);
   h_SoverB_class_4->Draw(drawOptions_same);
   h_SoverB_class_noMVAcuts->Draw(drawOptions_same);
   l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
-  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_info->DrawLatex(.19,.76,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg3->Draw();
+
+  c_SoverB_class->cd();
+  TPad *p_SoverB_class_norm = new TPad("p_SoverB_class_norm","p_SoverB_class_norm",0,.05,1,.4);
+  p_SoverB_class_norm->SetTopMargin(0);
+  p_SoverB_class_norm->SetBottomMargin(.3);
+  p_SoverB_class_norm->Draw();
+  p_SoverB_class_norm->cd();
+
+  h_SoverB_class_1_norm->SetMinimum(.9);
+  h_SoverB_class_1_norm->SetMaximum(2.05);
+  h_SoverB_class_1_norm->SetTitle("");
+
+  h_SoverB_class_1_norm->SetMarkerStyle(kMarkerStyle_1);
+  h_SoverB_class_2_norm->SetMarkerStyle(kMarkerStyle_2);
+  h_SoverB_class_3_norm->SetMarkerStyle(kMarkerStyle_3);
+  h_SoverB_class_4_norm->SetMarkerStyle(kMarkerStyle_4);
+
+  h_SoverB_class_1_norm->SetMarkerColor(kColor_1);
+  h_SoverB_class_2_norm->SetMarkerColor(kColor_2);
+  h_SoverB_class_3_norm->SetMarkerColor(kColor_3);
+  h_SoverB_class_4_norm->SetMarkerColor(kColor_4);
+
+  h_SoverB_class_1_norm->SetLineColor(kColor_1);
+  h_SoverB_class_2_norm->SetLineColor(kColor_2);
+  h_SoverB_class_3_norm->SetLineColor(kColor_3);
+  h_SoverB_class_4_norm->SetLineColor(kColor_4);
+
+  h_SoverB_class_1_norm->GetYaxis()->SetLabelSize(.07);
+  h_SoverB_class_1_norm->GetYaxis()->SetTitleOffset(.5);
+  h_SoverB_class_1_norm->GetYaxis()->SetTitleSize(.1);
+  h_SoverB_class_1_norm->GetXaxis()->SetTitleOffset(.9);
+  h_SoverB_class_1_norm->GetXaxis()->SetLabelSize(.1);
+  h_SoverB_class_1_norm->GetXaxis()->SetTitleSize(.14);
+  h_SoverB_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+
+  h_SoverB_class_1_norm->Draw(drawOptions_ratio);
+  h_SoverB_class_2_norm->Draw(drawOptions_ratio_same);
+  h_SoverB_class_3_norm->Draw(drawOptions_ratio_same);
+  h_SoverB_class_4_norm->Draw(drawOptions_ratio_same);
+
+  gPad->Update();
+  gPad->Modified();
+  
   c_SoverB_class->SaveAs("temp_output/c_SoverB_class.pdf");
   c_SoverB_class->SaveAs("temp_output/c_SoverB_class.root");
   c_SoverB_class->SaveAs("temp_output/c_SoverB_class.png");
 
 
   TCanvas *c_SoverB_exp = new TCanvas("c_SoverB_exp","",1024,768);
-  // c_SoverB_exp->SetGridy();
-  c_SoverB_exp->SetLogy();
+
+  TPad *p_SoverB_exp = new TPad("p_SoverB_exp","p_SoverB_exp",0,.4,1,1);
+  p_SoverB_exp->SetBottomMargin(0);
+  p_SoverB_exp->SetLogy();
+  p_SoverB_exp->Draw();
+  p_SoverB_exp->cd();
+
+  h_SoverB_exp_1->GetYaxis()->SetTitleSize(.065);
+  h_SoverB_exp_1->GetYaxis()->SetTitleOffset(.9);
+  h_SoverB_exp_1->SetMinimum(1.2e-5);
+  
   h_SoverB_exp_1->Draw(drawOptions);
   h_SoverB_exp_2->Draw(drawOptions_same);
   h_SoverB_exp_3->Draw(drawOptions_same);
@@ -495,13 +679,62 @@ void PlotMass_analysisComparison() {
   h_SoverB_exp_noMVAcuts->Draw(drawOptions_same);
   h_SoverB_exp_ideal->Draw(drawOptions_same);
   l_ALICE->DrawLatex(.19,.82,"ALICE work in progress");
-  l_info->DrawLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_info->DrawLatex(.19,.76,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   leg4->Draw();
+
+  c_SoverB_exp->cd();
+  TPad *p_SoverB_exp_norm = new TPad("p_SoverB_exp_norm","p_SoverB_exp_norm",0,.05,1,.4);
+  p_SoverB_exp_norm->SetTopMargin(0);
+  p_SoverB_exp_norm->SetBottomMargin(.3);
+  p_SoverB_exp_norm->Draw();
+  p_SoverB_exp_norm->cd();
+
+  h_SoverB_exp_1_norm->SetMinimum(.8);
+  h_SoverB_exp_1_norm->SetMaximum(1.75);
+  h_SoverB_exp_1_norm->SetTitle("");
+
+  h_SoverB_exp_1_norm->SetMarkerStyle(kMarkerStyle_1);
+  h_SoverB_exp_2_norm->SetMarkerStyle(kMarkerStyle_2);
+  h_SoverB_exp_3_norm->SetMarkerStyle(kMarkerStyle_3);
+  h_SoverB_exp_4_norm->SetMarkerStyle(kMarkerStyle_4);
+
+  h_SoverB_exp_1_norm->SetMarkerColor(kColor_1);
+  h_SoverB_exp_2_norm->SetMarkerColor(kColor_2);
+  h_SoverB_exp_3_norm->SetMarkerColor(kColor_3);
+  h_SoverB_exp_4_norm->SetMarkerColor(kColor_4);
+
+  h_SoverB_exp_1_norm->SetLineColor(kColor_1);
+  h_SoverB_exp_2_norm->SetLineColor(kColor_2);
+  h_SoverB_exp_3_norm->SetLineColor(kColor_3);
+  h_SoverB_exp_4_norm->SetLineColor(kColor_4);
+
+  h_SoverB_exp_1_norm->GetYaxis()->SetLabelSize(.07);
+  h_SoverB_exp_1_norm->GetYaxis()->SetTitleOffset(.5);
+  h_SoverB_exp_1_norm->GetYaxis()->SetTitleSize(.1);
+  h_SoverB_exp_1_norm->GetXaxis()->SetTitleOffset(.9);
+  h_SoverB_exp_1_norm->GetXaxis()->SetLabelSize(.1);
+  h_SoverB_exp_1_norm->GetXaxis()->SetTitleSize(.14);
+  h_SoverB_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+
+  h_SoverB_exp_1_norm->Draw(drawOptions_ratio);
+  h_SoverB_exp_2_norm->Draw(drawOptions_ratio_same);
+  h_SoverB_exp_3_norm->Draw(drawOptions_ratio_same);
+  h_SoverB_exp_4_norm->Draw(drawOptions_ratio_same);
+
+  gPad->Update();
+  gPad->Modified();
+  
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.pdf");
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.root");
   c_SoverB_exp->SaveAs("temp_output/c_SoverB_exp.png");
   
 
+
+
+  l_ALICE->SetTextSize(.035);
+  l_info->SetTextSize(.03);
+
+  
   h_eff_S_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_eff_S_1->SetYTitle("Efficiency (S)");
   h_eff_S_1->GetXaxis()->SetTitleOffset(1.2);
