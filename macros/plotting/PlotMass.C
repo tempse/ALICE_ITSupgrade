@@ -22,7 +22,7 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
 
-void PlotMass_prefilterCuts() {
+void PlotMass() {
 
   // File containing the input pairtree (test) data:
   TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
