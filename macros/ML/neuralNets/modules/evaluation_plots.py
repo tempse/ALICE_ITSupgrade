@@ -39,27 +39,28 @@ def plot_MVAoutput(y_truth, y_score, label='', nbins=100):
                  bins=nbins,
                  alpha=.25,
                  color='black',
-                 label='MVA output')
+                 label='signal+backgr.')
     
     n_trueNeg, bins_trueNeg, patches_trueNeg = \
         plt.hist(y_score_trueNeg,
                  bins=nbins,
                  alpha=0.5,
                  color='#dd0000',
-                 label='true negative')
+                 label='background')
     
     n_truePos, bins_truePos, patches_truePos = \
         plt.hist(y_score_truePos,
                  bins=nbins,
                  alpha=0.5,
                  color='green',
-                 label='true positive')
+                 label='signal')
     
-    plt.title('MVA output distribution (positive class)')
+    #plt.title('MVA output distribution (positive class)')
     plt.xlim(-0.05, 1.05)
-    plt.xlabel('MVA output')
-    plt.ylabel('Entries')
-    plt.legend()
+    plt.xlabel('MVA output', fontsize=18)
+    plt.ylabel('Entries', fontsize=18)
+    plt.legend(fontsize=15)
+    plt.tight_layout()
     plt.savefig(output_prefix + 'MVAoutput_distr_' + label + '.png')
     plt.savefig(output_prefix + 'MVAoutput_distr_' + label + '.pdf')
 
@@ -101,8 +102,8 @@ def plot_cut_efficiencies(num_signal, num_background):
 
     l1 = ax1.plot(MVAcut, signal_efficiency, label='signal efficiency', color='green')
     l2 = ax1.plot(MVAcut, backgr_efficiency, label='background efficiency', color='red')
-    ax1.set_xlabel('MVA cut')
-    ax1.set_ylabel('Efficiency')
+    ax1.set_xlabel('MVA cut', fontsize=18)
+    ax1.set_ylabel('Efficiency', fontsize=18)
 
     ax2 = ax1.twinx()
     significance_per_MVAcut = np.empty((0))
@@ -123,14 +124,14 @@ def plot_cut_efficiencies(num_signal, num_background):
                   label='max. significance for cut at %.2f' % MVAcut_opt,
                   marker='o', markersize=10, fillstyle='none', mew=2, linestyle='none',
                   color='#0000aa', alpha=.8)
-    ax2.set_ylabel('Significance', color='blue')
+    ax2.set_ylabel('Significance', color='blue', fontsize=18)
     ax2.tick_params('y', colors='blue')
 
     #plt.title('MVA cut efficiencies')
 
     lall = l1+l2+l3+l4
     labels = [l.get_label() for l in lall]
-    ax2.legend(lall, labels)
+    ax2.legend(lall, labels, fontsize=15)
 
     plt.tight_layout()
 
@@ -163,8 +164,8 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate', fontsize=18)
+    plt.ylabel('True Positive Rate', fontsize=18)
     plt.title('Receiver operating characteristic curve')
     
     if workingpoint != -1:
@@ -175,7 +176,7 @@ def plot_ROCcurve(y_truth, y_score, sample_weight=None, label='', workingpoint=-
                  label="threshold at %.2f" % workingpoint, fillstyle="none",
                  mew=2)
     
-    plt.legend(loc=4)
+    plt.legend(loc=4, fontsize=15)
     plt.savefig(output_prefix + 'roc_curve_' + label + '.png')
     plt.savefig(output_prefix + 'roc_curve_' + label + '.pdf')
 
@@ -222,10 +223,10 @@ def plot_precision_recall_curve(y_truth, y_score, sample_weight=None, label='', 
     
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
+    plt.xlabel('Recall', fontsize=18)
+    plt.ylabel('Precision', fontsize=18)
     #plt.title('Precision-Recall Curve')
-    plt.legend(loc="lower right")
+    plt.legend(loc="lower right", fontsize=15)
     plt.savefig(output_prefix + 'precision_recall_' + label + '.png')
     plt.savefig(output_prefix + 'precision_recall_' + label + '.pdf')
 
