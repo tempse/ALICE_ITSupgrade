@@ -176,20 +176,20 @@ void PlotMass() {
   TH1D *h_RPConv = new TH1D("h_RPConv","",nBins,min,max);
   
 
-  TH1D *h_S_prefilterCut = new TH1D("h_S_prefilterCut","",nBins,min,max);
+  TH1D *h_S_afterCut = new TH1D("h_S_afterCut","",nBins,min,max);
   
-  TH1D *h_SB_prefilterCut = new TH1D("h_SB_prefilterCut","",nBins,min,max);
+  TH1D *h_SB_afterCut = new TH1D("h_SB_afterCut","",nBins,min,max);
   
-  TH1D *h_CombiWithConvLeg_prefilterCut =
-    new TH1D("h_CombiWithConvLeg_prefilterCut","",nBins,min,max);
+  TH1D *h_CombiWithConvLeg_afterCut =
+    new TH1D("h_CombiWithConvLeg_afterCut","",nBins,min,max);
   
-  TH1D *h_CombiWithoutConvLeg_prefilterCut =
-    new TH1D("h_CombiWithoutConvLeg_prefilterCut","",nBins,min,max);
+  TH1D *h_CombiWithoutConvLeg_afterCut =
+    new TH1D("h_CombiWithoutConvLeg_afterCut","",nBins,min,max);
   
-  TH1D *h_HF_prefilterCut = new TH1D("h_HF_prefilterCut","",nBins,min,max);
+  TH1D *h_HF_afterCut = new TH1D("h_HF_afterCut","",nBins,min,max);
   
-  TH1D *h_RPConv_prefilterCut =
-    new TH1D("h_RPConv_prefilterCut","",nBins,min,max);
+  TH1D *h_RPConv_afterCut =
+    new TH1D("h_RPConv_afterCut","",nBins,min,max);
 
 
 
@@ -249,41 +249,41 @@ void PlotMass() {
       
       if(!useTwoVars) {
 	if(variable1 == wantedPrefilterTagValue1) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
       }else { // if(useTwoVars)
 	if(variable1 == wantedPrefilterTagValue1 &&
 	   variable2 == wantedPrefilterTagValue2) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
       }
@@ -292,80 +292,80 @@ void PlotMass() {
       
       if(!useTwoVars) {
 	if(signalRegion == "+" && variable1 >= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
 	if(signalRegion == "-" && variable1 <= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
       }else { // if(useTwoVars)
 	if(signalRegion == "+" &&
 	   variable1 >= MVAcut &&
 	   variable2 >= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
 	if(signalRegion == "-" &&
 	   variable1 <= MVAcut &&
 	   variable2 <= MVAcut) {
-	  h_SB_prefilterCut->Fill(mass, sample_weight);
+	  h_SB_afterCut->Fill(mass, sample_weight);
 	  if(IsRP==1 && IsConv==0) {
-	    h_S_prefilterCut->Fill(mass, sample_weight);
+	    h_S_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_prefilterCut->Fill(mass, sample_weight);
+	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==0 && IsHF==1) {
-	    h_HF_prefilterCut->Fill(mass, sample_weight);
+	    h_HF_afterCut->Fill(mass, sample_weight);
 	  }
 	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_prefilterCut->Fill(mass, sample_weight);
+	    h_RPConv_afterCut->Fill(mass, sample_weight);
 	  }
 	}
       }
@@ -388,22 +388,22 @@ void PlotMass() {
   //////////////////// SETTING UP THE PLOTS:  
 
 
-  if(!TEfficiency::CheckConsistency(*h_SB_prefilterCut, *h_SB) ||
-     !TEfficiency::CheckConsistency(*h_S_prefilterCut, *h_S) ||
-     !TEfficiency::CheckConsistency(*h_CombiWithConvLeg_prefilterCut, *h_CombiWithConvLeg) ||
-     !TEfficiency::CheckConsistency(*h_CombiWithoutConvLeg_prefilterCut, *h_CombiWithoutConvLeg) ||
-     !TEfficiency::CheckConsistency(*h_HF_prefilterCut, *h_HF) ||
-     !TEfficiency::CheckConsistency(*h_RPConv_prefilterCut, *h_RPConv)) {
+  if(!TEfficiency::CheckConsistency(*h_SB_afterCut, *h_SB) ||
+     !TEfficiency::CheckConsistency(*h_S_afterCut, *h_S) ||
+     !TEfficiency::CheckConsistency(*h_CombiWithConvLeg_afterCut, *h_CombiWithConvLeg) ||
+     !TEfficiency::CheckConsistency(*h_CombiWithoutConvLeg_afterCut, *h_CombiWithoutConvLeg) ||
+     !TEfficiency::CheckConsistency(*h_HF_afterCut, *h_HF) ||
+     !TEfficiency::CheckConsistency(*h_RPConv_afterCut, *h_RPConv)) {
     std::cout << "  ERROR: Histograms are inconsistent for TEfficiency object initialization." << std::endl;
     gApplication->Terminate();
   }
 
-  TEfficiency *pEff_SB = new TEfficiency(*h_SB_prefilterCut, *h_SB);
-  TEfficiency *pEff_S = new TEfficiency(*h_S_prefilterCut, *h_S);
-  TEfficiency *pEff_CombiWithConvLeg = new TEfficiency(*h_CombiWithConvLeg_prefilterCut, *h_CombiWithConvLeg);
-  TEfficiency *pEff_CombiWithoutConvLeg = new TEfficiency(*h_CombiWithoutConvLeg_prefilterCut, *h_CombiWithoutConvLeg);
-  TEfficiency *pEff_HF = new TEfficiency(*h_HF_prefilterCut, *h_HF);
-  TEfficiency *pEff_RPConv = new TEfficiency(*h_RPConv_prefilterCut, *h_RPConv);
+  TEfficiency *pEff_SB = new TEfficiency(*h_SB_afterCut, *h_SB);
+  TEfficiency *pEff_S = new TEfficiency(*h_S_afterCut, *h_S);
+  TEfficiency *pEff_CombiWithConvLeg = new TEfficiency(*h_CombiWithConvLeg_afterCut, *h_CombiWithConvLeg);
+  TEfficiency *pEff_CombiWithoutConvLeg = new TEfficiency(*h_CombiWithoutConvLeg_afterCut, *h_CombiWithoutConvLeg);
+  TEfficiency *pEff_HF = new TEfficiency(*h_HF_afterCut, *h_HF);
+  TEfficiency *pEff_RPConv = new TEfficiency(*h_RPConv_afterCut, *h_RPConv);
   
   
   TH1D *h_SB_eff = new TH1D("h_SB_eff","",nBins,min,max);
@@ -464,41 +464,41 @@ void PlotMass() {
   h_HF->SetLineWidth(lineWidth);
   h_RPConv->SetLineWidth(lineWidth);
 
-  h_SB_prefilterCut->SetLineWidth(lineWidth);
-  h_S_prefilterCut->SetLineWidth(lineWidth);
-  h_CombiWithConvLeg_prefilterCut->SetLineWidth(lineWidth);
-  h_CombiWithoutConvLeg_prefilterCut->SetLineWidth(lineWidth);
-  h_HF_prefilterCut->SetLineWidth(lineWidth);
-  h_RPConv_prefilterCut->SetLineWidth(lineWidth);
+  h_SB_afterCut->SetLineWidth(lineWidth);
+  h_S_afterCut->SetLineWidth(lineWidth);
+  h_CombiWithConvLeg_afterCut->SetLineWidth(lineWidth);
+  h_CombiWithoutConvLeg_afterCut->SetLineWidth(lineWidth);
+  h_HF_afterCut->SetLineWidth(lineWidth);
+  h_RPConv_afterCut->SetLineWidth(lineWidth);
 
-  h_SB_prefilterCut->SetLineColor(kBlack);
-  h_SB_prefilterCut->SetMarkerColor(kBlack);
-  h_S_prefilterCut->SetLineColor(kGreen+1);
-  h_S_prefilterCut->SetMarkerColor(kGreen+1);
-  h_CombiWithConvLeg_prefilterCut->SetLineColor(kRed);
-  h_CombiWithConvLeg_prefilterCut->SetMarkerColor(kRed);
-  h_CombiWithoutConvLeg_prefilterCut->SetLineColor(kBlue);
-  h_CombiWithoutConvLeg_prefilterCut->SetMarkerColor(kBlue);
-  h_HF_prefilterCut->SetLineColor(kOrange);
-  h_HF_prefilterCut->SetMarkerColor(kOrange);
-  h_RPConv_prefilterCut->SetLineColor(kMagenta);
-  h_RPConv_prefilterCut->SetMarkerColor(kMagenta);
+  h_SB_afterCut->SetLineColor(kBlack);
+  h_SB_afterCut->SetMarkerColor(kBlack);
+  h_S_afterCut->SetLineColor(kGreen+1);
+  h_S_afterCut->SetMarkerColor(kGreen+1);
+  h_CombiWithConvLeg_afterCut->SetLineColor(kRed);
+  h_CombiWithConvLeg_afterCut->SetMarkerColor(kRed);
+  h_CombiWithoutConvLeg_afterCut->SetLineColor(kBlue);
+  h_CombiWithoutConvLeg_afterCut->SetMarkerColor(kBlue);
+  h_HF_afterCut->SetLineColor(kOrange);
+  h_HF_afterCut->SetMarkerColor(kOrange);
+  h_RPConv_afterCut->SetLineColor(kMagenta);
+  h_RPConv_afterCut->SetMarkerColor(kMagenta);
 
   Int_t markerStyle = 20;
-  h_SB_prefilterCut->SetMarkerStyle(markerStyle);
-  h_S_prefilterCut->SetMarkerStyle(markerStyle);
-  h_CombiWithConvLeg_prefilterCut->SetMarkerStyle(markerStyle);
-  h_CombiWithoutConvLeg_prefilterCut->SetMarkerStyle(markerStyle);
-  h_HF_prefilterCut->SetMarkerStyle(markerStyle);
-  h_RPConv_prefilterCut->SetMarkerStyle(markerStyle);
+  h_SB_afterCut->SetMarkerStyle(markerStyle);
+  h_S_afterCut->SetMarkerStyle(markerStyle);
+  h_CombiWithConvLeg_afterCut->SetMarkerStyle(markerStyle);
+  h_CombiWithoutConvLeg_afterCut->SetMarkerStyle(markerStyle);
+  h_HF_afterCut->SetMarkerStyle(markerStyle);
+  h_RPConv_afterCut->SetMarkerStyle(markerStyle);
 
   Float_t markerSize = 1;
-  h_SB_prefilterCut->SetMarkerSize(markerSize);
-  h_S_prefilterCut->SetMarkerSize(markerSize);
-  h_CombiWithConvLeg_prefilterCut->SetMarkerSize(markerSize);
-  h_CombiWithoutConvLeg_prefilterCut->SetMarkerSize(markerSize);
+  h_SB_afterCut->SetMarkerSize(markerSize);
+  h_S_afterCut->SetMarkerSize(markerSize);
+  h_CombiWithConvLeg_afterCut->SetMarkerSize(markerSize);
+  h_CombiWithoutConvLeg_afterCut->SetMarkerSize(markerSize);
   h_HF->SetMarkerSize(markerSize);
-  h_RPConv_prefilterCut->SetMarkerSize(markerSize);
+  h_RPConv_afterCut->SetMarkerSize(markerSize);
 
   h_SB->GetYaxis()->SetRangeUser(1e-1,1e8);
   h_SB->SetXTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
@@ -531,7 +531,7 @@ void PlotMass() {
   TString drawOptions_mass = "hist e x0";
   TString drawOptions_mass_same = drawOptions_mass + " same";
 
-  TString drawOptions_mass_cut = "e1 x0 same";
+  TString drawOptions_mass_afterCut = "e1 x0 same";
 
   TCanvas *c = new TCanvas("c","",1024,768);
   c->SetLogy();
@@ -542,12 +542,12 @@ void PlotMass() {
   h_HF->Draw(drawOptions_mass_same);
   h_RPConv->Draw(drawOptions_mass_same);
 
-  h_SB_prefilterCut->Draw(drawOptions_mass_cut);
-  h_S_prefilterCut->Draw(drawOptions_mass_cut);
-  h_CombiWithConvLeg_prefilterCut->Draw(drawOptions_mass_cut);
-  h_CombiWithoutConvLeg_prefilterCut->Draw(drawOptions_mass_cut);
-  h_HF_prefilterCut->Draw(drawOptions_mass_cut);
-  h_RPConv_prefilterCut->Draw(drawOptions_mass_cut);
+  h_SB_afterCut->Draw(drawOptions_mass_afterCut);
+  h_S_afterCut->Draw(drawOptions_mass_afterCut);
+  h_CombiWithConvLeg_afterCut->Draw(drawOptions_mass_afterCut);
+  h_CombiWithoutConvLeg_afterCut->Draw(drawOptions_mass_afterCut);
+  h_HF_afterCut->Draw(drawOptions_mass_afterCut);
+  h_RPConv_afterCut->Draw(drawOptions_mass_afterCut);
 
   
   TLegend *leg_mass_nocuts = new TLegend(.575,.6,.67,.83, "w/o,");
@@ -652,12 +652,12 @@ void PlotMass() {
   h_HF->Write(0, TObject::kOverwrite);
   h_RPConv->Write(0, TObject::kOverwrite);
 
-  h_SB_prefilterCut->Write(0, TObject::kOverwrite);
-  h_S_prefilterCut->Write(0, TObject::kOverwrite);
-  h_CombiWithConvLeg_prefilterCut->Write(0, TObject::kOverwrite);
-  h_CombiWithoutConvLeg_prefilterCut->Write(0, TObject::kOverwrite);
-  h_HF_prefilterCut->Write(0, TObject::kOverwrite);
-  h_RPConv_prefilterCut->Write(0, TObject::kOverwrite);
+  h_SB_afterCut->Write(0, TObject::kOverwrite);
+  h_S_afterCut->Write(0, TObject::kOverwrite);
+  h_CombiWithConvLeg_afterCut->Write(0, TObject::kOverwrite);
+  h_CombiWithoutConvLeg_afterCut->Write(0, TObject::kOverwrite);
+  h_HF_afterCut->Write(0, TObject::kOverwrite);
+  h_RPConv_afterCut->Write(0, TObject::kOverwrite);
 
   h_SB_eff->Write(0, TObject::kOverwrite);
   h_S_eff->Write(0, TObject::kOverwrite);
