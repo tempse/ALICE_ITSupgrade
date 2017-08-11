@@ -26,22 +26,27 @@ void PlotMass_prefilterCuts() {
 
   // File containing the input pairtree (test) data:
   TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
+  TString treeName_TestTree = "pairTree_us";
+
+  // File containing the corresponding MVA output values:
+  TString fileName_MVAoutput = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
+  TString treeName_MVAoutputTree = "pairTree_us";
   
   TString h_text = "";//Single-track conv. rejection via MVA cuts";
 
   // two variables are combined, e.g., via
   // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoVars = kFALSE;
+  Bool_t useTwoVars = kTRUE;
 
-  Bool_t useTags = kTRUE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
-  Int_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
+  Bool_t useTags = kFALSE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
+  Float_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
   Float_t MVAcut = 0.41;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "IsTaggedRPConv_classicalCuts_prefilter";
+  TString variableName1 = "MVAoutput_convTrack1";
   TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
@@ -51,6 +56,10 @@ void PlotMass_prefilterCuts() {
   // set the used MVA method:
   const Bool_t isMLP = kTRUE;
   const Bool_t isBDT = kFALSE;
+
+  // MVA output range in the corresponding input file:
+  const Float_t MVAoutputRange_min = 0.;
+  const Float_t MVAoutputRange_max = 1.;
 
   const Bool_t doConsiderPIDefficiencies = kTRUE;
   
@@ -79,31 +88,64 @@ void PlotMass_prefilterCuts() {
   
 
   TFile *f = new TFile(fileName_testData,"READ");
-  TTree *TestTree = (TTree*)f->Get("pairTree_us");
+  TTree *TestTree = (TTree*)f->Get(treeName_TestTree);
 
   Float_t mass;
   Float_t pt1, pt2;
-  Int_t IsRP, IsConv, IsHF;
+  Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
   TestTree->SetBranchAddress("mass", &mass);
   TestTree->SetBranchAddress("pt1", &pt1);
   TestTree->SetBranchAddress("pt2", &pt2);
+  TestTree->SetBranchAddress("motherPdg1",&motherPdg1);
+  TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsCorrHF", &IsHF);
-  if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
-    TestTree->SetBranchAddress(variableName1, &variable1);
+  // if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
+  //   TestTree->SetBranchAddress(variableName1, &variable1);
+  // }else {
+  //   std::cout << "  ERROR: The branch " << variableName1
+  // 	      << " does not exist in the file " << f->GetName() << std::endl;
+  //   gApplication->Terminate();
+  // }
+  // if(useTwoVars) {
+  //   if(TestTree->GetListOfBranches()->FindObject(variableName2) != NULL) {
+  //     TestTree->SetBranchAddress(variableName2, &variable2);
+  //   }else {
+  //     std::cout << "  ERROR: The branch " << variableName2
+  // 		<< " does not exist in the file " << f->GetName() << std::endl;
+  //     gApplication->Terminate();
+  //   }
+  // }
+
+  // input MVA output information from file:
+  TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
+  TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get(treeName_MVAoutputTree);
+  Float_t MVAoutput;
+
+  if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
+    std::cout << "   ERROR: The trees of the input files have different sizes."
+	      << std::endl;
+    std::cout << "   Size of tree in file " << fileName_testData << ": "
+	      << TestTree->GetEntries() << std::endl;
+    std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
+	      << MVAoutputTree->GetEntries() << std::endl;
+    gApplication->Terminate();
+  }
+
+  if(MVAoutputTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
+    MVAoutputTree->SetBranchAddress(variableName1, &variable1);
   }else {
     std::cout << "  ERROR: The branch " << variableName1
-	      << " does not exist in the file " << f->GetName() << std::endl;
+	      << " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
     gApplication->Terminate();
   }
   if(useTwoVars) {
-    if(TestTree->GetListOfBranches()->FindObject(variableName2) != NULL) {
-      TestTree->SetBranchAddress(variableName2, &variable2);
+    if(MVAoutputTree->GetListOfBranches()->FindObject(variableName2) != NULL) {
+      MVAoutputTree->SetBranchAddress(variableName2, &variable2);
     }else {
       std::cout << "  ERROR: The branch " << variableName2
-		<< " does not exist in the file " << f->GetName() << std::endl;
-      gApplication->Terminate();
+		<< " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
     }
   }
 
@@ -151,7 +193,7 @@ void PlotMass_prefilterCuts() {
 
 
 
-  Long64_t nEv = TestTree->GetEntries()/100;
+  Long64_t nEv = TestTree->GetEntries();
   std::cout << "Starting to process " << nEv << " entries..." << std::endl;
 
   
@@ -161,14 +203,20 @@ void PlotMass_prefilterCuts() {
 
   watch->Start();
 
+  // linear mapping of the MVA cut value to the range [0,1]:
+  MVAcut = (MVAcut-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
+  
   for(Long64_t ev=0; ev<nEv; ev++) {
 
     if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
 				<< nEv << " (" << ev*100/nEv << "%)...";
     
     TestTree->GetEvent(ev);
+    MVAoutputTree->GetEvent(ev);
 
+    // linear mapping of the MVA output values to the range [0,1]:
+    MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
     Float_t sample_weight = 1.;
     if(doConsiderPIDefficiencies) {
@@ -400,36 +448,6 @@ void PlotMass_prefilterCuts() {
   }
   
   
-  gStyle->SetOptStat(0);
-
-  /*
-    TH1D *h_SB_eff = (TH1D*)h_SB_prefilterCut->Clone("h_SB_eff");
-    TH1D *h_S_eff = (TH1D*)h_S_prefilterCut->Clone("h_S_eff");
-    TH1D *h_CombiWithConvLeg_eff =
-    (TH1D*)h_CombiWithConvLeg_prefilterCut->Clone("h_CombiWithConvLeg_eff");
-    TH1D *h_CombiWithoutConvLeg_eff =
-    (TH1D*)h_CombiWithoutConvLeg_prefilterCut->Clone("h_CombiWithoutConvLeg_eff");
-    TH1D *h_HF_eff = (TH1D*)h_HF_prefilterCut->Clone("h_HF_eff");
-    TH1D *h_RPConv_eff = (TH1D*)h_RPConv_prefilterCut->Clone("h_RPConv_eff");
-    h_SB_eff->Sumw2();
-    h_SB->Sumw2();
-    h_SB_eff->Divide(h_SB);
-    h_S_eff->Sumw2();
-    h_S->Sumw2();
-    h_S_eff->Divide(h_S);
-    h_CombiWithConvLeg_eff->Sumw2();
-    h_CombiWithConvLeg->Sumw2();
-    h_CombiWithConvLeg_eff->Divide(h_CombiWithConvLeg);
-    h_CombiWithoutConvLeg_eff->Sumw2();
-    h_CombiWithoutConvLeg->Sumw2();
-    h_CombiWithoutConvLeg_eff->Divide(h_CombiWithoutConvLeg);
-    h_HF_eff->Sumw2();
-    h_HF->Sumw2();
-    h_HF_eff->Divide(h_HF);
-    h_RPConv_eff->Sumw2();
-    h_RPConv->Sumw2();
-    h_RPConv_eff->Divide(h_RPConv);
-  */
 
   h_SB->SetLineColor(kBlack);
   h_S->SetLineColor(kGreen+1);
