@@ -20,6 +20,13 @@ void SetStyle(Bool_t graypalette=kFALSE);
 
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
+Float_t significanceError(Float_t S, Float_t B) {
+  return 0.5*TMath::Sqrt((S*(S+4*B))/(S+B)/(S+B)); // neglects correlations
+}
+
+Float_t SoverBError(Float_t S, Float_t B) {
+  return TMath::Sqrt(S*(S+B)/TMath::Power(B,3));
+}
 
 
 void PlotMass() {
@@ -62,9 +69,13 @@ void PlotMass() {
   const Float_t MVAoutputRange_max = 1.;
 
   const Bool_t doConsiderPIDefficiencies = kTRUE;
+
+  // Output file path prefix:
+  TString output_prefix = "temp_output/";
+  if(!output_prefix.EndsWith("/")) output_prefix += "/";
   
   // ROOT file name containing all created histograms:
-  TString outfileName = "temp_output/mass_histos_prefilterCuts.root";
+  TString outfileName = output_prefix + "mass_histos.root";
 
   
   /////////////////////////////////////////////////////////////////////////
@@ -591,9 +602,9 @@ void PlotMass() {
   l_info->SetNDC();
   l_info->Draw();
 
-  c->SaveAs("temp_output/mass_prefilterCuts.pdf");
-  c->SaveAs("temp_output/mass_prefilterCuts.root");
-  c->SaveAs("temp_output/mass_prefilterCuts.png");
+  c->SaveAs(output_prefix + "mass.pdf");
+  c->SaveAs(output_prefix + "mass.root");
+  c->SaveAs(output_prefix + "mass.png");
 
 
   TString drawOptions_eff = "hist p x0 e1";
@@ -636,11 +647,550 @@ void PlotMass() {
   l_eff_info->SetNDC();
   l_eff_info->Draw();
 
-  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.pdf");
-  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.root");
-  c_eff->SaveAs("temp_output/mass_eff_prefilterCuts.png");
+  c_eff->SaveAs(output_prefix + "mass_eff.pdf");
+  c_eff->SaveAs(output_prefix + "mass_eff.root");
+  c_eff->SaveAs(output_prefix + "mass_eff.png");
 
 
+
+  
+
+  //////////////////////////////////////// SIGNIFICANCE, SIGNAL OVER BACKGROUND:
+
+  TH1D *h_signal_class = new TH1D();
+  h_signal_class = (TH1D*)h_S_afterCut->Clone("h_signal_afterCut");
+  h_signal_class->Add(h_CombiWithoutConvLeg_afterCut);
+  h_signal_class->Add(h_HF_afterCut);
+  h_signal_class->Sumw2();
+
+  TH1D *h_backgr_class = new TH1D();
+  h_backgr_class = (TH1D*)h_CombiWithConvLeg_afterCut->Clone("h_backgr_afterCut");
+  h_backgr_class->Add(h_RPConv_afterCut);
+  h_backgr_class->Sumw2();
+
+
+  TH1D *h_signal_class_noCuts = new TH1D();
+  h_signal_class_noCuts = (TH1D*)h_S->Clone("h_signal_class_noCuts");
+  h_signal_class_noCuts->Add(h_CombiWithoutConvLeg);
+  h_signal_class_noCuts->Add(h_HF);
+  h_signal_class_noCuts->Sumw2();
+
+  TH1D *h_backgr_class_noCuts = new TH1D();
+  h_backgr_class_noCuts = (TH1D*)h_CombiWithConvLeg->Clone("h_backgr_class_noCuts");
+  h_backgr_class_noCuts->Add(h_RPConv);
+  h_backgr_class_noCuts->Sumw2();
+
+
+  TH1D *h_signal_class_ideal = new TH1D();
+  h_signal_class_ideal = (TH1D*)h_S->Clone("h_signal_class_ideal");
+  h_signal_class_ideal->Add(h_CombiWithoutConvLeg);
+  h_CombiWithoutConvLeg->Add(h_HF);
+  h_CombiWithoutConvLeg->Sumw2();
+
+
+  TH1D *h_signal_exp = new TH1D();
+  h_signal_exp = (TH1D*)h_S_afterCut->Clone("h_signal_exp");
+  h_signal_exp->Add(h_HF_afterCut);
+  h_signal_exp->Sumw2();
+
+  TH1D *h_backgr_exp = new TH1D();
+  h_backgr_exp = (TH1D*)h_CombiWithConvLeg_afterCut->Clone("h_backgr_exp");
+  h_backgr_exp->Add(h_CombiWithoutConvLeg_afterCut);
+  h_backgr_exp->Add(h_RPConv_afterCut);
+  h_backgr_exp->Sumw2();
+
+
+  TH1D *h_signal_exp_noCuts = new TH1D();
+  h_signal_exp_noCuts = (TH1D*)h_S->Clone("h_signal_exp_noCuts");
+  h_signal_exp_noCuts->Add(h_HF);
+  h_signal_exp_noCuts->Sumw2();
+
+  TH1D *h_backgr_exp_noCuts = new TH1D();
+  h_backgr_exp_noCuts = (TH1D*)h_CombiWithConvLeg->Clone("h_backgr_exp_noCuts");
+  h_backgr_exp_noCuts->Add(h_CombiWithoutConvLeg);
+  h_CombiWithoutConvLeg->Add(h_RPConv);
+  h_CombiWithoutConvLeg->Sumw2();
+
+
+  TH1D *h_signal_exp_ideal = new TH1D();
+  h_signal_exp_ideal = (TH1D*)h_S->Clone("h_signal_exp_ideal");
+  h_signal_exp_ideal->Add(h_HF);
+  h_signal_exp_ideal->Sumw2();
+
+  TH1D *h_backgr_exp_ideal = new TH1D();
+  h_backgr_exp_ideal = (TH1D*)h_CombiWithoutConvLeg->Clone("h_backgr_exp_ideal");
+  h_backgr_exp_ideal->Sumw2();
+
+
+
+  TH1D *h_significance_class = new TH1D("h_significance_class", "", nBins, min, max);
+  TH1D *h_significance_class_norm = new TH1D("h_significance_class_norm", "", nBins, min, max);
+  TH1D *h_significance_class_noCuts = new TH1D("h_significance_class_noCuts", "", nBins, min, max);
+  TH1D *h_significance_class_noCuts_norm = new TH1D("h_significance_class_noCuts_norm", "", nBins, min, max);
+  TH1D *h_significance_class_ideal = new TH1D("h_significance_class_ideal", "", nBins, min, max);
+  TH1D *h_significance_class_ideal_norm = new TH1D("h_significance_class_ideal_norm", "", nBins, min, max);
+
+  TH1D *h_SoverB_class = new TH1D("h_SoverB_class", "", nBins, min, max);
+  TH1D *h_SoverB_class_norm = new TH1D("h_SoverB_class_norm", "", nBins, min, max);
+  TH1D *h_SoverB_class_noCuts = new TH1D("h_SoverB_class_noCuts", "", nBins, min, max);
+  TH1D *h_SoverB_class_noCuts_norm = new TH1D("h_SoverB_class_noCuts_norm", "", nBins, min, max);
+  TH1D *h_SoverB_class_ideal = new TH1D("h_SoverB_class_ideal", "", nBins, min, max);
+
+  TH1D *h_significance_exp = new TH1D("h_significance_exp", "", nBins, min, max);
+  TH1D *h_significance_exp_norm = new TH1D("h_significance_exp_norm", "", nBins, min, max);
+  TH1D *h_significance_exp_noCuts = new TH1D("h_significance_exp_noCuts", "", nBins, min, max);
+  TH1D *h_significance_exp_noCuts_norm = new TH1D("h_significance_exp_noCuts_norm", "", nBins, min, max);
+  TH1D *h_significance_exp_ideal = new TH1D("h_significance_exp_ideal", "", nBins, min, max);
+  TH1D *h_significance_exp_ideal_norm = new TH1D("h_significance_exp_ideal_norm", "", nBins, min, max);
+
+  TH1D *h_SoverB_exp = new TH1D("h_SoverB_exp", "", nBins, min, max);
+  TH1D *h_SoverB_exp_norm = new TH1D("h_SoverB_exp_norm", "", nBins, min, max);
+  TH1D *h_SoverB_exp_noCuts = new TH1D("h_SoverB_exp_noCuts", "", nBins, min, max);
+  TH1D *h_SoverB_exp_noCuts_norm = new TH1D("h_SoverB_exp_noCuts_norm", "", nBins, min, max);
+  TH1D *h_SoverB_exp_ideal = new TH1D("h_SoverB_exp_ideal", "", nBins, min, max);
+  TH1D *h_SoverB_exp_ideal_norm = new TH1D("h_SoverB_exp_ideal_norm", "", nBins, min, max);
+
+
+  Double_t significance_class_integral = 0.,
+    significance_class_noCuts_integral = 0.,
+    significance_class_ideal_integral = 0.;
+
+  Double_t significance_exp_integral = 0.,
+    significance_exp_noCuts_integral = 0.,
+    significance_exp_ideal_integral = 0.;
+
+
+
+  for(Int_t i=1; i<nBins; i++) {
+
+    // classifier significance
+    if(h_signal_class->GetBinContent(i) != 0) {
+      h_significance_class->SetBinContent(i,
+					  h_signal_class->GetBinContent(i) /
+					  TMath::Sqrt(h_signal_class->GetBinContent(i) +
+						      h_backgr_class->GetBinContent(i)));
+      h_significance_class->SetBinError(i, significanceError(h_signal_class->GetBinContent(i),
+							     h_backgr_class->GetBinContent(i)));
+      significance_class_integral += h_significance_class->GetBinContent(i);
+    }else {
+      h_significance_class->SetBinContent(i, 0.);
+      h_significance_class->SetBinError(i, 0.);
+    }
+
+    if(h_signal_class_noCuts->GetBinContent(i) != 0) {
+      h_significance_class_noCuts->SetBinContent(i,
+						 h_signal_class_noCuts->GetBinContent(i) /
+						 TMath::Sqrt(h_signal_class_noCuts->GetBinContent(i) +
+							     h_backgr_class_noCuts->GetBinContent(i)));
+      h_significance_class_noCuts->SetBinError(i, significanceError(h_signal_class_noCuts->GetBinContent(i),
+								    h_backgr_class_noCuts->GetBinContent(i)));
+      significance_class_noCuts_integral += h_significance_class_noCuts->GetBinContent(i);
+    }else {
+      h_significance_class_noCuts->SetBinContent(i, 0.);
+      h_significance_class_noCuts->SetBinContent(i, 0.);
+    }
+
+    h_significance_class_ideal->SetBinContent(i, TMath::Sqrt(h_signal_class_ideal->GetBinContent(i)));
+    h_significance_class_ideal->SetBinError(i, significanceError(h_signal_class_ideal->GetBinContent(i),
+								 0.));
+    significance_class_ideal_integral += h_significance_class_ideal->GetBinContent(i);
+
+
+    // experimental significance
+    if(h_signal_exp->GetBinContent(i) != 0) {
+      h_significance_exp->SetBinContent(i,
+					h_signal_exp->GetBinContent(i) /
+					TMath::Sqrt(h_signal_exp->GetBinContent(i) +
+						    h_backgr_exp->GetBinContent(i)));
+      h_significance_exp->SetBinError(i, significanceError(h_signal_exp->GetBinContent(i),
+							   h_backgr_exp->GetBinContent(i)));
+      significance_exp_integral += h_significance_exp->GetBinContent(i);
+    }else {
+      h_significance_exp->SetBinContent(i, 0.);
+      h_significance_exp->SetBinError(i, 0.);
+    }
+
+    if(h_signal_exp_noCuts->GetBinContent(i) != 0) {
+      h_significance_exp_noCuts->SetBinContent(i,
+					       h_signal_exp_noCuts->GetBinContent(i) /
+					       TMath::Sqrt(h_signal_exp_noCuts->GetBinContent(i) +
+							   h_backgr_exp_noCuts->GetBinContent(i)));
+      h_significance_exp_noCuts->SetBinError(i, significanceError(h_signal_exp_noCuts->GetBinContent(i),
+								  h_backgr_exp_noCuts->GetBinContent(i)));
+      significance_exp_noCuts_integral += h_significance_exp_noCuts->GetBinContent(i);
+    }else {
+      h_significance_exp_noCuts->SetBinContent(i, 0.);
+      h_significance_exp_noCuts->SetBinError(i, 0.);
+    }
+
+    if(h_signal_exp_ideal->GetBinContent(i) != 0) {
+      h_significance_exp_ideal->SetBinContent(i,
+					      h_signal_exp_ideal->GetBinContent(i) /
+					      TMath::Sqrt(h_signal_exp_ideal->GetBinContent(i) +
+							  h_backgr_exp_ideal->GetBinContent(i)));
+      h_significance_exp_ideal->SetBinError(i, significanceError(h_signal_exp_ideal->GetBinContent(i),
+								 h_backgr_exp_ideal->GetBinContent(i)));
+      significance_exp_ideal_integral += h_significance_exp_ideal->GetBinContent(i);
+    }else {
+      h_significance_exp_ideal->SetBinContent(i, 0.);
+      h_significance_exp_ideal->SetBinError(i, 0.);
+    }
+
+
+    // classifier S/B
+    if(h_backgr_class->GetBinContent(i) != 0) {
+      h_SoverB_class->SetBinContent(i,
+				    h_signal_class->GetBinContent(i) /
+				    h_backgr_class->GetBinContent(i));
+      h_SoverB_class->SetBinError(i, SoverBError(h_signal_class->GetBinContent(i),
+						 h_backgr_class->GetBinContent(i)));
+    }else {
+      h_SoverB_class->SetBinContent(i, 0.);
+      h_SoverB_class->SetBinError(i, 0.);
+    }
+
+    if(h_backgr_class_noCuts->GetBinContent(i) != 0) {
+      h_SoverB_class_noCuts->SetBinContent(i,
+					   h_signal_class_noCuts->GetBinContent(i) /
+					   h_backgr_class_noCuts->GetBinContent(i));
+      h_SoverB_class_noCuts->SetBinError(i, SoverBError(h_signal_class_noCuts->GetBinContent(i),
+							h_backgr_class_noCuts->GetBinContent(i)));
+    }else {
+      h_SoverB_class_noCuts->SetBinContent(i, 0.);
+      h_SoverB_class_noCuts->SetBinError(i, 0.);
+    }
+
+    h_SoverB_class_ideal->SetBinContent(i, h_signal_class_ideal->GetBinContent(i));
+    h_SoverB_class_ideal->SetBinError(i, 0.);
+
+
+    // experimental S/B
+    if(h_backgr_exp->GetBinContent(i) != 0) {
+      h_SoverB_exp->SetBinContent(i,
+				  h_signal_exp->GetBinContent(i) /
+				  h_backgr_exp->GetBinContent(i));
+      h_SoverB_exp->SetBinError(i, SoverBError(h_signal_exp->GetBinContent(i),
+					       h_backgr_exp->GetBinContent(i)));
+    }else {
+      h_SoverB_exp->SetBinContent(i, 0.);
+      h_SoverB_exp->SetBinError(i, 0.);
+    }
+
+    if(h_backgr_exp_noCuts->GetBinContent(i) != 0) {
+      h_SoverB_exp_noCuts->SetBinContent(i,
+					 h_signal_exp_noCuts->GetBinContent(i) /
+					 h_backgr_exp_noCuts->GetBinContent(i));
+      h_SoverB_exp_noCuts->SetBinError(i, SoverBError(h_signal_exp_noCuts->GetBinContent(i),
+						      h_backgr_exp_noCuts->GetBinContent(i)));
+    }else {
+      h_SoverB_exp_noCuts->SetBinContent(i, 0.);
+      h_SoverB_exp_noCuts->SetBinError(i, 0.);
+    }
+
+    if(h_backgr_exp_ideal->GetBinContent(i) != 0) {
+      h_SoverB_exp_ideal->SetBinContent(i,
+					h_signal_exp_ideal->GetBinContent(i) /
+					h_backgr_exp_ideal->GetBinContent(i));
+      h_backgr_exp_ideal->SetBinError(i, SoverBError(h_signal_exp_ideal->GetBinContent(i),
+						     h_backgr_exp_ideal->GetBinContent(i)));
+    }else {
+      h_SoverB_exp_ideal->SetBinContent(i, 0.);
+      h_SoverB_exp_ideal->SetBinError(i, 0.);
+    }
+    
+  }
+
+
+  // create ratio histograms
+  h_significance_class_norm = (TH1D*)h_significance_class->Clone("h_significance_class_norm");
+  h_significance_class_norm->Sumw2();
+  h_significance_class_noCuts->Sumw2();
+  h_significance_class_norm->Divide(h_significance_class_noCuts);
+
+  h_significance_exp_norm = (TH1D*)h_significance_exp->Clone("h_significance_exp_norm");
+  h_significance_exp_norm->Sumw2();
+  h_significance_exp_noCuts->Sumw2();
+  h_significance_exp_norm->Divide(h_significance_exp_noCuts);
+
+  h_SoverB_class_norm = (TH1D*)h_SoverB_exp->Clone("h_SoverB_class_norm");
+  h_SoverB_class_norm->Sumw2();
+  h_SoverB_class_noCuts->Sumw2();
+  h_SoverB_class_norm->Divide(h_SoverB_class_noCuts);
+
+  h_SoverB_exp_norm = (TH1D*)h_SoverB_exp->Clone("h_SoverB_exp_norm");
+  h_SoverB_exp_norm->Sumw2();
+  h_SoverB_exp_noCuts->Sumw2();
+  h_SoverB_exp_norm->Divide(h_SoverB_exp_noCuts);
+
+
+  const Int_t kColor_significance = kBlack;
+  const Int_t kColor_significance_noCuts = kGray+2;
+  const Int_t kColor_significance_ideal = kGray+2;
+
+  const Int_t kMarkerStyle_significance = 20;
+  const Int_t kMarkerStyle_significance_noCuts = 24;
+  const Int_t kMarkerStyle_significance_ideal = 5;
+
+  const Int_t kMarkerSize_significance = 1;
+  const Int_t kMarkerSize_significance_noCuts = 1;
+  const Int_t kMarkerSize_significance_ideal = 1;
+
+  const Int_t kMarkerStyle_SoverB = 20;
+
+  const Int_t kMarkerSize_SoverB = 1;
+  
+  h_significance_class->SetLineColor(kColor_significance);
+  h_significance_class->SetMarkerColor(kColor_significance);
+  h_significance_class_noCuts->SetLineColor(kColor_significance_noCuts);
+  h_significance_class_noCuts->SetMarkerColor(kColor_significance_noCuts);
+  h_significance_class_ideal->SetLineColor(kColor_significance_ideal);
+  h_significance_class_ideal->SetMarkerColor(kColor_significance_ideal);
+
+  h_significance_exp->SetLineColor(kColor_significance);
+  h_significance_exp->SetMarkerColor(kColor_significance);
+  h_significance_exp_noCuts->SetLineColor(kColor_significance_noCuts);
+  h_significance_exp_noCuts->SetMarkerColor(kColor_significance_noCuts);
+  h_significance_exp_ideal->SetLineColor(kColor_significance_ideal);
+  h_significance_exp_ideal->SetMarkerColor(kColor_significance_ideal);
+
+  h_significance_class->SetMarkerStyle(kMarkerStyle_significance);
+  h_significance_class_noCuts->SetMarkerStyle(kMarkerStyle_significance_noCuts);
+  h_significance_class_ideal->SetMarkerStyle(kMarkerStyle_significance_ideal);
+
+  h_significance_class->SetMarkerSize(kMarkerSize_significance);
+  h_significance_class_noCuts->SetMarkerSize(kMarkerSize_significance_noCuts);
+  h_significance_class_ideal->SetMarkerSize(kMarkerSize_significance_ideal);
+
+  h_significance_exp->SetMarkerStyle(kMarkerStyle_significance);
+  h_significance_exp_noCuts->SetMarkerStyle(kMarkerStyle_significance_noCuts);
+  h_significance_exp_ideal->SetMarkerStyle(kMarkerStyle_significance_ideal);
+
+  h_significance_exp->SetMarkerSize(kMarkerSize_significance);
+  h_significance_exp_noCuts->SetMarkerSize(kMarkerSize_significance_noCuts);
+  h_significance_exp_ideal->SetMarkerSize(kMarkerSize_significance_ideal);
+
+
+  h_SoverB_class->SetMarkerStyle(kMarkerStyle_SoverB);
+
+  h_SoverB_class->SetMarkerSize(kMarkerSize_SoverB);
+
+  h_SoverB_exp->SetMarkerStyle(kMarkerStyle_SoverB);
+
+  h_SoverB_exp->SetMarkerSize(kMarkerSize_SoverB);
+
+
+
+  TString XTitle = "#it{m}_{ee} / (GeV/#it{c}^{2})";
+  
+  TString YTitle_significance_class = "#it{S}_{class} / #sqrt{#it{S}_{class}+#it{B}_{class}}";
+  TString YTitle_significance_class_noCuts = YTitle_significance_class;
+  TString YTitle_significance_class_ideal = YTitle_significance_class;
+  
+  TString YTitle_significance_exp = "#it{S}_{exp} / #sqrt{#it{S}_{exp}+#it{B}_{exp}}";
+  TString YTitle_significance_exp_noCuts = YTitle_significance_exp;
+  TString YTitle_significance_exp_ideal = YTitle_significance_exp;
+
+  TString YTitle_SoverB_class = "#it{S}_{class}/#it{B}_{class}";
+  TString YTitle_SoverB_class_noCuts = YTitle_SoverB_class;
+  TString YTitle_SoverB_class_ideal = YTitle_SoverB_class;
+
+  TString YTitle_SoverB_exp = "#it{S}_{exp}/#it{B}_{exp}";
+  TString YTitle_SoverB_exp_noCuts = YTitle_SoverB_exp;
+  TString YTitle_SoverB_exp_ideal = YTitle_SoverB_exp;
+  
+  h_significance_class->SetXTitle(XTitle);
+  h_significance_class->SetYTitle(YTitle_significance_class);
+
+  h_significance_class_noCuts->SetXTitle(XTitle);
+  h_significance_class_noCuts->SetYTitle(YTitle_significance_class_noCuts);
+
+  h_significance_class_ideal->SetXTitle(XTitle);
+  h_significance_class_ideal->SetYTitle(YTitle_significance_class_ideal);
+
+  h_significance_exp->SetXTitle(XTitle);
+  h_significance_exp->SetYTitle(YTitle_significance_exp);
+
+  h_significance_exp_noCuts->SetXTitle(XTitle);
+  h_significance_exp_noCuts->SetYTitle(YTitle_significance_exp_noCuts);
+
+  h_significance_exp_ideal->SetXTitle(XTitle);
+  h_significance_exp_ideal->SetYTitle(YTitle_significance_exp_ideal);
+
+  h_SoverB_class->SetXTitle(XTitle);
+  h_SoverB_class->SetYTitle(YTitle_SoverB_class);
+
+  h_SoverB_class_noCuts->SetXTitle(XTitle);
+  h_SoverB_class_noCuts->SetYTitle(YTitle_SoverB_class_noCuts);
+
+  h_SoverB_class_ideal->SetXTitle(XTitle);
+  h_SoverB_class_ideal->SetYTitle(YTitle_SoverB_class_ideal);
+
+  h_SoverB_exp->SetXTitle(XTitle);
+  h_SoverB_exp->SetYTitle(YTitle_SoverB_exp);
+
+  h_SoverB_exp_noCuts->SetXTitle(XTitle);
+  h_SoverB_exp_noCuts->SetYTitle(YTitle_SoverB_exp_noCuts);
+
+  h_SoverB_exp_ideal->SetXTitle(XTitle);
+  h_SoverB_exp_ideal->SetYTitle(YTitle_SoverB_exp_ideal);
+
+
+
+  TString leg_baselabel_class = "MVA cut";
+  TString leg_label_class = leg_baselabel_class;
+  leg_label_class += " (sign. int. = ";
+  leg_label_class += significance_class_integral;
+  leg_label_class += ")";
+
+  TString leg_baselabel_class_noCuts = "no backgr. rej.";
+  TString leg_label_class_noCuts = leg_baselabel_class_noCuts;
+  leg_label_class_noCuts += " (sign. int. = ";
+  leg_label_class_noCuts += significance_class_noCuts_integral;
+  leg_label_class_noCuts += ")";
+
+  TString leg_baselabel_class_ideal = "ideal backgr. rej.";
+  TString leg_label_class_ideal = leg_baselabel_class_ideal;
+  leg_label_class_ideal += " (sign. int. = ";
+  leg_label_class_ideal += significance_class_ideal_integral;
+  leg_label_class_ideal += ")";
+
+  TString leg_baselabel_exp = leg_baselabel_class;
+  TString leg_label_exp = leg_baselabel_exp;
+  leg_label_exp += " (sign. int. = ";
+  leg_label_exp += significance_exp_integral;
+  leg_label_exp += ")";
+
+  TString leg_baselabel_exp_noCuts = leg_baselabel_class_noCuts;
+  TString leg_label_exp_noCuts = leg_baselabel_exp_noCuts;
+  leg_label_exp_noCuts += " (sign. int. = ";
+  leg_label_exp_noCuts += significance_exp_noCuts_integral;
+  leg_label_exp_noCuts += ")";
+
+  TString leg_baselabel_exp_ideal = leg_baselabel_class_ideal;
+  TString leg_label_exp_ideal = leg_baselabel_exp_ideal;
+  leg_label_exp_ideal += " (sign. int. = ";
+  leg_label_exp_ideal += significance_exp_ideal_integral;
+  leg_label_exp_ideal += ")";
+
+
+  TLegend *leg_significance_class = new TLegend(.5, .7,.95, .95);
+  leg_significance_class->AddEntry(h_significance_class, leg_label_class, "p");
+  leg_significance_class->AddEntry(h_significance_class_noCuts, leg_label_class_noCuts, "p");
+  leg_significance_class->AddEntry(h_significance_class_ideal, leg_label_class_ideal, "p");
+
+  TLegend *leg_significance_exp = new TLegend(.5, .7, .95, .95);
+  leg_significance_exp->AddEntry(h_significance_exp, leg_label_exp, "p");
+  leg_significance_exp->AddEntry(h_significance_exp_noCuts, leg_label_exp_noCuts, "p");
+  leg_significance_exp->AddEntry(h_significance_exp_ideal, leg_label_exp_ideal, "p");
+
+  TLegend *leg_SoverB_class = new TLegend(.6, .75, .95, .95);
+  leg_SoverB_class->AddEntry(h_SoverB_class, leg_label_class, "p");
+  leg_SoverB_class->AddEntry(h_SoverB_class_noCuts, leg_label_class_noCuts, "p");
+  leg_SoverB_class->AddEntry(h_SoverB_class_ideal, leg_label_class_ideal, "p");
+
+  TLegend *leg_SoverB_exp = new TLegend(.6, .75, .95, .95);
+  leg_SoverB_exp->AddEntry(h_SoverB_exp, leg_label_exp, "p");
+  leg_SoverB_exp->AddEntry(h_SoverB_exp_noCuts, leg_label_exp_noCuts, "p");
+  leg_SoverB_exp->AddEntry(h_SoverB_exp_ideal, leg_label_exp_ideal, "p");
+  
+
+
+  TString drawOptions_significance_class = "p0";
+
+  TCanvas *c_significance_class = new TCanvas("c_significance_class", "", 1024, 768);
+  h_significance_class->Draw(drawOptions_significance_class);
+  h_significance_class_noCuts->Draw(drawOptions_significance_class + " same");
+  h_significance_class_ideal->Draw(drawOptions_significance_class + " same");
+  leg_significance_class->Draw();
+
+  c_significance_class->SaveAs(output_prefix + "mass_significance_class.pdf");
+  c_significance_class->SaveAs(output_prefix + "mass_significance_class.png");
+  c_significance_class->SaveAs(output_prefix + "mass_significance_class.root");
+
+
+  TString drawOptions_significance_class_norm = "p0 e1 x0";
+
+  TCanvas *c_significance_class_norm = new TCanvas("c_significance_class_norm", "", 1024, 768);
+  h_significance_class_norm->Draw(drawOptions_significance_class_norm);
+
+  c_significance_class_norm->SaveAs(output_prefix + "mass_significance_class_norm.pdf");
+  c_significance_class_norm->SaveAs(output_prefix + "mass_significance_class_norm.png");
+  c_significance_class_norm->SaveAs(output_prefix + "mass_significance_class_norm.root");
+
+
+  TString drawOptions_significance_exp = "p0 e1 x0";
+
+  TCanvas *c_significance_exp = new TCanvas("c_significance_exp", "", 1024, 768);
+  c_significance_exp->SetLogy();
+  h_significance_exp->Draw(drawOptions_significance_exp);
+  h_significance_exp_noCuts->Draw(drawOptions_significance_exp + " same");
+  h_significance_exp_ideal->Draw(drawOptions_significance_exp + " same");
+  leg_significance_exp->Draw();
+
+  c_significance_exp->SaveAs(output_prefix + "mass_significance_exp.pdf");
+  c_significance_exp->SaveAs(output_prefix + "mass_significance_exp.png");
+  c_significance_exp->SaveAs(output_prefix + "mass_significance_exp.root");
+
+
+  TString drawOptions_significance_exp_norm = "p0 e1 x0";
+
+  TCanvas *c_significance_exp_norm = new TCanvas("c_significance_exp_norm", "", 1024, 768);
+  h_significance_exp_norm->Draw(drawOptions_significance_exp_norm);
+
+  c_significance_exp_norm->SaveAs(output_prefix + "mass_significance_exp_norm.pdf");
+  c_significance_exp_norm->SaveAs(output_prefix + "mass_significance_exp_norm.png");
+  c_significance_exp_norm->SaveAs(output_prefix + "mass_significance_exp_norm.root");
+
+
+  TString drawOptions_SoverB_class = "p0 e1";
+
+  TCanvas *c_SoverB_class = new TCanvas("c_SoverB_class", "", 1024, 768);
+  h_SoverB_class->Draw(drawOptions_SoverB_class);
+  h_SoverB_class_noCuts->Draw(drawOptions_SoverB_class + " same");
+  h_SoverB_class_ideal->Draw(drawOptions_SoverB_class + " same");
+  leg_SoverB_class->Draw();
+
+  c_SoverB_class->SaveAs(output_prefix + "mass_SoverB_class.pdf");
+  c_SoverB_class->SaveAs(output_prefix + "mass_SoverB_class.png");
+  c_SoverB_class->SaveAs(output_prefix + "mass_SoverB_class.root");
+  
+
+  TString drawOptions_SoverB_class_norm = "p0 e1 x0";
+
+  TCanvas *c_SoverB_class_norm = new TCanvas("c_SoverB_class_norm", "", 1024, 768);
+  h_SoverB_class_norm->Draw(drawOptions_SoverB_class_norm);
+
+  c_SoverB_class_norm->SaveAs(output_prefix + "mass_SoverB_class_norm.pdf");
+  c_SoverB_class_norm->SaveAs(output_prefix + "mass_SoverB_class_norm.png");
+  c_SoverB_class_norm->SaveAs(output_prefix + "mass_SoverB_class_norm.root");
+
+
+  TString drawOptions_SoverB_exp = "p0 e1 x0";
+
+  TCanvas *c_SoverB_exp = new TCanvas("c_SoverB_exp", "", 1024, 768);
+  c_SoverB_exp->SetLogy();
+  h_SoverB_exp->Draw(drawOptions_SoverB_exp);
+  h_SoverB_exp_noCuts->Draw(drawOptions_SoverB_exp + " same");
+  h_SoverB_exp_ideal->Draw(drawOptions_SoverB_exp + " same");
+  leg_SoverB_exp->Draw();
+
+  c_SoverB_exp->SaveAs(output_prefix + "mass_SoverB_exp.pdf");
+  c_SoverB_exp->SaveAs(output_prefix + "mass_SoverB_exp.png");
+  c_SoverB_exp->SaveAs(output_prefix + "mass_SoverB_exp.root");
+
+  TString drawOptions_SoverB_exp_norm = "p0 e1 x0";
+
+  TCanvas *c_SoverB_exp_norm = new TCanvas("c_SoverB_exp_norm", "", 1024, 768);
+  h_SoverB_exp_norm->Draw(drawOptions_SoverB_exp_norm);
+
+  c_SoverB_exp_norm->SaveAs(output_prefix + "mass_SoverB_exp_norm.pdf");
+  c_SoverB_exp_norm->SaveAs(output_prefix + "mass_SoverB_exp_norm.png");
+  c_SoverB_exp_norm->SaveAs(output_prefix + "mass_SoverB_exp_norm.root");
+
+  
+
+  
+  
 
   // store all created histograms in a ROOT file:
   TFile *outfile = new TFile(outfileName, "RECREATE");
@@ -665,11 +1215,54 @@ void PlotMass() {
   h_CombiWithoutConvLeg_eff->Write(0, TObject::kOverwrite);
   h_HF_eff->Write(0, TObject::kOverwrite);
   h_RPConv_eff->Write(0, TObject::kOverwrite);
+
+  h_signal_class->Write(0, TObject::kOverwrite);
+  h_signal_class_noCuts->Write(0, TObject::kOverwrite);
+  h_signal_class_ideal->Write(0, TObject::kOverwrite);
+  h_backgr_class->Write(0, TObject::kOverwrite);
+  h_backgr_class_noCuts->Write(0, TObject::kOverwrite);
+
+  h_signal_exp->Write(0, TObject::kOverwrite);
+  h_signal_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_signal_exp_ideal->Write(0, TObject::kOverwrite);
+  h_backgr_exp->Write(0, TObject::kOverwrite);
+  h_backgr_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_backgr_exp_ideal->Write(0, TObject::kOverwrite);
+
+  h_significance_class->Write(0, TObject::kOverwrite);
+  h_significance_class_norm->Write(0, TObject::kOverwrite);
+  h_significance_class_noCuts->Write(0, TObject::kOverwrite);
+  h_significance_class_noCuts_norm->Write(0, TObject::kOverwrite);
+  h_significance_class_ideal->Write(0, TObject::kOverwrite);
+  h_significance_class_ideal_norm->Write(0, TObject::kOverwrite);
+
+  h_significance_exp->Write(0, TObject::kOverwrite);
+  h_significance_exp_norm->Write(0, TObject::kOverwrite);
+  h_significance_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_significance_exp_noCuts_norm->Write(0, TObject::kOverwrite);
+  h_significance_exp_ideal->Write(0, TObject::kOverwrite);
+  h_significance_exp_ideal_norm->Write(0, TObject::kOverwrite);
+
+  h_SoverB_class->Write(0, TObject::kOverwrite);
+  h_SoverB_class_norm->Write(0, TObject::kOverwrite);
+  h_SoverB_class_noCuts->Write(0, TObject::kOverwrite);
+  h_SoverB_class_noCuts_norm->Write(0, TObject::kOverwrite);
+  h_SoverB_class_ideal->Write(0, TObject::kOverwrite);
+
+  h_SoverB_exp->Write(0, TObject::kOverwrite);
+  h_SoverB_exp_norm->Write(0, TObject::kOverwrite);
+  h_SoverB_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_SoverB_exp_noCuts_norm->Write(0, TObject::kOverwrite);
+  h_SoverB_exp_ideal->Write(0, TObject::kOverwrite);
+  h_SoverB_exp_ideal_norm->Write(0, TObject::kOverwrite);
   
   outfile->Close();
+
   
-  // gApplication->Terminate();
+  gApplication->Terminate();
 }
+
+
 
 
 Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {

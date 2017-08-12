@@ -23,7 +23,7 @@ Float_t SoverBError(Float_t S, Float_t B) {
 }
 
 
-void PlotMass_cutVarComparison() {
+void PlotMass_cutVarComparison_deprecated() {
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -559,9 +559,9 @@ void PlotMass_cutVarComparison() {
 
 
   // create ratio histograms:
+  h_significance_1_norm = (TH1D*)h_significance_1->Clone("h_significance_1_norm");
   h_significance_1_norm->Sumw2();
   h_significance_noMVAcuts->Sumw2();
-  h_significance_1_norm = (TH1D*)h_significance_1->Clone("h_significance_1_norm");
   h_significance_1_norm->Divide(h_significance_noMVAcuts);
 
   h_significance_exp_1_norm = (TH1D*)h_significance_exp_1->Clone("h_significance_exp_1_norm");
