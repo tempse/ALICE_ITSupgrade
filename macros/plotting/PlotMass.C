@@ -73,10 +73,10 @@ void PlotMass() {
   const Bool_t doConsiderPIDefficiencies = kTRUE;
   
   // number of subsamples which are created for significance error estimation:
-  const Int_t num_subsamples = 100;
+  const Int_t num_subsamples = 20;
 
   // enable bootstrapping for significance error estimation:
-  const Bool_t doBootstrap = kFALSE;
+  const Bool_t doBootstrap = kTRUE;
 
   // Output file path prefix:
   TString output_prefix = "temp_output/";
@@ -170,7 +170,7 @@ void PlotMass() {
 
 
   // File containing the pt-dependent PID efficiencies:
-  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -248,6 +248,17 @@ void PlotMass() {
 
   TH2D *h_RPConv_afterCut_subsample =
     new TH2D("h_RPConv_afterCut_subsample","",nBins,min,max,num_subsamples,0,num_subsamples);
+
+  for(Int_t i=1; i<=nBins; i++) {
+    for(Int_t j=1; j<=num_subsamples; j++) {
+      h_S_afterCut_subsample->SetBinContent(i, j, 0.);
+      h_SB_afterCut_subsample->SetBinContent(i, j, 0.);
+      h_CombiWithConvLeg_afterCut_subsample->SetBinContent(i, j, 0.);
+      h_CombiWithoutConvLeg_afterCut_subsample->SetBinContent(i, j, 0.);
+      h_HF_afterCut_subsample->SetBinContent(i, j, 0.);
+      h_RPConv_afterCut_subsample->SetBinContent(i, j, 0.);
+    }
+  }
 
   TRandom *rand_subsample = new TRandom();
   
@@ -982,6 +993,30 @@ void PlotMass() {
   TH1D *h_SoverB_exp_ideal_norm = new TH1D("h_SoverB_exp_ideal_norm", "", nBins, min, max);
 
 
+  TH1D *h_error_uncorr_significance_class = new TH1D("h_error_uncorr_significance_class","",nBins,min,max);
+  TH1D *h_error_uncorr_significance_class_noCuts = new TH1D("h_error_uncorr_significance_class_noCuts","",nBins,min,max);
+  TH1D *h_error_uncorr_significance_class_ideal = new TH1D("h_error_uncorr_significance_class_ideal","",nBins,min,max);
+  TH1D *h_error_uncorr_significance_exp = new TH1D("h_error_uncorr_significance_exp","",nBins,min,max);
+  TH1D *h_error_uncorr_significance_exp_noCuts = new TH1D("h_error_uncorr_significance_exp_noCuts","",nBins,min,max);
+  TH1D *h_error_uncorr_significance_exp_ideal = new TH1D("h_error_uncorr_significance_exp_ideal","",nBins,min,max);
+
+  TH1D *h_error_est_significance_class = new TH1D("h_error_est_significance_class","",nBins,min,max);
+  TH1D *h_error_est_significance_class_noCuts = new TH1D("h_error_est_significance_class_noCuts","",nBins,min,max);
+  TH1D *h_error_est_significance_class_ideal = new TH1D("h_error_est_significance_class_ideal","",nBins,min,max);
+  TH1D *h_error_est_significance_exp = new TH1D("h_error_est_significance_exp","",nBins,min,max);
+  TH1D *h_error_est_significance_exp_noCuts = new TH1D("h_error_est_significance_exp_noCuts","",nBins,min,max);
+  TH1D *h_error_est_significance_exp_ideal = new TH1D("h_error_est_significance_exp_ideal","",nBins,min,max);
+  
+  TH1D *h_errorDiff_significance_class = new TH1D("h_errorDiff_significance_class","",nBins,min,max);
+  TH1D *h_errorDiff_significance_class_noCuts = new TH1D("h_errorDiff_significance_class_noCuts","",nBins,min,max);
+  TH1D *h_errorDiff_significance_class_ideal = new TH1D("h_errorDiff_significance_class_ideal","",nBins,min,max);
+  TH1D *h_errorDiff_significance_exp = new TH1D("h_errorDiff_significance_exp","",nBins,min,max);
+  TH1D *h_errorDiff_significance_exp_noCuts = new TH1D("h_errorDiff_significance_exp_noCuts","",nBins,min,max);
+  TH1D *h_errorDiff_significance_exp_ideal = new TH1D("h_errorDiff_significance_exp_ideal","",nBins,min,max);
+
+  Double_t temp_error_uncorr;
+
+
   Double_t significance_class_integral = 0.,
     significance_class_noCuts_integral = 0.,
     significance_class_ideal_integral = 0.;
@@ -992,23 +1027,35 @@ void PlotMass() {
 
 
 
-  for(Int_t i=1; i<nBins; i++) {
+  for(Int_t i=1; i<=nBins; i++) {
 
     // classifier significance
-    if(h_signal_class->GetBinContent(i) != 0) {
+    if((h_signal_class->GetBinContent(i) + h_backgr_class->GetBinContent(i)) != 0) {
       h_significance_class->SetBinContent(i,
 					  h_signal_class->GetBinContent(i) /
 					  TMath::Sqrt(h_signal_class->GetBinContent(i) +
 						      h_backgr_class->GetBinContent(i)));
       h_significance_class->SetBinError(i, significanceError(*h_signal_class_subsample, *h_backgr_class_subsample,
-							     i, num_subsamples));
+       							     i, num_subsamples));
       significance_class_integral += h_significance_class->GetBinContent(i);
     }else {
       h_significance_class->SetBinContent(i, 0.);
       h_significance_class->SetBinError(i, 0.);
     }
 
-    if(h_signal_class_noCuts->GetBinContent(i) != 0) {
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_class->GetBinContent(i),
+						       h_backgr_class->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_class->SetBinContent(i,
+						    (temp_error_uncorr -
+						     h_significance_class->GetBinError(i)) /
+						    temp_error_uncorr);
+    }
+    h_error_est_significance_class->SetBinContent(i, h_significance_class->GetBinError(i));
+    h_error_uncorr_significance_class->SetBinContent(i, temp_error_uncorr);
+
+    
+    if((h_signal_class_noCuts->GetBinContent(i) + h_backgr_class_noCuts->GetBinContent(i)) != 0) {
       h_significance_class_noCuts->SetBinContent(i,
 						 h_signal_class_noCuts->GetBinContent(i) /
 						 TMath::Sqrt(h_signal_class_noCuts->GetBinContent(i) +
@@ -1021,14 +1068,37 @@ void PlotMass() {
       h_significance_class_noCuts->SetBinContent(i, 0.);
     }
 
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_class_noCuts->GetBinContent(i),
+						       h_backgr_class_noCuts->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_class_noCuts->SetBinContent(i,
+							   (temp_error_uncorr -
+							    h_significance_class_noCuts->GetBinError(i)) /
+							   temp_error_uncorr);
+    }
+    h_error_est_significance_class_noCuts->SetBinContent(i, h_significance_class_noCuts->GetBinError(i));
+    h_error_uncorr_significance_class_noCuts->SetBinContent(i, temp_error_uncorr);
+    
+
     h_significance_class_ideal->SetBinContent(i, TMath::Sqrt(h_signal_class_ideal->GetBinContent(i)));
     h_significance_class_ideal->SetBinError(i, significanceError(*h_signal_class_ideal_subsample, *h_backgr_class_ideal_subsample,
 								 i, num_subsamples));
     significance_class_ideal_integral += h_significance_class_ideal->GetBinContent(i);
 
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_class_ideal->GetBinContent(i),
+						       h_backgr_class_ideal->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_class_ideal->SetBinContent(i,
+							  (temp_error_uncorr -
+							   h_significance_class_ideal->GetBinError(i)) /
+							  temp_error_uncorr);
+    }
+    h_error_est_significance_class_ideal->SetBinContent(i, h_significance_class_ideal->GetBinError(i));
+    h_error_uncorr_significance_class_ideal->SetBinContent(i, temp_error_uncorr);
+
     
     // experimental significance
-    if(h_signal_exp->GetBinContent(i) != 0) {
+    if((h_signal_exp->GetBinContent(i) + h_backgr_exp->GetBinContent(i)) != 0) {
       h_significance_exp->SetBinContent(i,
 					h_signal_exp->GetBinContent(i) /
 					TMath::Sqrt(h_signal_exp->GetBinContent(i) +
@@ -1041,7 +1111,19 @@ void PlotMass() {
       h_significance_exp->SetBinError(i, 0.);
     }
 
-    if(h_signal_exp_noCuts->GetBinContent(i) != 0) {
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_exp->GetBinContent(i),
+						       h_backgr_exp->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_exp->SetBinContent(i,
+						  (temp_error_uncorr -
+						   h_significance_exp->GetBinError(i)) /
+						  temp_error_uncorr);
+    }
+    h_error_est_significance_exp->SetBinContent(i, h_significance_exp->GetBinError(i));
+    h_error_uncorr_significance_exp->SetBinContent(i, temp_error_uncorr);
+    
+
+    if((h_signal_exp_noCuts->GetBinContent(i) + h_backgr_exp_noCuts->GetBinContent(i))!= 0) {
       h_significance_exp_noCuts->SetBinContent(i,
 					       h_signal_exp_noCuts->GetBinContent(i) /
 					       TMath::Sqrt(h_signal_exp_noCuts->GetBinContent(i) +
@@ -1054,7 +1136,19 @@ void PlotMass() {
       h_significance_exp_noCuts->SetBinError(i, 0.);
     }
 
-    if(h_signal_exp_ideal->GetBinContent(i) != 0) {
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_exp_noCuts->GetBinContent(i),
+						       h_backgr_exp_noCuts->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_exp_noCuts->SetBinContent(i,
+							 (temp_error_uncorr -
+							  h_significance_exp_noCuts->GetBinError(i)) /
+							 temp_error_uncorr);
+    }
+    h_error_est_significance_exp_noCuts->SetBinContent(i, h_significance_exp_noCuts->GetBinError(i));
+    h_error_uncorr_significance_exp_noCuts->SetBinContent(i, temp_error_uncorr);
+    
+
+    if((h_signal_exp_ideal->GetBinContent(i) + h_backgr_exp_ideal->GetBinContent(i)) != 0) {
       h_significance_exp_ideal->SetBinContent(i,
 					      h_signal_exp_ideal->GetBinContent(i) /
 					      TMath::Sqrt(h_signal_exp_ideal->GetBinContent(i) +
@@ -1066,6 +1160,17 @@ void PlotMass() {
       h_significance_exp_ideal->SetBinContent(i, 0.);
       h_significance_exp_ideal->SetBinError(i, 0.);
     }
+
+    temp_error_uncorr = significanceError_uncorrelated(h_signal_exp_ideal->GetBinContent(i),
+						       h_backgr_exp_ideal->GetBinContent(i));
+    if(temp_error_uncorr != 0) {
+      h_errorDiff_significance_exp_ideal->SetBinContent(i,
+							(temp_error_uncorr -
+							 h_significance_exp_ideal->GetBinError(i)) /
+							temp_error_uncorr);
+    }
+    h_error_est_significance_exp_ideal->SetBinContent(i, h_significance_exp_ideal->GetBinError(i));
+    h_error_uncorr_significance_exp_ideal->SetBinContent(i, temp_error_uncorr);
 
 
     // classifier S/B
@@ -1326,7 +1431,7 @@ void PlotMass() {
   
 
 
-  TString drawOptions_significance_class = "p0 e1 x0";
+  TString drawOptions_significance_class = "p0 x0";
 
   TCanvas *c_significance_class = new TCanvas("c_significance_class", "", 1024, 768);
   h_significance_class->Draw(drawOptions_significance_class);
@@ -1349,7 +1454,7 @@ void PlotMass() {
   c_significance_class_norm->SaveAs(output_prefix + "mass_significance_class_norm.root");
 
 
-  TString drawOptions_significance_exp = "p0 e1 x0";
+  TString drawOptions_significance_exp = "p0 x0";
 
   TCanvas *c_significance_exp = new TCanvas("c_significance_exp", "", 1024, 768);
   c_significance_exp->SetLogy();
@@ -1363,7 +1468,7 @@ void PlotMass() {
   c_significance_exp->SaveAs(output_prefix + "mass_significance_exp.root");
 
 
-  TString drawOptions_significance_exp_norm = "p0 e1 x0";
+  TString drawOptions_significance_exp_norm = "p0 x0";
 
   TCanvas *c_significance_exp_norm = new TCanvas("c_significance_exp_norm", "", 1024, 768);
   h_significance_exp_norm->Draw(drawOptions_significance_exp_norm);
@@ -1373,7 +1478,7 @@ void PlotMass() {
   c_significance_exp_norm->SaveAs(output_prefix + "mass_significance_exp_norm.root");
 
 
-  TString drawOptions_SoverB_class = "p0 e1 x0";
+  TString drawOptions_SoverB_class = "p0 x0";
 
   TCanvas *c_SoverB_class = new TCanvas("c_SoverB_class", "", 1024, 768);
   h_SoverB_class->Draw(drawOptions_SoverB_class);
@@ -1396,7 +1501,7 @@ void PlotMass() {
   c_SoverB_class_norm->SaveAs(output_prefix + "mass_SoverB_class_norm.root");
 
 
-  TString drawOptions_SoverB_exp = "p0 e1 x0";
+  TString drawOptions_SoverB_exp = "p0 x0";
 
   TCanvas *c_SoverB_exp = new TCanvas("c_SoverB_exp", "", 1024, 768);
   c_SoverB_exp->SetLogy();
@@ -1493,6 +1598,27 @@ void PlotMass() {
   h_SoverB_exp_noCuts_norm->Write(0, TObject::kOverwrite);
   h_SoverB_exp_ideal->Write(0, TObject::kOverwrite);
   h_SoverB_exp_ideal_norm->Write(0, TObject::kOverwrite);
+
+  h_error_est_significance_class->Write(0, TObject::kOverwrite);
+  h_error_est_significance_class_noCuts->Write(0, TObject::kOverwrite);
+  h_error_est_significance_class_ideal->Write(0, TObject::kOverwrite);
+  h_error_est_significance_exp->Write(0, TObject::kOverwrite);
+  h_error_est_significance_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_error_est_significance_exp_ideal->Write(0, TObject::kOverwrite);
+
+  h_error_uncorr_significance_class->Write(0, TObject::kOverwrite);
+  h_error_uncorr_significance_class_noCuts->Write(0, TObject::kOverwrite);
+  h_error_uncorr_significance_class_ideal->Write(0, TObject::kOverwrite);
+  h_error_uncorr_significance_exp->Write(0, TObject::kOverwrite);
+  h_error_uncorr_significance_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_error_uncorr_significance_exp_ideal->Write(0, TObject::kOverwrite);
+
+  h_errorDiff_significance_class->Write(0, TObject::kOverwrite);
+  h_errorDiff_significance_class_noCuts->Write(0, TObject::kOverwrite);
+  h_errorDiff_significance_class_ideal->Write(0, TObject::kOverwrite);
+  h_errorDiff_significance_exp->Write(0, TObject::kOverwrite);
+  h_errorDiff_significance_exp_noCuts->Write(0, TObject::kOverwrite);
+  h_errorDiff_significance_exp_ideal->Write(0, TObject::kOverwrite);
   
   outfile->Close();
 
@@ -1521,24 +1647,33 @@ Float_t significanceError(TH2D &signal_subsamples, TH2D &backgr_subsamples,
   
   Float_t significance_subsamples[num_subsamples];
   
-  for(Int_t i=1; i<=num_subsamples; i++) {
-    significance_subsamples[i] = signal_subsamples.GetBinContent(bin_mass, i) /
-      TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i) +
-		  backgr_subsamples.GetBinContent(bin_mass, i));
+  for(Int_t i=0; i<num_subsamples; i++) {
+    significance_subsamples[i] =
+      (signal_subsamples.GetBinContent(bin_mass, i+1) + backgr_subsamples.GetBinContent(bin_mass, i+1))==0 ?
+      -1. : signal_subsamples.GetBinContent(bin_mass, i+1) /
+      TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i+1) +
+		  backgr_subsamples.GetBinContent(bin_mass, i+1));
   }
 
   Float_t mean=0., stddev=0.;
+  UInt_t cnt_invalidEntries = 0;
   for(Int_t i=0; i<num_subsamples; i++) {
-    mean += significance_subsamples[i];
+    if(significance_subsamples[i] != -1) {
+      mean += significance_subsamples[i];
+    }else {
+      cnt_invalidEntries++;
+    }
   }
-  mean /= num_subsamples;
+  mean /= num_subsamples - cnt_invalidEntries;
 
   for(Int_t i=0; i<num_subsamples; i++) {
-    stddev += (significance_subsamples[i]-mean)*(significance_subsamples[i]-mean);
+    if(significance_subsamples[i] != -1) {
+      stddev += (significance_subsamples[i]-mean)*(significance_subsamples[i]-mean);
+    }
   }
-  stddev = TMath::Sqrt(stddev/num_subsamples);
+  stddev = TMath::Sqrt(stddev/(num_subsamples-cnt_invalidEntries));
 
-  return stddev;  
+  return stddev;
 }
 
 
