@@ -112,7 +112,7 @@ h_combi = ax.plot(fpr_combi, tpr_combi,
 
 h_CombConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_noPrefilter'],
                            data_ROCdata_CombConvRej_RPConvRej['tpr_noPrefilter'],
-                           label='Comb. conv. rej. via MVA cuts (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_noPrefilter'],
+                           label='MVA 1 (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_noPrefilter'],
                                                                                           data_ROCdata_CombConvRej_RPConvRej['fpr_noPrefilter'])),
                            color=color_CombConvRej)
 
@@ -129,7 +129,7 @@ print('CombConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_
 
 
 h_singleConvTrackRejMVA = ax.plot(fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA,
-                                  label='Single-track conv. rej. via MVA cuts (AUC = %.3f)' % (np.trapz(tpr_singleConvTrackRejMVA, fpr_singleConvTrackRejMVA)),
+                                  label='MVA 2 (AUC = %.3f)' % (np.trapz(tpr_singleConvTrackRejMVA, fpr_singleConvTrackRejMVA)),
                                   color=color_singleConvTrackRej)
 
 ax.plot(fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
@@ -145,7 +145,7 @@ print('singleTrackConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (tpr_si
 
 
 h_RPConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
-                         label='RP conv. rej. via MVA cuts + prefiltering (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
+                         label='MVA 3 (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
                                                                                                     data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'])),
                          color=color_RPConvRejMVA)
 
@@ -176,21 +176,21 @@ h_optMarker = ax.plot(-99, -99,
 
 
 h_RPConvRejClass_1 = ax.plot(.490, .596, 'o', color=color_RPConvRejClass,
-        label='RP conv. rej. via classical cuts: $\phi_V>\pi/2$, $mass<0.05$', markersize=8, alpha=.6)
+        label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.6)
 h_RPConvRejClass_2 = ax.plot(.614, .776, 'o', color=color_RPConvRejClass,
-        label='     $\phi_V>2$, $mass<0.04$', markersize=6, alpha=.6)
+        label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.6)
 h_RPConvRejClass_3 = ax.plot(.721, .912, 'o', color=color_RPConvRejClass,
-        label='     $\phi_V>2.4$, $mass<0.01$', markersize=4, alpha=.6)
+        label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.6)
 h_RPConvRejClass_4 = ax.plot(.936, .986, 'o', color=color_RPConvRejClass,
-        label='     $\phi_V>2.9$, $mass<0.0035$', markersize=3, alpha=.6)
+        label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.6)
 
 
 
 plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristics')
+plt.xlabel('False Positive Rate', fontsize=18)
+plt.ylabel('True Positive Rate', fontsize=18)
+#plt.title('Receiver operating characteristics')
 
 handles, labels = ax.get_legend_handles_labels()
 handles_temp, labels_temp = handles[0], labels[0]
@@ -199,6 +199,7 @@ handles, labels = np.insert(handles, 4, handles_temp), np.insert(labels, 4, labe
 
 plt.legend(handles, labels, loc=4, fontsize=7)
 
+plt.tight_layout()
 
-plt.savefig('temp_output/ROCcurves_entireMassRange.png')
-plt.savefig('temp_output/ROCcurves_entireMassRange.pdf')
+plt.savefig('temp_output/ROCcurves.png')
+plt.savefig('temp_output/ROCcurves.pdf')

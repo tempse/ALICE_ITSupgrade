@@ -27,7 +27,7 @@ void PlotPhiv() {
 
 
   Float_t lineWidth = 3;
-  TString XTitle = "#phi_{V} (rad)";
+  TString XTitle = "#it{#varphi}_{V} (rad)";
   TString YTitle = "Yield (arb. units)";
   
   TCanvas *c = new TCanvas("c","",768,768);
