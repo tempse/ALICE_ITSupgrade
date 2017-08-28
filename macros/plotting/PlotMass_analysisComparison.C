@@ -33,7 +33,7 @@ void PlotMass_analysisComparison() {
   // Comb. conv. rej. via MVA cuts:
   TString infile4_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/CombConvRejMVA_DNN_0.05mass/cutVariations/wRatios/mass_histos_comparison.root";
 
-  TString infile_noMVAcuts_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/plots/singleTrackConvRejMVA_DNN_noMassCut/cutVariations/wRatios/mass_histos_comparison.root";
+  TString infile_noMVAcuts_filename = "~/analysis/code/FT2_AnalysisResults_Upgrade/macros/plotting/temp_output/mass_histos.root";
 
 
   TString leg_label1 = "classical cuts";
@@ -137,12 +137,12 @@ void PlotMass_analysisComparison() {
   h_SoverB_exp_4->SetName("h_SoverB_exp_4");
 
   TFile *infile_noMVAcuts = new TFile(infile_noMVAcuts_filename, "READ");
-  TH1D *h_significance_class_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_noMVAcuts");
-  TH1D *h_significance_exp_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_exp_noMVAcuts");
-  TH1D *h_significance_class_ideal = (TH1D*)infile_noMVAcuts->Get("h_significance_ideal");
+  TH1D *h_significance_class_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_class_noCuts");
+  TH1D *h_significance_exp_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_significance_exp_noCuts");
+  TH1D *h_significance_class_ideal = (TH1D*)infile_noMVAcuts->Get("h_significance_class_ideal");
   TH1D *h_significance_exp_ideal = (TH1D*)infile_noMVAcuts->Get("h_significance_exp_ideal");
-  TH1D *h_SoverB_class_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_SoverB_noMVAcuts");
-  TH1D *h_SoverB_exp_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_SoverB_exp_noMVAcuts");
+  TH1D *h_SoverB_class_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_SoverB_class_noCuts");
+  TH1D *h_SoverB_exp_noMVAcuts = (TH1D*)infile_noMVAcuts->Get("h_SoverB_exp_noCuts");
   TH1D *h_SoverB_exp_ideal = (TH1D*)infile_noMVAcuts->Get("h_SoverB_exp_ideal");
   h_significance_class_noMVAcuts->SetName("h_significance_class_noMVAcuts");
   h_significance_exp_noMVAcuts->SetName("h_significance_exp_noMVAcuts");
@@ -379,13 +379,13 @@ void PlotMass_analysisComparison() {
   h_SoverB_class_1->SetYTitle("#it{S}_{class} / #it{B}_{class}");
   h_SoverB_class_1->SetTitleSize(axisTitleSize,"xyz");
 
-  h_SoverB_class_1_norm->SetYTitle("(S/B) / (S/B)_{no cuts}");
+  h_SoverB_class_1_norm->SetYTitle("(#it{S}/#it{B}) / (#it{S}/#it{B})_{no cuts}");
 
   h_SoverB_exp_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
   h_SoverB_exp_1->SetYTitle("#it{S}_{exp} / #it{B}_{exp}");
   h_SoverB_exp_1->SetTitleSize(axisTitleSize,"xyz");
 
-  h_SoverB_exp_1_norm->SetYTitle("(S/B) / (S/B)_{no cuts}");
+  h_SoverB_exp_1_norm->SetYTitle("(#it{S}/#it{B}) / (#it{S}/#it{B})_{no cuts}");
 
 
   h_eff_CombiWithConvLeg_1->SetXTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
@@ -422,6 +422,7 @@ void PlotMass_analysisComparison() {
   leg4->AddEntry(h_SoverB_exp_3, leg_label3, "p");
   leg4->AddEntry(h_SoverB_exp_2, leg_label2, "p");
   leg4->AddEntry(h_SoverB_exp_noMVAcuts, leg_label_noMVAcuts, "p");
+  leg4->AddEntry(h_SoverB_exp_ideal, leg_label_ideal, "p");
 
   TLegend *leg5 = new TLegend(.65, .7, .95, .95);
   leg5->AddEntry(h_eff_S_1, "S", "l");
@@ -508,7 +509,7 @@ void PlotMass_analysisComparison() {
   h_significance_class_1_norm->GetXaxis()->SetTitleOffset(.9);
   h_significance_class_1_norm->GetXaxis()->SetLabelSize(.1);
   h_significance_class_1_norm->GetXaxis()->SetTitleSize(.14);
-  h_significance_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+  h_significance_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
 
   h_significance_class_1_norm->Draw(drawOptions_ratio);
   h_significance_class_2_norm->Draw(drawOptions_ratio_same);
@@ -578,7 +579,7 @@ void PlotMass_analysisComparison() {
   h_significance_exp_1_norm->GetXaxis()->SetTitleOffset(.9);
   h_significance_exp_1_norm->GetXaxis()->SetLabelSize(.1);
   h_significance_exp_1_norm->GetXaxis()->SetTitleSize(.14);
-  h_significance_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+  h_significance_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
 
   h_significance_exp_1_norm->Draw(drawOptions_ratio);
   h_significance_exp_2_norm->Draw(drawOptions_ratio_same);
@@ -645,7 +646,7 @@ void PlotMass_analysisComparison() {
   h_SoverB_class_1_norm->GetXaxis()->SetTitleOffset(.9);
   h_SoverB_class_1_norm->GetXaxis()->SetLabelSize(.1);
   h_SoverB_class_1_norm->GetXaxis()->SetTitleSize(.14);
-  h_SoverB_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+  h_SoverB_class_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
 
   h_SoverB_class_1_norm->Draw(drawOptions_ratio);
   h_SoverB_class_2_norm->Draw(drawOptions_ratio_same);
@@ -714,7 +715,7 @@ void PlotMass_analysisComparison() {
   h_SoverB_exp_1_norm->GetXaxis()->SetTitleOffset(.9);
   h_SoverB_exp_1_norm->GetXaxis()->SetLabelSize(.1);
   h_SoverB_exp_1_norm->GetXaxis()->SetTitleSize(.14);
-  h_SoverB_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+  h_SoverB_exp_1_norm->GetXaxis()->SetTitle("#it{m}_{ee} (GeV/#it{c}^{2})");
 
   h_SoverB_exp_1_norm->Draw(drawOptions_ratio);
   h_SoverB_exp_2_norm->Draw(drawOptions_ratio_same);

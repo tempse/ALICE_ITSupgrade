@@ -1599,6 +1599,20 @@ void PlotMass() {
   h_SoverB_exp_ideal->Write(0, TObject::kOverwrite);
   h_SoverB_exp_ideal_norm->Write(0, TObject::kOverwrite);
 
+  h_signal_class_subsample->Write(0, TObject::kOverwrite);
+  h_signal_class_noCuts_subsample->Write(0, TObject::kOverwrite);
+  h_signal_class_ideal_subsample->Write(0, TObject::kOverwrite);
+  h_signal_exp_subsample->Write(0, TObject::kOverwrite);
+  h_signal_exp_noCuts_subsample->Write(0, TObject::kOverwrite);
+  h_signal_exp_ideal_subsample->Write(0, TObject::kOverwrite);
+
+  h_backgr_class_subsample->Write(0, TObject::kOverwrite);
+  h_backgr_class_noCuts_subsample->Write(0, TObject::kOverwrite);
+  h_backgr_class_ideal_subsample->Write(0, TObject::kOverwrite);
+  h_backgr_exp_subsample->Write(0, TObject::kOverwrite);
+  h_backgr_exp_noCuts_subsample->Write(0, TObject::kOverwrite);
+  h_backgr_exp_ideal_subsample->Write(0, TObject::kOverwrite);
+
   h_error_est_significance_class->Write(0, TObject::kOverwrite);
   h_error_est_significance_class_noCuts->Write(0, TObject::kOverwrite);
   h_error_est_significance_class_ideal->Write(0, TObject::kOverwrite);
