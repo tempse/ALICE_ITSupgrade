@@ -16,8 +16,6 @@
 #include <TLatex.h>
 
 
-void SetStyle(Bool_t graypalette=kFALSE);
-
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 Float_t significanceError(TH2D&, TH2D&, Int_t, Int_t);
@@ -31,7 +29,7 @@ Float_t SoverBError(Float_t S, Float_t B) {
 }
 
 
-void PlotMass() {
+void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
 
   // File containing the input pairtree (test) data:
   TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
@@ -72,11 +70,11 @@ void PlotMass() {
 
   const Bool_t doConsiderPIDefficiencies = kTRUE;
   
-  // number of subsamples which are created for significance error estimation:
-  const Int_t num_subsamples = 20;
+  // // number of subsamples which are created for significance error estimation:
+  // num_subsamples = 20;
 
-  // enable bootstrapping for significance error estimation:
-  const Bool_t doBootstrap = kTRUE;
+  // // enable bootstrapping for significance error estimation:
+  // doBootstrap = kTRUE;
 
   // Output file path prefix:
   TString output_prefix = "temp_output/";
@@ -1678,56 +1676,14 @@ Float_t significanceError(TH2D &signal_subsamples, TH2D &backgr_subsamples,
       cnt_invalidEntries++;
     }
   }
-  mean /= num_subsamples - cnt_invalidEntries;
+  mean /= (num_subsamples - cnt_invalidEntries)*1.0;
 
   for(Int_t i=0; i<num_subsamples; i++) {
     if(significance_subsamples[i] != -1) {
       stddev += (significance_subsamples[i]-mean)*(significance_subsamples[i]-mean);
     }
   }
-  stddev = TMath::Sqrt(stddev/(num_subsamples-cnt_invalidEntries));
+  stddev = TMath::Sqrt(stddev/(num_subsamples-cnt_invalidEntries*1.0));
 
   return stddev;
-}
-
-
-
-void SetStyle(Bool_t graypalette) {
-  
-  gStyle->Reset("Plain");
-  gStyle->SetOptTitle(0);
-  gStyle->SetOptStat(0);
-  if(graypalette) gStyle->SetPalette(8,0);
-  else gStyle->SetPalette(1);
-  gStyle->SetCanvasColor(10);
-  gStyle->SetCanvasBorderMode(0);
-  gStyle->SetFrameLineWidth(1);
-  gStyle->SetFrameFillColor(kWhite);
-  gStyle->SetPadColor(10);
-  gStyle->SetPadTickX(1);
-  gStyle->SetPadTickY(1);
-  gStyle->SetPadBottomMargin(0.15);
-  gStyle->SetPadLeftMargin(0.15);
-  gStyle->SetHistLineWidth(1);
-  gStyle->SetHistLineColor(kRed);
-  gStyle->SetFuncWidth(2);
-  gStyle->SetFuncColor(kGreen);
-  gStyle->SetLineWidth(2);
-  gStyle->SetLabelSize(0.045,"xyz");
-  gStyle->SetLabelOffset(0.01,"y");
-  gStyle->SetLabelOffset(0.01,"x");
-  gStyle->SetLabelColor(kBlack,"xyz");
-  gStyle->SetTitleSize(0.05,"xyz");
-  gStyle->SetTitleOffset(1.25,"y");
-  gStyle->SetTitleOffset(1.2,"x");
-  gStyle->SetTitleFillColor(kWhite);
-  gStyle->SetTextSizePixels(26);
-  gStyle->SetTextFont(42);
-  //  gStyle->SetTickLength(0.04,"X");  gStyle->SetTickLength(0.04,"Y"); 
-
-  gStyle->SetLegendBorderSize(0);
-  gStyle->SetLegendFillColor(kWhite);
-  //  gStyle->SetFillColor(kWhite);
-  gStyle->SetLegendFont(42);
-
 }

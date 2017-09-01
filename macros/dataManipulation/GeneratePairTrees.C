@@ -37,7 +37,7 @@ void calculateHF();
 
 // MVA cut value (for identifying conversion tracks):
 const Bool_t doConsiderMVAinfo_convTrack = kFALSE;
-const Float_t MVAcut_convTrack = .31; // MVA output<MVAcut_convTrack <-> conversion track
+const Float_t MVAcut_convTrack = .41; // MVA output<MVAcut_convTrack <-> conversion track
 
 // // MVA cut value (For identifying real pair conversions):
 // const Float_t MVAcut_RPConv = 0.; // MVA output>MVAcut_RPConv <-> RP conv track
@@ -118,16 +118,16 @@ TVector3 temp;
 
 // program control parameters:
 bool isPairTree_rp = false;      // }
-bool isPairTree_us = false;      // } set/unset the
+bool isPairTree_us = true;      // } set/unset the
 bool isPairTree_ls = false;      // } output trees here
-bool isPairTree_us_ls = true;    // }
+bool isPairTree_us_ls = false;    // }
 
 
 
 void GeneratePairTrees() {
   
-  TFile *infile = TFile::Open("~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/CA_AnalysisResults_Upgrade_iGeo19.root", "READ");
-  TTree *singleTree = (TTree*)infile->Get("outputITSup/tracks");
+  TFile *infile = TFile::Open("~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_singleTree_mergedWithLooseTrackCuts.root", "READ");
+  TTree *singleTree = (TTree*)infile->Get("tracks");
 
   std::cout << std::endl;
   if(infile->IsOpen()) {
@@ -138,7 +138,7 @@ void GeneratePairTrees() {
   }
 
   
-  TString infile_MVAoutputs_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/sklearn_BDT_analysis/randomForest/singleTrackConvRej_wPIDeffs/temp_output/bdt/predictions_BDT.root";
+  TString infile_MVAoutputs_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/singleTrackConvRejMVA_DNN_noMassCuts/output/predictions_NN.root";
   
   TChain *singleTree_MVAoutputs = new TChain("singleTree_MVAoutput");
   if(doConsiderMVAinfo_convTrack) {
@@ -558,12 +558,12 @@ void GeneratePairTrees() {
 
 
 
-  for(Long64_t tr1=0; tr1<singleTree_nEvents; tr1++) { // first track loop
+  for(Long64_t tr1=0; tr1<singleTree_nEvents-1; tr1++) { // first track loop, do not search partner tracks in the last event of the tree
     if((tr1%1000)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
 				<< " (" << tr1*100/singleTree_nEvents << "%)...";
     
-    // do not look for partner tracks of the last event in the tree:
-    if(tr1 == singleTree_nEvents-1) break;
+    // // do not look for partner tracks of the last event in the tree:
+    // if(tr1 == singleTree_nEvents-1) break;
 
     singleTree->GetEntry(tr1);
     if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->GetEntry(tr1);
@@ -1075,12 +1075,12 @@ void calculateHF() {
 
     // // NB: IGNORE LABEL CHECKS FOR IGEO19
     
-    // // check whether they are in the same first mother range (i.e., have the same origin):
-    // if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
+    // check whether they are in the same first mother range (i.e., have the same origin):
+    if(firstMotherLabel1>=firstMotherLabel2_min && firstMotherLabel1<=firstMotherLabel2_max) {
       
-    //   if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
-    // 	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
-    //   }
+      if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
+    	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
+      }
       
       // check heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
@@ -1098,14 +1098,14 @@ void calculateHF() {
 	
       }
       
-      // }else { // <-> mothers have a different origin
+    }else { // <-> mothers have a different origin
       
       // check only heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
 	IsCombHF = 1;
       }
       
-      //}
+    }
     
   }
   
