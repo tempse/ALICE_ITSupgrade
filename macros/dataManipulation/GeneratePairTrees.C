@@ -47,6 +47,9 @@ const Float_t MVAcut_convTrack = .31; // MVA output<MVAcut_convTrack <-> convers
 Float_t phiv_cutValue = 2.4;  // RP convs. at phiv>phiv_cutValue
 Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 
+// Loose track cuts settings: set kTRUE if the tree also contains tracks with looser cuts:
+const Bool_t doContainLooseTracks = kTRUE;
+
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
@@ -106,6 +109,7 @@ Float_t TPCchi21, TPCchi22;
 Float_t phi1, phi2;
 Float_t eta1, eta2;
 Float_t pt1, pt2;
+Int_t IsLooseCuts1, IsLooseCuts2; // markers indicating tracks with loose track cuts
 
 TVector3 pv1, pv2;
 TVector3 z(0,0,1);
@@ -196,7 +200,7 @@ void GeneratePairTrees() {
   Int_t ST_nTPC;
   Double_t ST_ITSchi2;
   Double_t ST_TPCchi2;
-
+  Int_t ST_IsLooseCuts;
   
   TParticle* ST_particle = NULL;
   
@@ -228,6 +232,7 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("nTPC",&ST_nTPC);
   singleTree->SetBranchAddress("ITSchi2",&ST_ITSchi2);
   singleTree->SetBranchAddress("TPCchi2",&ST_TPCchi2);
+  if(doContainLooseTracks) singleTree->SetBranchAddress("IsLooseCuts",&ST_IsLooseCuts);
 
 
   if(isPairTree_rp) {
@@ -302,6 +307,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("eta2",&eta2);
     pairTree_rp->Branch("pt1",&pt1);
     pairTree_rp->Branch("pt2",&pt2);
+    if(doContainLooseTracks) pairTree_rp->Branch("IsLooseCuts1",&IsLooseCuts1);
+    if(doContainLooseTracks) pairTree_rp->Branch("IsLooseCuts2",&IsLooseCuts2);
   }
 
   if(isPairTree_us) {
@@ -376,6 +383,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("eta2",&eta2);
     pairTree_us->Branch("pt1",&pt1);
     pairTree_us->Branch("pt2",&pt2);
+    if(doContainLooseTracks) pairTree_us->Branch("IsLooseCuts1",&IsLooseCuts1);
+    if(doContainLooseTracks) pairTree_us->Branch("IsLooseCuts2",&IsLooseCuts2);
   }
 
   if(isPairTree_ls) {
@@ -450,6 +459,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("eta2",&eta2);
     pairTree_ls->Branch("pt1",&pt1);
     pairTree_ls->Branch("pt2",&pt2);
+    if(doContainLooseTracks) pairTree_ls->Branch("IsLooseCuts1",&IsLooseCuts1);
+    if(doContainLooseTracks) pairTree_ls->Branch("IsLooseCuts2",&IsLooseCuts2);
   }
 
   if(isPairTree_us_ls) {
@@ -524,6 +535,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("eta2",&eta2);
     pairTree_us_ls->Branch("pt1",&pt1);
     pairTree_us_ls->Branch("pt2",&pt2);
+    if(doContainLooseTracks) pairTree_us_ls->Branch("IsLooseCuts1",&IsLooseCuts1);
+    if(doContainLooseTracks) pairTree_us_ls->Branch("IsLooseCuts2",&IsLooseCuts2);
   }
 
 
@@ -614,6 +627,7 @@ void GeneratePairTrees() {
       eta1 = ST_eta;
       pt1 = ST_pt;
       PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
+      if(doContainLooseTracks) IsLooseCuts1 = ST_IsLooseCuts;
     }else {
       EventID2 = ST_event;
       TrackID2 = tr1;
@@ -642,6 +656,7 @@ void GeneratePairTrees() {
       eta2 = ST_eta;
       pt2 = ST_pt;
       PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
+      if(doContainLooseTracks) IsLooseCuts2 = ST_IsLooseCuts;
     }
 
     
@@ -700,6 +715,7 @@ void GeneratePairTrees() {
 	eta2 = ST_eta;
 	pt2 = ST_pt;
 	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
+	if(doContainLooseTracks) IsLooseCuts2 = ST_IsLooseCuts;
       }else {
 	EventID1 = ST_event;
 	TrackID1 = tr2;
@@ -728,6 +744,7 @@ void GeneratePairTrees() {
 	eta1 = ST_eta;
 	pt1 = ST_pt;
 	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
+	if(doContainLooseTracks) IsLooseCuts1 = ST_IsLooseCuts;
       }
 
       IsRP = 0; // default value
