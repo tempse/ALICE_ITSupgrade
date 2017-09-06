@@ -10,6 +10,8 @@
 
 #include <TROOT.h>
 #include <TApplication.h>
+#include <TDirectory.h>
+#include <TList.h>
 #include <TFile.h>
 #include <TChain.h>
 #include <TTree.h>
@@ -109,7 +111,7 @@ Float_t TPCchi21, TPCchi22;
 Float_t phi1, phi2;
 Float_t eta1, eta2;
 Float_t pt1, pt2;
-Int_t IsLooseCuts1, IsLooseCuts2; // markers indicating tracks with loose track cuts
+Int_t TrackCut1, TrackCut2; // 0: ITS standalone tracks, 1: loose track cuts, 2: normal (tight) track cuts
 
 TVector3 pv1, pv2;
 TVector3 z(0,0,1);
@@ -125,16 +127,25 @@ bool isPairTree_us_ls = false;    // }
 
 
 void GeneratePairTrees() {
-  
-  TFile *infile = TFile::Open("~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_singleTree_mergedWithLooseTrackCuts.root", "READ");
-  TTree *singleTree = (TTree*)infile->Get("tracks");
 
-  std::cout << std::endl;
-  if(infile->IsOpen()) {
-    std::cout << "Open input file " << infile->GetName() << std::endl;
-  }else {
-    std::cout << "  ERROR reading file " << infile->GetName() << std::endl;
-    gApplication->Terminate();
+  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_wLooseTrackCuts_iGeo12.root/";
+  const char *file_ext = ".root";
+  TSystemDirectory input_dir(input_dirname, input_dirname);
+  TList *input_files = input_dir.GetListOfFiles();
+  
+  TChain *singleTree = new TChain("outputITSup/tracks");
+  if(input_files) {
+    std::cout << "Reading \"*" << file_ext << "\" files from "
+	      << input_dirname << "...";
+    TSystemFile *file;
+    TString fname;
+    TIter next(input_files);
+    while((file = (TSystemFile*)next())) {
+      fname = file->GetName();
+      if(!file->IsDirectory() && fname.EndsWith(file_ext)) {
+	singleTree->Add(input_dirname + fname);
+      }
+    }
   }
 
   
@@ -162,7 +173,7 @@ void GeneratePairTrees() {
   if(doConsiderMVAinfo_convTrack && (singleTree->GetEntries() != singleTree_MVAoutputs->GetEntries())) {
     std::cout << "  ERROR: The trees in the input files have different sizes."
 	      << std::endl;
-    std::cout << "    Size of tree in file " << infile->GetName() << ": "
+    std::cout << "    Size of tree in input files: "
 	      << singleTree->GetEntries() << std::endl;
     std::cout << "    Size of tree in file " << infile_MVAoutputs_name << ": "
 	      << singleTree_MVAoutputs->GetEntries() << std::endl;
@@ -200,7 +211,7 @@ void GeneratePairTrees() {
   Int_t ST_nTPC;
   Double_t ST_ITSchi2;
   Double_t ST_TPCchi2;
-  Int_t ST_IsLooseCuts;
+  Int_t ST_isTrackCut;
   
   TParticle* ST_particle = NULL;
   
@@ -232,7 +243,7 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("nTPC",&ST_nTPC);
   singleTree->SetBranchAddress("ITSchi2",&ST_ITSchi2);
   singleTree->SetBranchAddress("TPCchi2",&ST_TPCchi2);
-  if(doContainLooseTracks) singleTree->SetBranchAddress("IsLooseCuts",&ST_IsLooseCuts);
+  singleTree->SetBranchAddress("isTrackCut",&ST_isTrackCut);
 
 
   if(isPairTree_rp) {
@@ -307,8 +318,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("eta2",&eta2);
     pairTree_rp->Branch("pt1",&pt1);
     pairTree_rp->Branch("pt2",&pt2);
-    if(doContainLooseTracks) pairTree_rp->Branch("IsLooseCuts1",&IsLooseCuts1);
-    if(doContainLooseTracks) pairTree_rp->Branch("IsLooseCuts2",&IsLooseCuts2);
+    pairTree_rp->Branch("TrackCut1",&TrackCut1);
+    pairTree_rp->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_us) {
@@ -383,8 +394,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("eta2",&eta2);
     pairTree_us->Branch("pt1",&pt1);
     pairTree_us->Branch("pt2",&pt2);
-    if(doContainLooseTracks) pairTree_us->Branch("IsLooseCuts1",&IsLooseCuts1);
-    if(doContainLooseTracks) pairTree_us->Branch("IsLooseCuts2",&IsLooseCuts2);
+    pairTree_us->Branch("TrackCut1",&TrackCut1);
+    pairTree_us->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_ls) {
@@ -459,8 +470,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("eta2",&eta2);
     pairTree_ls->Branch("pt1",&pt1);
     pairTree_ls->Branch("pt2",&pt2);
-    if(doContainLooseTracks) pairTree_ls->Branch("IsLooseCuts1",&IsLooseCuts1);
-    if(doContainLooseTracks) pairTree_ls->Branch("IsLooseCuts2",&IsLooseCuts2);
+    pairTree_ls->Branch("TrackCut1",&TrackCut1);
+    pairTree_ls->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_us_ls) {
@@ -535,8 +546,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("eta2",&eta2);
     pairTree_us_ls->Branch("pt1",&pt1);
     pairTree_us_ls->Branch("pt2",&pt2);
-    if(doContainLooseTracks) pairTree_us_ls->Branch("IsLooseCuts1",&IsLooseCuts1);
-    if(doContainLooseTracks) pairTree_us_ls->Branch("IsLooseCuts2",&IsLooseCuts2);
+    pairTree_us_ls->Branch("TrackCut1",&TrackCut1);
+    pairTree_us_ls->Branch("TrackCut2",&TrackCut2);
   }
 
 
@@ -550,6 +561,7 @@ void GeneratePairTrees() {
   
   Long64_t singleTree_nEvents = singleTree->GetEntries();
 
+  Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
   
   std::cout << std::endl << "Start event processing...";
   
@@ -559,11 +571,9 @@ void GeneratePairTrees() {
 
 
   for(Long64_t tr1=0; tr1<singleTree_nEvents-1; tr1++) { // first track loop, do not search partner tracks in the last event of the tree
-    if((tr1%1000)==0) std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
-				<< " (" << tr1*100/singleTree_nEvents << "%)...";
-    
-    // // do not look for partner tracks of the last event in the tree:
-    // if(tr1 == singleTree_nEvents-1) break;
+    if((tr1%singleTree_nEvents_1percent)==0)
+      std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
+		<< " (" << tr1*100/singleTree_nEvents << "%)...";
 
     singleTree->GetEntry(tr1);
     if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->GetEntry(tr1);
@@ -627,7 +637,7 @@ void GeneratePairTrees() {
       eta1 = ST_eta;
       pt1 = ST_pt;
       PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-      if(doContainLooseTracks) IsLooseCuts1 = ST_IsLooseCuts;
+      TrackCut1 = ST_isTrackCut;
     }else {
       EventID2 = ST_event;
       TrackID2 = tr1;
@@ -656,7 +666,7 @@ void GeneratePairTrees() {
       eta2 = ST_eta;
       pt2 = ST_pt;
       PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-      if(doContainLooseTracks) IsLooseCuts2 = ST_IsLooseCuts;
+      TrackCut2 = ST_isTrackCut;
     }
 
     
@@ -715,7 +725,7 @@ void GeneratePairTrees() {
 	eta2 = ST_eta;
 	pt2 = ST_pt;
 	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doContainLooseTracks) IsLooseCuts2 = ST_IsLooseCuts;
+	TrackCut2 = ST_isTrackCut;
       }else {
 	EventID1 = ST_event;
 	TrackID1 = tr2;
@@ -744,7 +754,7 @@ void GeneratePairTrees() {
 	eta1 = ST_eta;
 	pt1 = ST_pt;
 	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doContainLooseTracks) IsLooseCuts1 = ST_IsLooseCuts;
+	TrackCut1 = ST_isTrackCut;
       }
 
       IsRP = 0; // default value
@@ -847,8 +857,6 @@ void GeneratePairTrees() {
   watch->Print();
   std::cout << std::endl;
   watch->Stop();
-
-  infile->Close();
   
   if(isPairTree_rp) pairTree_rp->Write(0, TObject::kOverwrite);
   if(isPairTree_us) pairTree_us->Write(0, TObject::kOverwrite);
@@ -862,9 +870,6 @@ void GeneratePairTrees() {
   std::cout << "  us: " << "\t" << cnt_us << std::endl
 	    << "  ls: " << "\t" << cnt_ls << std::endl
 	    << "  ls+us: " << "\t" << cnt_us_ls << std::endl << std::endl;
-
-  // histDiagnosis1->SaveAs("histDiagnosis1.root");
-  // histDiagnosis2->SaveAs("histDiagnosis2.root");
 
   
   gApplication->Terminate();
