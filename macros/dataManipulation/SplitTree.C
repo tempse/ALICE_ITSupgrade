@@ -1,183 +1,244 @@
 #include <iostream>
 
 #include <TROOT.h>
-#include <TApplication.h>
+#include <TSystem.h>
+#include <TDirectory.h>
+#include <TSystemDirectory.h>
+#include <TSystemFile.h>
+#include <TList.h>
 #include <TString.h>
 #include <TFile.h>
+#include <TChain.h>
 #include <TTree.h>
 
-void SplitTree(TString fname, TString tname, TString frac, TString method) {
+void SplitTree() {
+  
+  // directory containing the input ROOT files
+  const char *input_dirname = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_wLooseTrackCuts_iGeo12.root/";
+  const char *file_ext = ".root";
 
-  // TString infileName = "../inputData/FT2_AnalysisResults_Upgrade_addFeat.root";
-  TString infileName;
-  if(fname.IsNull() || !fname.EndsWith(".root")) {
-    std::cout << "  ERROR: You must provide a ROOT file name with the first argument."
+  // tree name
+  TString treeName = "outputITSup/tracks";
+
+  // size of test sample (int/float)  
+  TString test_sample_size = "538273";
+
+  // choose what to write to disk ("train"/"test"/"train+test")
+  TString write_samples = "train+test";
+
+  // path to output folder
+  TString output_prefix = "temp_output/";
+
+  // branch name with event IDs in case test_sample_size is type int
+  TString ev_id_branchname = "event";
+
+  // branch name with information about the looseness of the track cuts
+  TString trackCut_branchname = "isTrackCut";
+
+  
+
+  if(test_sample_size.IsNull() || !test_sample_size.IsFloat()) {
+    std::cout << "  Error: Invalid format or "
+	      << "missing value of variable 'test_sample_size'."
 	      << std::endl;
-    exit(1);
-  }else {
-    infileName = fname;
+    gSystem->Exit(1);
   }
 
-
-  TString treeName = "tracks";
-  if(tname.IsNull()) {
-    std::cout << "  Warning: No tree name provided. Default value (\""
-	      << treeName << "\") will be used." << std::endl;
-  }else {
-    treeName = tname;
-  }
+  Long64_t num_events_testsample;
+  Float_t frac_events_testsample;
+  Bool_t doSplitByEvent;
   
-
-  TString splitFraction = "1:1:8";
-  if(frac.IsNull() || !frac.Contains(":")) {
-    std::cout << "  Warning: Invalid format or missing value of third argument. "
-	      << "  The default value \"1:1:8\" will be used." << std::endl;
+  if(!test_sample_size.IsNull()) {
+    if(test_sample_size.IsDigit()) {
+      doSplitByEvent = kTRUE;
+      num_events_testsample = test_sample_size.Atoi();
+    }else if(test_sample_size.IsFloat()) {
+      doSplitByEvent = kFALSE;
+      frac_events_testsample = test_sample_size.Atof();
+    }else {
+      std::cout << "  Error: invalid format of variable 'test_sample_size', "
+		<< "  has to be either int or float." << std::endl;
+      gSystem->Exit(1);
+    }
   }else {
-    splitFraction = frac;
+    std::cout << "  Error: Missing argument: 'test_sample_size.'"
+	      << std::endl;
+    gSystem->Exit(1);
   }
 
-  TString temp1_str = splitFraction, temp2_str = splitFraction;
-  TString str1 = splitFraction.Remove(splitFraction.First(':'),
-				      splitFraction.Length());
-  TString str2 = temp1_str.Remove(0,temp1_str.First(':')+1);
-  str2.Remove(str2.Last(':'), str2.Length());
-  TString str3 = temp2_str.Remove(0, temp2_str.Last(':')+1);
-  Int_t part1, part2, part3;
-  if(!frac.IsNull() && (!str1.IsDigit() || !str2.IsDigit() || !str3.IsDigit())) {
-    std::cout << "  Warning: invalid format of third argument. "
-	      << "  (You should enter something like \"1:1:8\".)" << std::endl
-	      << "  Default values will be used." << std::endl;
-    part1 = 1; // default value
-    part2 = 1; // default value
-    part3 = 8; // default value
-  }else {
-    part1 = str1.Atoi();
-    part2 = str2.Atoi();
-    part3 = str3.Atoi();
+  if(doSplitByEvent && ev_id_branchname.IsNull()) {
+    std::cout << "  Error: Missing argument: 'ev_id_branchname'." << std::endl;
+    gSystem->Exit(1);
   }
 
 
-  if(method.IsNull()) {
-    method = "1+2+3"; // default value
+  TSystemDirectory input_dir(input_dirname, input_dirname);
+  TList *input_files = input_dir.GetListOfFiles();
+  
+  TChain *infileTree = new TChain(treeName);
+  if(input_files) {
+    std::cout << "Reading \"*" << file_ext << "\" files from \""
+	      << input_dirname << "\"...";
+    TSystemFile *file;
+    TString fname;
+    TIter next(input_files);
+    while((file = (TSystemFile*)next())) {
+      fname = file->GetName();
+      if(!file->IsDirectory() && fname.EndsWith(file_ext)) {
+	infileTree->Add(input_dirname + fname);
+      }
+    }
   }
+  std::cout << "DONE" << std::endl;
+  
+  
+  Long64_t ev_id;
+  Int_t isTrackCut;
+  if(doSplitByEvent) infileTree->SetBranchAddress(ev_id_branchname, &ev_id);
+  if(doSplitByEvent) infileTree->SetBranchAddress(trackCut_branchname, &isTrackCut);
 
   
-  TFile *infile = new TFile(infileName, "READ");
-  TTree *infileTree = (TTree*)infile->Get(treeName);
-
-  TFile *outfile_part1 = new TFile("temp_output/output_splitTree_part1.root", "RECREATE");
+  TFile *outfile_part1 = new TFile(output_prefix + "output_splitTree_train.root", "RECREATE");
   TTree *splitTree_part1 = infileTree->CloneTree(0);
 
-  TFile *outfile_part2 = new TFile("temp_output/output_splitTree_part2.root", "RECREATE");
+  TFile *outfile_part2 = new TFile(output_prefix + "output_splitTree_test.root", "RECREATE");
   TTree *splitTree_part2 = infileTree->CloneTree(0);
 
-  TFile *outfile_part3 = new TFile("temp_output/output_splitTree_part3.root", "RECREATe");
-  TTree *splitTree_part3 = infileTree->CloneTree(0);
-  
-  
-  Long64_t infileTree_nEvents = infileTree->GetEntries();
-  Long64_t splitTree_part1_nEvents = part1 * infileTree_nEvents / (part1+part2+part3);
-  Long64_t splitTree_part2_nEvents = part2 * infileTree_nEvents / (part1+part2+part3);
-  Long64_t splitTree_part3_nEvents = part3 * infileTree_nEvents / (part1+part2+part3);
 
+  Long64_t infileTree_nEntries = infileTree->GetEntries();
 
-  std::cout << "Input file: " << infileName << std::endl << std::endl;
+  Bool_t doTrainSplit = (write_samples.Contains("train")) ? kTRUE : kFALSE;
+  Bool_t doTestSplit = (write_samples.Contains("test")) ? kTRUE : kFALSE;
   
-  // create first tree:
-  if(method.Contains("1")) {
-    std::cout << std::endl << "Processing first part of the tree..." << std::endl;
-    for(Long64_t ev=0;
-	ev<splitTree_part1_nEvents;
-	ev++) {
-      if((ev%1000)==0) {
-	std::cout << "\rProcessing event " << ev << " of "
-		  << splitTree_part1_nEvents << " ("
-		  << ev*100/splitTree_part1_nEvents << "%)...";
+  
+  if(!doSplitByEvent) {
+
+    std::cout << "Split criterion: fraction (test_sample_size: "
+	      << frac_events_testsample << ")" << std::endl;
+    
+    Long64_t splitTree_part2_nEntries = (Long64_t)(frac_events_testsample * infileTree_nEntries);
+    Long64_t splitTree_part1_nEntries = infileTree_nEntries - splitTree_part2_nEntries;
+  
+    // create first tree:
+    if(doTrainSplit) {
+      std::cout << std::endl << "Processing train split..." << std::endl;
+      for(Long64_t ev=0;
+	  ev<splitTree_part1_nEntries;
+	  ev++) {
+	if((ev%1000)==0) {
+	  std::cout << "\rProcessing event " << ev << " of "
+		    << splitTree_part1_nEntries << " ("
+		    << ev*100/splitTree_part1_nEntries << "%)...";
+	}
+
+	infileTree->GetEntry(ev);
+
+	splitTree_part1->Fill();
+      }
+      std::cout << "\rProcessing event " << splitTree_part1_nEntries
+		<< " of " << splitTree_part1_nEntries << " (100%)... DONE."
+		<< std::endl << std::endl;
+    }
+
+    outfile_part1->cd();
+    splitTree_part1->Write(0, TObject::kOverwrite);
+
+    
+    // create second tree:
+    
+    if(doTestSplit) {
+      std::cout << "Processing test split..." << std::endl;
+      for(Long64_t ev=splitTree_part1_nEntries + 1;
+	  ev<splitTree_part1_nEntries + splitTree_part2_nEntries;
+	  ev++) {
+	if((ev%1000)==0) {
+	  std::cout << "\rProcessing event " << ev << " of "
+		    << infileTree_nEntries << " ("
+		    << (ev - splitTree_part1_nEntries)*100/splitTree_part2_nEntries
+		    << "%)...";
+	}
+
+	infileTree->GetEntry(ev);
+
+	splitTree_part2->Fill();
       }
 
-      infileTree->GetEntry(ev);
-
-      splitTree_part1->Fill();
+      outfile_part2->cd();
+      splitTree_part2->Write(0, TObject::kOverwrite);
+      
+      std::cout << "\rProcessing event " << splitTree_part2_nEntries
+		<< " of " << splitTree_part2_nEntries << " (100%)... DONE."
+		<< std::endl;
+      std::cout << std::endl;
     }
-    std::cout << "\rProcessing event " << splitTree_part1_nEvents
-	      << " of " << splitTree_part1_nEvents << " (100%)... DONE."
-	      << std::endl << std::endl;
-  
-    outfile_part1->Write();
-    outfile_part1->Close();
-  }
+    
+  }else { // <-> if(doSplitByEvent)
 
-  
-  // create second tree:
-  if(method.Contains("2")) {
-    std::cout << "Processing second part of the tree..." << std::endl;
-    for(Long64_t ev=splitTree_part1_nEvents + 1;
-	ev<splitTree_part1_nEvents + splitTree_part2_nEvents;
-	ev++) {
-      if((ev%1000)==0) {
-	std::cout << "\rProcessing event " << ev << " of "
-		  << infileTree_nEvents << " ("
-		  << (ev - splitTree_part1_nEvents)*100/splitTree_part2_nEvents
-		  << "%)...";
+    std::cout << "Split criterion: event number (test sample event number: "
+	      << num_events_testsample << ")" << std::endl;
+    
+    Long64_t splitTree_testSample_nEvents = num_events_testsample;
+
+
+    if(splitTree_testSample_nEvents >= infileTree_nEntries) {
+      std::cout << "  Error: Event number in test sample (" << num_events_testsample
+		<< ") exceeds total number of entries (" << infileTree_nEntries << ")."
+		<< std::endl;
+      gSystem->Exit(1);
+    }
+
+    Long64_t infileTree_nEntries_1percent = (Long64_t)(infileTree_nEntries/100);
+
+    Long64_t cnt_percent = 0;
+
+    Long64_t ev_id_prev = -1;
+    Long64_t cnt_passedEvents = 0;
+    Long64_t cnt_trainEntries = 0, cnt_testEntries = 0;
+
+    Bool_t doCountEvent = kFALSE;
+
+    std::cout << "Splitting the data..." << std::endl;
+    
+    for(Long64_t en=0; en<infileTree_nEntries; en++) {
+      if((en%infileTree_nEntries_1percent)==0) {
+	std::cout << "\r  Processing... (" << cnt_percent << "%)";
+	cnt_percent++;
       }
 
-      infileTree->GetEntry(ev);
+      infileTree->GetEntry(en);
 
-      splitTree_part2->Fill();
+      // monitor whether there is a "standard-cut" track in the event
+      if(isTrackCut == 2) doCountEvent = kTRUE;
+
+      if(ev_id != ev_id_prev) {
+	if(doCountEvent) cnt_passedEvents++;
+	ev_id_prev = ev_id;
+	doCountEvent = kFALSE;
+      }
+
+      if(cnt_passedEvents < splitTree_testSample_nEvents) {
+	if(doTestSplit) splitTree_part2->Fill();
+	cnt_testEntries++;
+      }else {
+	if(doTrainSplit) splitTree_part1->Fill();
+	cnt_trainEntries++;
+      }
     }
-    std::cout << "\rProcessing event " << splitTree_part2_nEvents
-	      << " of " << splitTree_part2_nEvents << " (100%)... DONE."
-	      << std::endl;
     std::cout << std::endl;
+    
+    std::cout << "Number of entries in training sample: " << cnt_trainEntries << std::endl
+	      << "Number of entries in test sample:     " << cnt_testEntries << std::endl;
+    
 
-    outfile_part2->Write();
-    outfile_part2->Close();
+    
+    outfile_part1->cd();
+    splitTree_part1->Write(0, TObject::kOverwrite);
+
+    outfile_part2->cd();
+    splitTree_part2->Write(0, TObject::kOverwrite);
+
   }
+    
 
-
-  // create third tree:
-  if(method.Contains("3")) {
-    std::cout << "Processing third part of the tree..." << std::endl;
-    for(Long64_t ev=splitTree_part1_nEvents + splitTree_part2_nEvents + 1;
-	ev<splitTree_part1_nEvents + splitTree_part2_nEvents + splitTree_part3_nEvents;
-	ev++) {
-      if((ev%1000)==0) {
-	std::cout << "\rProcessing event " << ev << " of "
-		  << infileTree_nEvents << " ("
-		  << (ev - splitTree_part1_nEvents - splitTree_part2_nEvents)*100/splitTree_part3_nEvents
-		  << "%)...";
-      }
-
-      infileTree->GetEntry(ev);
-
-      splitTree_part3->Fill();
-    }
-    std::cout << "\rProcessing event " << splitTree_part3_nEvents
-	      << " of " << splitTree_part3_nEvents << " (100%)... DONE."
-	      << std::endl;
-    std::cout << std::endl;
-
-    outfile_part3->Write();
-    outfile_part3->Close();
-  }
-
-
-  // Print summary:
-  std::cout << "The following trees were created:" << std::endl;
-  if(method.Contains("1"))
-    std::cout << "  1st tree containing " << splitTree_part1_nEvents
-	    << " events (" << splitTree_part1_nEvents/((Float_t)infileTree_nEvents)*100
-	    << "% of input tree)" << std::endl;
-  if(method.Contains("2"))
-    std::cout << "  2nd tree containing " << splitTree_part2_nEvents
-	    << " events (" << splitTree_part2_nEvents/((Float_t)infileTree_nEvents)*100
-	    << "% of input tree)" << std::endl;
-  if(method.Contains("3"))
-    std::cout << "  3rd tree containing " << splitTree_part3_nEvents
-	    << " events (" << splitTree_part3_nEvents/((Float_t)infileTree_nEvents)*100
-	    << "% of input tree)" << std::endl;
-  std::cout << std::endl;
-
-
-  gApplication->Terminate();
+  gSystem->Exit(1);
 }
