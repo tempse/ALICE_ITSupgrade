@@ -11,33 +11,20 @@
 
 // stores all relevant information of a particle pair:
 struct particlePair {
-  Int_t EventID;
+  Long64_t EventID;
   Int_t TrackID1;
   Int_t TrackID2;
   Int_t IsTaggedAccepted;
-  Long64_t originalPosition;
-
-  // bool operator < (const particlePair &rhs) const {
-  //   return (EventID < rhs.EventID);
-  // }
 };
 
 bool sortPairsByEventID(const particlePair &lhs, const particlePair &rhs) {
   return lhs.EventID < rhs.EventID;
 }
 
-bool sortByOriginalPosition(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.originalPosition < rhs.originalPosition;
-}
-
 // store all relevant information of a particle track:
 struct particleTrack {
-  Int_t EventID;
+  Long64_t EventID;
   Int_t TrackID;
-
-  // bool operator < (const particleTrack &rhs) const {
-  //   return (EventID < rhs.EventID);
-  // }
 };
 
 bool sortTracksByEventID(const particleTrack &lhs, const particleTrack &rhs) {
@@ -62,21 +49,22 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   std::cout << "Reading file...";
   TFile *updatefile = new TFile(updatefilename, "UPDATE");
   TTree *tree_updatefile = (TTree*)updatefile->Get(treename_updatefile);
-  Int_t EventID, TrackID1, TrackID2;
-  tree_updatefile->SetBranchAddress("EventID1", &EventID);
+  Long64_t EventID;
+  Int_t TrackID1, TrackID2;
+  tree_updatefile->SetBranchAddress("EventID1_unique", &EventID);
   tree_updatefile->SetBranchAddress("TrackID1", &TrackID1);
   tree_updatefile->SetBranchAddress("TrackID2", &TrackID2);
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_updatefile) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_updatefile
-	      << " already exists in file " << updatefile->GetName() << std::endl;
+        << " already exists in file " << updatefile->GetName() << std::endl;
     gApplication->Terminate();
   }
   std::cout << " DONE." << std::endl;
   
   TString branchname_updatefile_vartype = branchname_updatefile + "/I";
   TBranch *newBranch = tree_updatefile->Branch(branchname_updatefile,
-					       &isAccepted,
-					       branchname_updatefile_vartype);
+  				       &isAccepted,
+  				       branchname_updatefile_vartype);
   
   
   TFile *branchfile = new TFile(branchfilename, "READ");
@@ -95,6 +83,10 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     gApplication->Terminate();
   }
 
+
+  // TFile *outfile = new TFile("output_prefilterTagBranchMVA.root","RECREATE");
+  // TTree *tree_outfile = new TTree("prefilterTags","prefilterTags");
+  // tree_outfile->Branch(branchname_updatefile, &isAccepted, branchname_updatefile + "/I");
 
 
   // Collection of all particle pairs (of all events):
@@ -122,7 +114,6 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     currentPair.EventID = EventID;
     currentPair.TrackID1 = TrackID1;
     currentPair.TrackID2 = TrackID2;
-    currentPair.originalPosition = j;
     
     if(signalRegion == "+") {
       if(var < -1 || var > 1) { // check if previously tagged as non-accepted
@@ -163,62 +154,38 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   std::cout << std::endl;
 
 
-  // sort pairs and tracks by event ID:
-  std::cout << "Sorting data...";
-  std::sort(allPairs.begin(), allPairs.end(), sortPairsByEventID);
-  std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end(), sortTracksByEventID);
-  std::cout << " DONE." << std::endl;
+  Int_t EventID_prev = -1;
+
+  Int_t pairs_startPos = 0, accTracks_startPos = 0;
+  Int_t accTracks_nextStartPos;
+
+
+  std::cout << "Propagating tag information to other pairs in the respective event..."
+	    << std::endl;
   
+  while(pairs_startPos < nentries) {
+    std::cout << "\r  (" << pairs_startPos << " / " << nentries << ")";
 
-  // store start positions of new events:
-  std::cout << "Finding new event start positions...";
-  std::map<Long64_t, Long64_t> eventID_startPos;
-  Long64_t EventID_prev = -1;
-  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-    if(tracksTaggedAccepted[i].EventID != EventID_prev) {
-      eventID_startPos[tracksTaggedAccepted[i].EventID] = i;
-    }
-    EventID_prev = tracksTaggedAccepted[i].EventID;
-  }
-  std::cout << " DONE." << std::endl;
-  
+    while(allPairs[pairs_startPos].EventID == EventID_prev) {
 
-
-  std::cout << "Propagate tag information to other pairs..." << std::endl;
-  
-  TStopwatch *watch = new TStopwatch();
-  watch->Start();
-
-  for(Long64_t i=0; i<nentries; i++) {
-    if((i%1000)==0) {
-      std::cout << "\r  Processing event " << i << " of " << nentries
-		<< " (" << i/((Float_t)nentries)*100 << " %)...";
-    }
-    
-    if( allPairs[i].IsTaggedAccepted == -999 ) continue; // skip irrelevant entries
-    
-    for(Long64_t j=eventID_startPos[allPairs[i].EventID];
-	j<(Long64_t)tracksTaggedAccepted.size();
-	j++) {
-      if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
-	break;
-      }else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
-	       allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
-	allPairs[i].IsTaggedAccepted = 1.;
+      for(Int_t i=accTracks_startPos; i<tracksTaggedAccepted.size(); i++) {
+	if(tracksTaggedAccepted[i].EventID != allPairs[pairs_startPos].EventID) {
+	  accTracks_nextStartPos = i;
+	  break;
+	}else if(allPairs[pairs_startPos].TrackID1 == tracksTaggedAccepted[i].TrackID ||
+		 allPairs[pairs_startPos].TrackID2 == tracksTaggedAccepted[i].TrackID) {
+	  allPairs[pairs_startPos].IsTaggedAccepted = 1;
+	}
       }
+
+      pairs_startPos++;
     }
+
+    accTracks_startPos = accTracks_nextStartPos;
+    EventID_prev = allPairs[pairs_startPos].EventID;
+    
   }
-  std::cout << "\r  Processing event " << nentries << " of " << nentries
-	    << " (100 %)... DONE.";
-  std::cout << " Time elapsed: " << watch->RealTime() << " seconds."
-	    << std::endl << std::endl;
 
-
-  // restore original order of allPairs vector:
-  std::cout << "Restoring original order of data...";
-  std::sort(allPairs.begin(), allPairs.end(), sortByOriginalPosition);
-  std::cout << " DONE." << std::endl;
-  
 
   std::cout << "Fill new branch with appropriate tags...";
   for(Long64_t i=0; i<nentries; i++) {
@@ -235,6 +202,6 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   std::cout << "File " << updatefile->GetName() << " updated." << std::endl;
 
   
-  gApplication->Terminate();
+  gSystem->Exit(0);
   
 }
