@@ -3,6 +3,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TDirectory.h>
+#include <TSystemDirectory.h>
 #include <TList.h>
 #include <TString.h>
 #include <TFile.h>
@@ -19,7 +20,7 @@ void CountEvents() {
   TString treeName = "tracks";
 
   // branch name with event IDs in case test_sample_size is type int
-  TString ev_id_branchname = "event";
+  TString ev_id_branchname = "EventID1_unique";
 
   // branch name with information about the looseness of the track cuts
   TString trackCut_branchname = "isTrackCut";
@@ -51,7 +52,7 @@ void CountEvents() {
   Int_t ev_id;
   Int_t TrackCut;
   infileTree->SetBranchAddress(ev_id_branchname, &ev_id);
-  infileTree->SetBranchAddress(trackCut_branchname, &TrackCut);
+  //infileTree->SetBranchAddress(trackCut_branchname, &TrackCut);
   
   Int_t infileTree_nEntries = infileTree->GetEntries();
   std::cout << "Processing " << infileTree_nEntries << " entries..." << std::endl;
@@ -60,9 +61,9 @@ void CountEvents() {
 
   Long64_t cnt_percent = 0;
 
-  Long64_t ev_id_prev = -1;
-  Long64_t cnt_passedEvents = 0;
-  Long64_t cnt_trainEntries = 0, cnt_testEntries = 0;
+  Long64_t ev_id_prev = -99;
+  Long64_t cnt_passedEvents = -1;
+  Long64_t cnt_descendingID = 0, cnt_largeIncrement = -1, cnt_largerIncrement = -1;
 
   std::cout << "Counting events..." << std::endl;
 
@@ -74,17 +75,21 @@ void CountEvents() {
 
     infileTree->GetEntry(en);
 
-    // monitor whether there is a "standard-cut" track in the event
-    if(TrackCut != 2) continue;
-
     if(ev_id != ev_id_prev) {
-      cnt_passedEvents++;
+      /*if(TrackCut == 2)*/ cnt_passedEvents++;
+      if(ev_id < ev_id_prev) cnt_descendingID++;
+      if(ev_id != ev_id_prev+1) cnt_largeIncrement++;
+      if(ev_id > ev_id_prev+2) cnt_largerIncrement++;
+      
       ev_id_prev = ev_id;
     }
   }
   std::cout << std::endl;
   
-  std::cout << "Number of events: " << cnt_passedEvents << std::endl;
+  std::cout << "Number of (standard-cut) events: " << cnt_passedEvents << std::endl;
+  std::cout << "Occurrences of descending event IDs: " << cnt_descendingID << std::endl;
+  std::cout << "Occurrences of ID increments != 1: " << cnt_largeIncrement << std::endl;
+  std::cout << "Occurrences of ID increments > 2: " << cnt_largerIncrement << std::endl;
 
   gSystem->Exit(0);
 
