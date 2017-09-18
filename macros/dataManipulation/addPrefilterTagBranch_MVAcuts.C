@@ -17,19 +17,11 @@ struct particlePair {
   Int_t IsTaggedAccepted;
 };
 
-bool sortPairsByEventID(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
-
 // store all relevant information of a particle track:
 struct particleTrack {
   Long64_t EventID;
   Int_t TrackID;
 };
-
-bool sortTracksByEventID(const particleTrack &lhs, const particleTrack &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
 
 
 
