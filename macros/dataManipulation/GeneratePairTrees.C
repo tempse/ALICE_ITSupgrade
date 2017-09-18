@@ -11,6 +11,8 @@
 #include <TROOT.h>
 #include <TApplication.h>
 #include <TDirectory.h>
+#include <TSystemDirectory.h>
+#include <TSystemFile.h>
 #include <TList.h>
 #include <TFile.h>
 #include <TChain.h>
@@ -50,7 +52,7 @@ Float_t phiv_cutValue = 2.4;  // RP convs. at phiv>phiv_cutValue
 Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 
 // Loose track cuts settings: set kTRUE if the tree also contains tracks with looser cuts:
-const Bool_t doContainLooseTracks = kTRUE;
+const Bool_t doContainLooseTracks = kFALSE;
 
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
@@ -65,6 +67,7 @@ Int_t cnt_ls = 0, cnt_us = 0, cnt_us_ls = 0, cnt_rp = 0;
 // output variables (1,2 <-> 1st leg, 2nd leg):
 Int_t TrackID1, TrackID2;
 Int_t EventID1, EventID2;
+Long64_t EventID1_unique, EventID2_unique; // continuously assigned, unique event IDs
 Int_t IsRP;                         // real pairs: 1, combinatorial pairs: 0
 Int_t IsUS;                         // pair with unlike sign (regardless of IsRP)
 Int_t IsConv;                       // both mother particles are gammas (can still be comb. pairs)
@@ -128,12 +131,12 @@ bool isPairTree_us_ls = false;    // }
 
 void GeneratePairTrees() {
 
-  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_wLooseTrackCuts_iGeo12.root/";
-  const char *file_ext = ".root";
+  const char *input_dirname = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
+  const char *file_ext = "FT2_ITSup_singleTree_part2_1-9-split.root";
   TSystemDirectory input_dir(input_dirname, input_dirname);
   TList *input_files = input_dir.GetListOfFiles();
   
-  TChain *singleTree = new TChain("outputITSup/tracks");
+  TChain *singleTree = new TChain("tracks");
   if(input_files) {
     std::cout << "Reading \"*" << file_ext << "\" files from "
 	      << input_dirname << "...";
@@ -156,7 +159,7 @@ void GeneratePairTrees() {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
   }
 
-  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -215,6 +218,8 @@ void GeneratePairTrees() {
   
   TParticle* ST_particle = NULL;
   
+  Long64_t ST_eventID_unique = 0;
+  
   
   singleTree->SetBranchAddress("event",&ST_event);
   singleTree->SetBranchAddress("IP",&ST_IP);
@@ -243,7 +248,8 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("nTPC",&ST_nTPC);
   singleTree->SetBranchAddress("ITSchi2",&ST_ITSchi2);
   singleTree->SetBranchAddress("TPCchi2",&ST_TPCchi2);
-  singleTree->SetBranchAddress("isTrackCut",&ST_isTrackCut);
+  if(doContainLooseTracks) singleTree->SetBranchAddress("isTrackCut",&ST_isTrackCut);
+  
 
 
   if(isPairTree_rp) {
@@ -251,6 +257,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("TrackID2",&TrackID2);
     pairTree_rp->Branch("EventID1",&EventID1);
     pairTree_rp->Branch("EventID2",&EventID2);
+    pairTree_rp->Branch("EventID1_unique",&EventID1_unique);
+    pairTree_rp->Branch("EventID2_unique",&EventID2_unique);
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
@@ -327,6 +335,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("TrackID2",&TrackID2);
     pairTree_us->Branch("EventID1",&EventID1);
     pairTree_us->Branch("EventID2",&EventID2);
+    pairTree_us->Branch("EventID1_unique",&EventID1_unique);
+    pairTree_us->Branch("EventID2_unique",&EventID2_unique);
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
@@ -403,6 +413,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("TrackID2",&TrackID2);
     pairTree_ls->Branch("EventID1",&EventID1);
     pairTree_ls->Branch("EventID2",&EventID2);
+    pairTree_ls->Branch("EventID1_unique",&EventID1_unique);
+    pairTree_ls->Branch("EventID2_unique",&EventID2_unique);
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
@@ -479,6 +491,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("TrackID2",&TrackID2);
     pairTree_us_ls->Branch("EventID1",&EventID1);
     pairTree_us_ls->Branch("EventID2",&EventID2);
+    pairTree_us_ls->Branch("EventID1_unique",&EventID1_unique);
+    pairTree_us_ls->Branch("EventID2_unique",&EventID2_unique);
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
@@ -562,6 +576,9 @@ void GeneratePairTrees() {
   Long64_t singleTree_nEvents = singleTree->GetEntries();
 
   Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
+
+
+  Long64_t ev_prev = -1;
   
   std::cout << std::endl << "Start event processing...";
   
@@ -580,6 +597,11 @@ void GeneratePairTrees() {
 
     
     Int_t ev_temp = ST_event; // marks the current event number
+
+    if(ev_temp != ev_prev) {
+      ST_eventID_unique++;
+      ev_prev = ev_temp;
+    }
 
     // pdg cut:
     if(abs(ST_pdg) != 11) continue; // keep electrons/positrons only
@@ -611,6 +633,7 @@ void GeneratePairTrees() {
     // already available, pairing-independent variables of 1st leg for output tree:
     if(!doSwapCurrentPair) {
       EventID1 = ST_event;
+      EventID1_unique = ST_eventID_unique;
       TrackID1 = tr1;
       MVAoutput_convTrack1 = MVAoutput_convTrack;
       mcPx1 = ST_particle->Px();
@@ -640,6 +663,7 @@ void GeneratePairTrees() {
       TrackCut1 = ST_isTrackCut;
     }else {
       EventID2 = ST_event;
+      EventID2_unique = ST_eventID_unique;
       TrackID2 = tr1;
       MVAoutput_convTrack2 = MVAoutput_convTrack;
       mcPx2 = ST_particle->Px();
@@ -699,6 +723,7 @@ void GeneratePairTrees() {
       // already available, pairing-independent variables of 2nd leg for output tree:
       if(!doSwapCurrentPair) {
 	EventID2 = ST_event;
+	EventID2_unique = ST_eventID_unique;
 	TrackID2 = tr2;
 	MVAoutput_convTrack2 = MVAoutput_convTrack;
 	mcPx2 = ST_particle->Px();
@@ -728,6 +753,7 @@ void GeneratePairTrees() {
 	TrackCut2 = ST_isTrackCut;
       }else {
 	EventID1 = ST_event;
+	EventID1_unique = ST_eventID_unique;
 	TrackID1 = tr2;
 	MVAoutput_convTrack1 = MVAoutput_convTrack;
 	mcPx1 = ST_particle->Px();
@@ -846,7 +872,7 @@ void GeneratePairTrees() {
 	  cnt_us_ls++;
 	}
       }
-      
+
       tr2++;
     }
   }
