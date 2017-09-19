@@ -55,8 +55,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   
   TString branchname_updatefile_vartype = branchname_updatefile + "/I";
   TBranch *newBranch = tree_updatefile->Branch(branchname_updatefile,
-  				       &isAccepted,
-  				       branchname_updatefile_vartype);
+					       &isAccepted,
+					       branchname_updatefile_vartype);
   
   
   TFile *branchfile = new TFile(branchfilename, "READ");
@@ -148,33 +148,33 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 
   Int_t EventID_prev = -1;
 
-  Int_t pairs_startPos = 0, accTracks_startPos = 0;
-  Int_t accTracks_nextStartPos;
+  Int_t pairs_currentPos = 0;
+  Int_t accTracks_startPos = 0, accTracks_nextStartPos;
 
 
   std::cout << "Propagating tag information to other pairs in the respective event..."
 	    << std::endl;
   
-  while(pairs_startPos < nentries) {
-    std::cout << "\r  (" << pairs_startPos << " / " << nentries << ")";
+  while(pairs_currentPos < nentries) {
+    std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
 
-    while(allPairs[pairs_startPos].EventID == EventID_prev) {
+    while(allPairs[pairs_currentPos].EventID == EventID_prev) {
 
       for(Int_t i=accTracks_startPos; i<tracksTaggedAccepted.size(); i++) {
-	if(tracksTaggedAccepted[i].EventID != allPairs[pairs_startPos].EventID) {
+	if(tracksTaggedAccepted[i].EventID != allPairs[pairs_currentPos].EventID) {
 	  accTracks_nextStartPos = i;
 	  break;
-	}else if(allPairs[pairs_startPos].TrackID1 == tracksTaggedAccepted[i].TrackID ||
-		 allPairs[pairs_startPos].TrackID2 == tracksTaggedAccepted[i].TrackID) {
-	  allPairs[pairs_startPos].IsTaggedAccepted = 1;
+	}else if(allPairs[pairs_currentPos].TrackID1 == tracksTaggedAccepted[i].TrackID ||
+		 allPairs[pairs_currentPos].TrackID2 == tracksTaggedAccepted[i].TrackID) {
+	  allPairs[pairs_currentPos].IsTaggedAccepted = 1;
 	}
       }
 
-      pairs_startPos++;
+      pairs_currentPos++;
     }
 
     accTracks_startPos = accTracks_nextStartPos;
-    EventID_prev = allPairs[pairs_startPos].EventID;
+    EventID_prev = allPairs[pairs_currentPos].EventID;
     
   }
 
@@ -193,6 +193,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   std::cout << " DONE." << std::endl;
   std::cout << "File " << updatefile->GetName() << " updated." << std::endl;
 
+  updatefile->Close();
+  branchfile->Close();
   
   gSystem->Exit(0);
   
