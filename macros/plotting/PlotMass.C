@@ -110,6 +110,7 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
   Float_t mass;
   Float_t pt1, pt2;
   Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
+  Int_t TrackCut1, TrackCut2;
   TestTree->SetBranchAddress("mass", &mass);
   TestTree->SetBranchAddress("pt1", &pt1);
   TestTree->SetBranchAddress("pt2", &pt2);
@@ -118,6 +119,8 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsCorrHF", &IsHF);
+  TestTree->SetBranchAddress("TrackCut1", &TrackCut1);
+  TestTree->SetBranchAddress("TrackCut2", &TrackCut2);
   // if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
   //   TestTree->SetBranchAddress(variableName1, &variable1);
   // }else {
@@ -284,6 +287,9 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
     
     TestTree->GetEvent(ev);
     MVAoutputTree->GetEvent(ev);
+
+    // only select events with standard track cuts:
+    if(TrackCut1 != 2 || TrackCut2 != 2) continue;
 
     // linear mapping of the MVA output values to the range [0,1]:
     MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
