@@ -1662,34 +1662,21 @@ Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
 
 Float_t significanceError(TH2D &signal_subsamples, TH2D &backgr_subsamples,
 			  Int_t bin_mass, Int_t num_subsamples) {
-  
-  Float_t significance_subsamples[num_subsamples];
-  
-  for(Int_t i=0; i<num_subsamples; i++) {
-    significance_subsamples[i] =
-      (signal_subsamples.GetBinContent(bin_mass, i+1) + backgr_subsamples.GetBinContent(bin_mass, i+1))==0 ?
-      -1. : signal_subsamples.GetBinContent(bin_mass, i+1) /
-      TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i+1) +
-		  backgr_subsamples.GetBinContent(bin_mass, i+1));
-  }
 
-  Float_t mean=0., stddev=0.;
-  UInt_t cnt_invalidEntries = 0;
-  for(Int_t i=0; i<num_subsamples; i++) {
-    if(significance_subsamples[i] != -1) {
-      mean += significance_subsamples[i];
-    }else {
-      cnt_invalidEntries++;
+  
+  TH1D *significance_subsamples = new TH1D("significance_subsamples","",
+					   10000,
+					   0,
+					   TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, 1)*num_subsamples));
+  
+  for(Int_t i=1; i<=num_subsamples; i++) {
+    if(signal_subsamples.GetBinContent(bin_mass, i) +
+       backgr_subsamples.GetBinContent(bin_mass, i) != 0) {
+      significance_subsamples->Fill(signal_subsamples.GetBinContent(bin_mass, i) /
+				    TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i) +
+						backgr_subsamples.GetBinContent(bin_mass, i)));
     }
   }
-  mean /= (num_subsamples - cnt_invalidEntries)*1.0;
 
-  for(Int_t i=0; i<num_subsamples; i++) {
-    if(significance_subsamples[i] != -1) {
-      stddev += (significance_subsamples[i]-mean)*(significance_subsamples[i]-mean);
-    }
-  }
-  stddev = TMath::Sqrt(stddev/(num_subsamples-cnt_invalidEntries*1.0));
-
-  return stddev;
+  return significance_subsamples->GetStdDev();
 }
