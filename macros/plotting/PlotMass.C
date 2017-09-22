@@ -119,8 +119,15 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
   TestTree->SetBranchAddress("IsCorrHF", &IsHF);
-  TestTree->SetBranchAddress("TrackCut1", &TrackCut1);
-  TestTree->SetBranchAddress("TrackCut2", &TrackCut2);
+  if(TestTree->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
+     TestTree->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
+    TestTree->SetBranchAddress("TrackCut1", &TrackCut1);
+    TestTree->SetBranchAddress("TrackCut2", &TrackCut2);
+  }else {
+    std::cout << "  Info: No branch holding track cut information found. "
+	      << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
   // if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
   //   TestTree->SetBranchAddress(variableName1, &variable1);
   // }else {
@@ -289,7 +296,7 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
     MVAoutputTree->GetEvent(ev);
 
     // only select events with standard track cuts:
-    if(TrackCut1 != 2 || TrackCut2 != 2) continue;
+    if(containsTrackCutInfo && (TrackCut1 != 2 || TrackCut2 != 2)) continue;
 
     // linear mapping of the MVA output values to the range [0,1]:
     MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
