@@ -10,40 +10,6 @@
 #include <TStopwatch.h>
 
 
-
-// stores all relevant information of a particle pair:
-struct particlePair {
-  Long64_t EventID;
-  Long64_t TrackID1;
-  Long64_t TrackID2;
-  Int_t    IsTaggedAccepted_prefilter;
-  Int_t    IsTaggedAccepted_noPrefilter;
-  Int_t    IsTrueConv;
-  Int_t    IsTrueRP;
-  Float_t  pt1;
-  Float_t  pt2;
-  Long64_t originalPosition;
-};
-
-bool sortPairsByEventID(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
-
-bool sortByOriginalPosition(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.originalPosition < rhs.originalPosition;
-}
-
-// store all relevant information of a particle track:
-struct particleTrack {
-  Long64_t EventID;
-  Long64_t TrackID;
-};
-
-bool sortTracksByEventID(const particleTrack &lhs, const particleTrack &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
-
-
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
@@ -68,12 +34,14 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   Int_t isAccepted;
   
   
-  std::cout << "Reading files...";
+  std::cout << "Opening files...";
   TFile *MCdatafile = new TFile(MCdatafilename, "READ");
   TTree *tree_MCdatafile = (TTree*)MCdatafile->Get(treename_MCdatafile);
   Int_t EventID, TrackID1, TrackID2;
   Int_t IsConv, IsRP;
   Float_t pt1, pt2;
+  Bool_t containsTrackCutInfo = kTRUE;
+  Int_t TrackCut1, TrackCut2;
   tree_MCdatafile->SetBranchAddress("EventID1", &EventID);
   tree_MCdatafile->SetBranchAddress("TrackID1", &TrackID1);
   tree_MCdatafile->SetBranchAddress("TrackID2", &TrackID2);
@@ -81,6 +49,15 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   tree_MCdatafile->SetBranchAddress("IsRP", &IsRP);
   tree_MCdatafile->SetBranchAddress("pt1", &pt1);
   tree_MCdatafile->SetBranchAddress("pt2", &pt2);
+  if(tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
+     tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
+    tree_MCdatafile->SetBranchAddress("TrackCut1", &TrackCut1);
+    tree_MCdatafile->SetBranchAddress("TrackCut2", &TrackCut2);
+  }else {
+    std::cout << "  Warning: No branch holding track cut information found. "
+	      << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
   std::cout << " DONE." << std::endl;
 
 
@@ -131,9 +108,6 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   Float_t tpr_prefilter, fpr_prefilter;
   Float_t tpr_noPrefilter, fpr_noPrefilter;
   Float_t currentMVAcut;
-  // Long64_t nTaggedAccepted_prefilter;
-  // Long64_t nTaggedAccepted_noPrefilter;
-  // Long64_t nIsConv, nIsRP;
   std::vector<Int_t> pairs_IsTaggedAccepted_prefilter;
   std::vector<Int_t> pairs_IsTaggedAccepted_noPrefilter;
   std::vector<Int_t> pairs_IsTrueConv;
@@ -147,10 +121,6 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   outtree->Branch("tpr_noPrefilter", &tpr_noPrefilter, "tpr_noPrefilter/F");
   outtree->Branch("fpr_noPrefilter", &fpr_noPrefilter, "fpr_noPrefilter/F");
   outtree->Branch("MVAcut", &currentMVAcut, "MVAcut/F");
-  // outtree->Branch("nTaggedAccepted_prefilter", &nTaggedAccepted_prefilter, "nTaggedAccepted_prefilter/I");
-  // outtree->Branch("nTaggedAccepted_noPrefilter", &nTaggedAccepted_noPrefilter, "nTaggedAccepted_noPrefilter/I");
-  // outtree->Branch("nIsConv", &nIsConv, "nIsConv/I");
-  // outtree->Branch("nIsRP", &nIsRP, "nIsRP/I");
   
 
   
@@ -161,8 +131,58 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   
   
   const Long64_t nentries = tree_MCdatafile->GetEntries()/10;
+  std::cout << "Number of entries: " << nentries << std::endl;
+
+  
+  Int_t *EventID_all = NULL;
+  Int_t *TrackID1_all = NULL;
+  Int_t *TrackID2_all = NULL;
+  Int_t *IsConv_all = NULL;
+  Int_t *IsRP_all = NULL;
+  Float_t *pt1_all = NULL;
+  Float_t *pt2_all = NULL;
+  Float_t *MVAout_prefilter_all = NULL;
+  Float_t *MVAout_noPrefilter_all = NULL;
+
+  EventID_all = new Int_t[nentries];
+  TrackID1_all = new Int_t[nentries];
+  TrackID2_all = new Int_t[nentries];
+  IsConv_all = new Int_t[nentries];
+  IsRP_all = new Int_t[nentries];
+  pt1_all = new Float_t[nentries];
+  pt2_all = new Float_t[nentries];
+  MVAout_prefilter_all = new Float_t[nentries];
+  MVAout_noPrefilter_all = new Float_t[nentries];
+
+  for(Long64_t i=0; i<nentries; i++) {
+    EventID_all[i] = 0;
+    TrackID1_all[i] = 0;
+    TrackID2_all[i] = 0;
+    IsConv_all[i] = 0;
+    IsRP_all[i] = 0;
+    pt1_all[i] = 0.;
+    pt2_all[i] = 0.;
+    MVAout_prefilter_all[i] = 0.;
+    MVAout_noPrefilter_all[i] = 0.;
+  }
+
+  std::cout << "Reading the data...";
+
+  for(Long64_t i=0; i<nentries; i++) {
+    tree_MCdatafile->GetEntry(i);
+      
+    EventID_all[i] = EventID;
+    TrackID1_all[i] = TrackID1;
+    TrackID2_all[i] = TrackID2;
+    IsConv_all[i] = IsConv;
+    IsRP_all[i] = IsRP;
+    pt1_all[i] = pt1;
+    pt2_all[i] = pt2;
+  }
+  std::cout << " DONE" << std::endl;
 
 
+  
   TStopwatch *watch_overall = new TStopwatch();
   watch_overall->Start();
 
@@ -172,18 +192,22 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     TStopwatch *watch_step = new TStopwatch();
     watch_step->Start();
 
+    Int_t *tags_prefilter = NULL;
+    Int_t *tags_noPrefilter = NULL;
+
+    tags_prefilter = new Int_t[nentries];
+    tags_noPrefilter = new Int_t[nentries];
+    
+    for(Long64_t i=0; i<nentries; i++) {
+      tags_prefilter[i] = 0;
+      tags_noPrefilter[i] = 0;
+    }
+    
     
     pairs_IsTaggedAccepted_prefilter.clear();
     pairs_IsTaggedAccepted_noPrefilter.clear();
     pairs_IsTrueConv.clear();
     pairs_pairweight.clear();
-    
-    
-    // Collection of all particle pairs (of all events):
-    std::vector<particlePair> allPairs;
-
-    // Collection of all accepted particle tracks (of all events):
-    std::vector<particleTrack> tracksTaggedAccepted;
 
     
     Float_t MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
@@ -192,177 +216,101 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     std::cout << std::endl << "---------- Step " << scan << " of " << num_steps
 	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
 
-    
-    std::cout << "Tagging pairs based on MVA output..." << std::endl;
-  
-    for(Long64_t j=0; j<nentries; j++) {
-      if((j%10000)==0) {
-	std::cout << "\r  Processing event " << j << " of " << nentries
-		  << " (" << j/((Float_t)nentries)*100 << " %)...";
-      }
-
-
-      tree_MCdatafile->GetEntry(j);
-      tree_MVAoutput_prefilter_file->GetEntry(j);
-      tree_MVAoutput_noPrefilter_file->GetEntry(j);
-    
-      particlePair currentPair;
-      currentPair.EventID = EventID;
-      currentPair.TrackID1 = TrackID1;
-      currentPair.TrackID2 = TrackID2;
-      currentPair.IsTrueConv = IsConv;
-      currentPair.IsTrueRP = IsRP;
-      currentPair.pt1 = pt1;
-      currentPair.pt2 = pt2;
-      currentPair.originalPosition = j;
-    
-      if(signalRegion == "+") {
-
-	if(MVAout_prefilter < MVAoutputRange_min || MVAout_prefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
-	  currentPair.IsTaggedAccepted_prefilter = -999;
-	}else if(MVAout_prefilter >= MVAcut) {
-	  currentPair.IsTaggedAccepted_prefilter = 1;
-
-	  particleTrack currentTrack1 = {EventID, TrackID1};
-	  particleTrack currentTrack2 = {EventID, TrackID2};
-	  tracksTaggedAccepted.push_back(currentTrack1);
-	  tracksTaggedAccepted.push_back(currentTrack2);
-	}else currentPair.IsTaggedAccepted_prefilter = 0;
-
-	if(MVAout_noPrefilter < MVAoutputRange_min || MVAout_noPrefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
-	  currentPair.IsTaggedAccepted_noPrefilter = -999;
-	}else if(MVAout_noPrefilter >= MVAcut) {
-	  currentPair.IsTaggedAccepted_noPrefilter = 1;
-	}else currentPair.IsTaggedAccepted_noPrefilter = 0;
-	
-      }else if(signalRegion == "-") {
-
-	if(MVAout_prefilter < MVAoutputRange_min || MVAout_prefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
-	  currentPair.IsTaggedAccepted_prefilter = -999;
-	}else if(MVAout_prefilter <= MVAcut) {
-	  currentPair.IsTaggedAccepted_prefilter = 1;
-
-	  particleTrack currentTrack1 = {EventID, TrackID1};
-	  particleTrack currentTrack2 = {EventID, TrackID2};
-	  tracksTaggedAccepted.push_back(currentTrack1);
-	  tracksTaggedAccepted.push_back(currentTrack2);
-	}else currentPair.IsTaggedAccepted_prefilter = 0;
-
-	if(MVAout_noPrefilter < MVAoutputRange_min || MVAout_noPrefilter > MVAoutputRange_max) { // check if previously tagged as non-accepted
-	  currentPair.IsTaggedAccepted_noPrefilter = -999;
-	}else if(MVAout_noPrefilter <= MVAcut) {
-	  currentPair.IsTaggedAccepted_noPrefilter = 1;
-	}else currentPair.IsTaggedAccepted_noPrefilter = 0;
-	
-      }else {
-	std::cout << "  ERROR: 'signalRegion' definition is wrong. "
-		  << "(It should be either '+' (default) or '-'.)" << std::endl;
-	std::cout << "  Abort." << std::endl << std::endl;
-	gApplication->Terminate();
-      }
-
-      allPairs.push_back(currentPair);
-    }
-    std::cout << "\r  Processing event " << nentries << " of " << nentries
-	      << " (100 %)... DONE" << std::endl;
-
-    std::cout << "Number of pairs (prefilter): " << allPairs.size() << std::endl;
-    std::cout << "Number of accepted tracks (prefilter): " << tracksTaggedAccepted.size() << std::endl;
-    std::cout << std::endl;
-
-
-    // sort pairs and tracks by event ID:
-    std::cout << "Sorting data...";
-    std::sort(allPairs.begin(), allPairs.end(), sortPairsByEventID);
-    std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end(), sortTracksByEventID);
-    std::cout << " DONE." << std::endl;
-  
-
-    // store start positions of new events:
-    std::cout << "Finding new event start positions...";
-    std::map<Long64_t, Long64_t> eventID_startPos;
-    Long64_t EventID_prev = -1;
-    for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-      if(tracksTaggedAccepted[i].EventID != EventID_prev) {
-	eventID_startPos[tracksTaggedAccepted[i].EventID] = i;
-      }
-      EventID_prev = tracksTaggedAccepted[i].EventID;
-    }
-    std::cout << " DONE." << std::endl;
-  
-
-
-    std::cout << "Propagate tag information to other pairs..." << std::endl;
-  
+    std::cout << "Reading the data...";
 
     for(Long64_t i=0; i<nentries; i++) {
-      if((i%10000)==0) {
-	std::cout << "\r  Processing event " << i << " of " << nentries
-		  << " (" << i/((Float_t)nentries)*100 << " %)...";
+      tree_MVAoutput_prefilter_file->GetEntry(i);
+      tree_MVAoutput_noPrefilter_file->GetEntry(i);
+      
+      MVAout_prefilter_all[i] = MVAout_prefilter;
+      MVAout_noPrefilter_all[i] = MVAout_noPrefilter;
+    }
+    std::cout << " DONE" << std::endl;
+
+    
+    Int_t EventID_prev = -1;
+
+    Int_t accTracks_startPos = 0, accTracks_nextStartPos;
+
+    std::cout << "Tagging pairs and applying the prefilter..."
+	      << std::endl;
+    
+    
+    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
+      if((pairs_currentPos%1000)==0) {
+	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
       }
-    
-      if( allPairs[i].IsTaggedAccepted_prefilter == -999 ) continue; // skip irrelevant entries
-    
-      for(Long64_t j=eventID_startPos[allPairs[i].EventID];
-	  j<(Long64_t)tracksTaggedAccepted.size();
-	  j++) {
-	if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
+      
+      if( (MVAout_prefilter_all[pairs_currentPos] < MVAoutputRange_min ||
+	   MVAout_prefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
+	continue;
+      }
+
+      if(signalRegion == "+" && MVAout_prefilter_all[pairs_currentPos] >= MVAcut) {
+	tags_prefilter[pairs_currentPos] = 1;
+	tags_noPrefilter[pairs_currentPos] = 1;
+      }else if(signalRegion == "-" && MVAout_prefilter_all[pairs_currentPos] <= MVAcut) {
+	tags_prefilter[pairs_currentPos] = 1;
+	tags_noPrefilter[pairs_currentPos] = 1;
+      }
+
+      Int_t EventID_current = EventID_all[pairs_currentPos];
+      Int_t TrackID1_current = TrackID1_all[pairs_currentPos];
+      Int_t TrackID2_current = TrackID2_all[pairs_currentPos];
+      
+      for(Int_t i=pairs_currentPos+1; i<nentries; i++) {
+	  
+	if(EventID_all[i] != EventID_current) {
 	  break;
-	}else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
-		 allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
-	  allPairs[i].IsTaggedAccepted_prefilter = 1.;
+	}
+
+	if(tags_prefilter[pairs_currentPos] == 1) {
+	  tags_prefilter[i] = 1;
+	}
+
+	if(signalRegion == "+" && MVAout_prefilter_all[i] >= MVAcut &&
+	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	  tags_prefilter[pairs_currentPos] = 1;
+	}else if(signalRegion == "-" && MVAout_prefilter_all[i] <= MVAcut &&
+		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	  tags_prefilter[pairs_currentPos] = 1;
 	}
       }
+      
     }
-    std::cout << "\r  Processing event " << nentries << " of " << nentries
-	      << " (100 %)... DONE." << std::endl;
-
-
-    // restore original order of allPairs vector:
-    std::cout << "Restoring original order of data...";
-    std::sort(allPairs.begin(), allPairs.end(), sortByOriginalPosition);
-    std::cout << " DONE." << std::endl;
-
 
     
-    std::cout << "Calculating output values...";    
-    
-    // nTaggedAccepted_prefilter = 0;
-    // nTaggedAccepted_noPrefilter = 0;
-    // nIsConv = 0;
-    // nIsRP = 0;
+    std::cout << std::endl << "Calculating output values...";
     Double_t tp_noPrefilter=0, fp_noPrefilter=0, fn_noPrefilter=0, tn_noPrefilter=0;
     Double_t tp_prefilter=0, fp_prefilter=0, fn_prefilter=0, tn_prefilter=0;
     
     for(Long64_t i=0; i<nentries; i++) {
-      if(allPairs[i].IsTaggedAccepted_prefilter!=0 && allPairs[i].IsTaggedAccepted_prefilter!=1)
+      
+      if(tags_prefilter[i]!=0 && tags_prefilter[i]!=1) {
+	pairs_IsTaggedAccepted_prefilter.push_back(-999);
+	pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
+	pairs_IsTrueConv.push_back(IsConv);
+	pairs_pairweight.push_back(0.);
 	continue;
+      }
 
-      // if(allPairs[i].IsTrueConv) nIsConv++;
-      // if(allPairs[i].IsTrueRP) nIsRP++;
-
-
-      // if(allPairs[i].IsTaggedAccepted_noPrefilter) nTaggedAccepted_noPrefilter++;
-
-      Double_t pairweight = getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
+      Double_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
       
-      if(allPairs[i].IsTaggedAccepted_noPrefilter && allPairs[i].IsTrueConv) tn_noPrefilter += pairweight;
-      if(allPairs[i].IsTaggedAccepted_noPrefilter && !allPairs[i].IsTrueConv) fn_noPrefilter += pairweight;
-      if(!allPairs[i].IsTaggedAccepted_noPrefilter && allPairs[i].IsTrueConv) fp_noPrefilter += pairweight;
-      if(!allPairs[i].IsTaggedAccepted_noPrefilter && !allPairs[i].IsTrueConv) tp_noPrefilter += pairweight;
-
+      if(tags_noPrefilter[i] && IsConv_all[i]) tn_noPrefilter += pairweight;
+      if(tags_noPrefilter[i] && !IsConv_all[i]) fn_noPrefilter += pairweight;
+      if(!tags_noPrefilter[i] && IsConv_all[i]) fp_noPrefilter += pairweight;
+      if(!tags_noPrefilter[i] && !IsConv_all[i]) tp_noPrefilter += pairweight;
       
-      // if(allPairs[i].IsTaggedAccepted_prefilter) nTaggedAccepted_prefilter++;
-      
-      if(allPairs[i].IsTaggedAccepted_prefilter && allPairs[i].IsTrueConv) tn_prefilter += pairweight;
-      if(allPairs[i].IsTaggedAccepted_prefilter && !allPairs[i].IsTrueConv) fn_prefilter += pairweight;
-      if(!allPairs[i].IsTaggedAccepted_prefilter && allPairs[i].IsTrueConv) fp_prefilter += pairweight;
-      if(!allPairs[i].IsTaggedAccepted_prefilter && !allPairs[i].IsTrueConv) tp_prefilter += pairweight;
+      if(tags_prefilter[i] && IsConv_all[i]) tn_prefilter += pairweight;
+      if(tags_prefilter[i] && !IsConv_all[i]) fn_prefilter += pairweight;
+      if(!tags_prefilter[i] && IsConv_all[i]) fp_prefilter += pairweight;
+      if(!tags_prefilter[i] && !IsConv_all[i]) tp_prefilter += pairweight;
 
-
-      pairs_IsTaggedAccepted_prefilter.push_back(allPairs[i].IsTaggedAccepted_prefilter);
-      pairs_IsTaggedAccepted_noPrefilter.push_back(allPairs[i].IsTaggedAccepted_noPrefilter);
-      pairs_IsTrueConv.push_back(allPairs[i].IsTrueConv);
+      pairs_IsTaggedAccepted_prefilter.push_back(tags_prefilter[i]);
+      pairs_IsTaggedAccepted_noPrefilter.push_back(tags_noPrefilter[i]);
+      pairs_IsTrueConv.push_back(IsConv);
       pairs_pairweight.push_back(pairweight);
       
     }
@@ -386,8 +334,33 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
     std::cout << std::endl << "Time elapsed: " << watch_step->RealTime()
 	      << " seconds." << std::endl;
+
+    delete [] tags_prefilter;
+    delete [] tags_noPrefilter;
+    
+    tags_prefilter = NULL;
+    tags_noPrefilter = NULL;
   }
 
+  delete [] EventID_all;
+  delete [] TrackID1_all;
+  delete [] TrackID2_all;
+  delete [] IsConv_all;
+  delete [] IsRP_all;
+  delete [] pt1_all;
+  delete [] pt2_all;
+  delete [] MVAout_prefilter_all;
+  delete [] MVAout_noPrefilter_all;
+    
+  EventID_all = NULL;
+  TrackID1_all = NULL;
+  TrackID2_all = NULL;
+  IsConv_all = NULL;
+  IsRP_all = NULL;
+  pt1_all = NULL;
+  pt2_all = NULL;
+  MVAout_prefilter_all = NULL;
+  MVAout_noPrefilter_all = NULL;
   
   std::cout << "Write data...";
   outfile->cd();
@@ -471,10 +444,27 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       Double_t tn_combi = 0;
       
       for(Long64_t k=0; k<(Long64_t)pairs_IsTaggedAccepted_noPrefilter.size(); k++) {
-	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) && pairs_IsTrueConv_combi->at(k)!=1 ) tp_combi += pairs_pairweight_combi->at(k);
-	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) && pairs_IsTrueConv_combi->at(k)!=1 ) fn_combi += pairs_pairweight_combi->at(k);
-	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) && pairs_IsTrueConv_combi->at(k)==1 ) fp_combi += pairs_pairweight_combi->at(k);
-	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) && pairs_IsTrueConv_combi->at(k)==1 ) tn_combi += pairs_pairweight_combi->at(k);
+
+	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+	    pairs_IsTrueConv_combi->at(k)!=1 ) {
+	  tp_combi += pairs_pairweight_combi->at(k);
+	}
+	
+	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+	    pairs_IsTrueConv_combi->at(k)!=1 ) {
+	  fn_combi += pairs_pairweight_combi->at(k);
+	}
+	
+	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+	    pairs_IsTrueConv_combi->at(k)==1 ) {
+	  fp_combi += pairs_pairweight_combi->at(k);
+	}
+	
+	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+	    pairs_IsTrueConv_combi->at(k)==1 ) {
+	  tn_combi += pairs_pairweight_combi->at(k);
+	}
+	
       }
       
       tpr_combi = tp_combi/(tp_combi+fn_combi*1.0);

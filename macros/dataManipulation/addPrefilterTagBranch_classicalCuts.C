@@ -9,54 +9,27 @@
 #include <TH1F.h>
 #include <TCanvas.h>
 
-
-// stores all relevant information of a particle pair:
-struct particlePair {
-  Int_t EventID;
-  Int_t TrackID1;
-  Int_t TrackID2;
-  Int_t IsTaggedAccepted;
-  Int_t num_associatedPairs;
-  Long64_t originalPosition;
-
-  bool operator < (const particlePair &rhs) const {
-    return (EventID < rhs.EventID);
-  }
-};
-
-bool sortByOriginalPosition(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.originalPosition < rhs.originalPosition;
-}
-
-// store all relevant information of a particle track:
-struct particleTrack {
-  Int_t EventID;
-  Int_t TrackID;
-
-  bool operator < (const particleTrack &rhs) const {
-    return (EventID < rhs.EventID);
-  }
-};
-
-
-
 void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 					 TString treename_updatefile,
 					 TString branchname_read,
 					 TString branchname_add,
 					 TString signalRegion = "+") {
   
-  Int_t var;
+  Int_t input_tag;
   Int_t isAccepted;
+
+  Float_t input_tag_min = 0.;
+  Float_t input_tag_max = 1.;
   
   std::cout << "Reading file...";
   TFile *updatefile = new TFile(updatefilename, "UPDATE");
   TTree *tree_updatefile = (TTree*)updatefile->Get(treename_updatefile);
-  Int_t EventID, TrackID1, TrackID2;
+  Int_t EventID;
+  Int_t TrackID1, TrackID2;
   tree_updatefile->SetBranchAddress("EventID1", &EventID);
   tree_updatefile->SetBranchAddress("TrackID1", &TrackID1);
   tree_updatefile->SetBranchAddress("TrackID2", &TrackID2);
-  tree_updatefile->SetBranchAddress(branchname_read, &var);
+  tree_updatefile->SetBranchAddress(branchname_read, &input_tag);
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_add) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_add
 	      << " already exists in file " << updatefile->GetName() << std::endl;
@@ -69,148 +42,93 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 					       &isAccepted,
 					       branchname_add_vartype);
 
-
-  // Collection of all particle pairs (of all events):
-  std::vector<particlePair> allPairs;
-
-  // Collection of all accepted particle tracks (of all events):
-  std::vector<particleTrack> tracksTaggedAccepted;
-
   
   const Long64_t nentries = tree_updatefile->GetEntries();
 
-  std::cout << "Tagging real pairs based on cut values...";
+  Int_t *EventID_all = NULL;
+  Int_t *TrackID1_all = NULL;
+  Int_t *TrackID2_all = NULL;
+  Float_t *input_tag_all = NULL;
+  Int_t *tags_prefilter = NULL;
   
+  EventID_all = new Int_t[nentries];
+  TrackID1_all = new Int_t[nentries];
+  TrackID2_all = new Int_t[nentries];
+  input_tag_all = new Float_t[nentries];
+  tags_prefilter = new Int_t[nentries];
+  
+  for(Long64_t i=0; i<nentries; i++) {
+    EventID_all[i] = 0;
+    TrackID1_all[i] = 0;
+    TrackID2_all[i] = 0;
+    input_tag_all[i] = 0.;
+    tags_prefilter[i] = 0;
+  }
+
+  std::cout << "Reading the data into memory..." << std::endl;
+  
+  for(Long64_t i=0; i<nentries; i++) {
+    if((i%5000)==0) std::cout << "\r  (" << i << " / " << nentries << ")";
+    
+    tree_updatefile->GetEntry(i);
+    
+    EventID_all[i] = EventID;
+    TrackID1_all[i] = TrackID1;
+    TrackID2_all[i] = TrackID2;
+    input_tag_all[i] = input_tag;
+  }
+  std::cout << "\r  (" << nentries << " / " << nentries << ")" << std::endl;
+
+
+  Int_t EventID_prev = -1;
+
+  Int_t accTracks_startPos = 0, accTracks_nextStartPos;
+
+  
+  std::cout << "Tagging pairs and applying the prefilter..." << std::endl;
+
+
   for(Long64_t j=0; j<nentries; j++) {
-    if((j%1000)==0) {
-      std::cout << "\r Processing event " << j << " of " << nentries
-		<< " (" << j/((Float_t)nentries)*100 << " %)...";
-    }
-    
-    tree_updatefile->GetEntry(j);
-    
-    particlePair currentPair;
-    currentPair.EventID = EventID;
-    currentPair.TrackID1 = TrackID1;
-    currentPair.TrackID2 = TrackID2;
-    currentPair.num_associatedPairs = 0;
-    currentPair.originalPosition = j;
-    
-    if(signalRegion == "+") {
-      if(var == 1) {
-	currentPair.IsTaggedAccepted = 1.;
 
-	particleTrack currentTrack1 = {EventID, TrackID1};
-	particleTrack currentTrack2 = {EventID, TrackID2};
-	tracksTaggedAccepted.push_back(currentTrack1);
-	tracksTaggedAccepted.push_back(currentTrack2);
-      }
-      else currentPair.IsTaggedAccepted = 0.;
-    }else if(signalRegion == "-") {
-      if(var == 0) {
-	currentPair.IsTaggedAccepted = 1.;
+    if((j%1000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
 
-	particleTrack currentTrack1 = {EventID, TrackID1};
-	particleTrack currentTrack2 = {EventID, TrackID2};
-	tracksTaggedAccepted.push_back(currentTrack1);
-	tracksTaggedAccepted.push_back(currentTrack2);
-      }
-      else currentPair.IsTaggedAccepted = 0.;
-    }else {
-      std::cout << "  ERROR: 'signalRegion' definition is wrong. "
-		<< "(It should be either '+' (default) or '-'.)" << std::endl;
-      std::cout << "  Abort." << std::endl << std::endl;
-      gApplication->Terminate();
+    if( input_tag_all[j] < input_tag_min ||
+	input_tag_all[j] > input_tag_max ) continue;
+
+    if(signalRegion == "+" && input_tag_all[j] == 1) {
+      tags_prefilter[j] = 1;
+    }else if(signalRegion == "-" && input_tag_all[j] == 0) {
+      tags_prefilter[j] = 1;
     }
 
-    allPairs.push_back(currentPair);
-  }
-  std::cout << "\r Processing event " << nentries << " of " << nentries
-	    << " (100 %)... DONE" << std::endl;
+    Int_t EventID_current = EventID_all[j];
+    Int_t TrackID1_current = TrackID1_all[j];
+    Int_t TrackID2_current = TrackID2_all[j];
 
-  std::cout << "Number of pairs: " << allPairs.size() << std::endl;
-  std::cout << "Number of accepted pairs: " << tracksTaggedAccepted.size()/2 << std::endl;
-  std::cout << std::endl;
+    for(Int_t i=j; i<nentries; i++) {
 
+      if(EventID_all[i] != EventID_current) break;
 
-  // sort pairs and tracks by event ID:
-  std::cout << "Sorting data...";
-  std::sort(allPairs.begin(), allPairs.end());
-  std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end());
-  std::cout << " DONE." << std::endl;
-  
-  // store start positions of new events:
-  std::cout << "Finding new event start postitions...";
-  std::map<Long64_t, Long64_t> eventID_startPos;
-  Long64_t EventID_prev = -1;
-  for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-    if(tracksTaggedAccepted[i].EventID != EventID_prev) {
-      eventID_startPos[tracksTaggedAccepted[i].EventID] = i;
-    }
-    EventID_prev = tracksTaggedAccepted[i].EventID;
-  }
-  std::cout << " DONE." << std::endl;
-  
+      if(tags_prefilter[j] == 1) tags_prefilter[i] = 1;
 
-  std::cout << "Propagate tag information to other pairs..." << std::endl;
-  
-  TStopwatch *watch = new TStopwatch();
-  watch->Start();
-
-  for(Long64_t i=0; i<nentries; i++) {
-    if((i%2500)==0) {
-      std::cout << "\r  Processing event " << i << " of " << nentries
-		<< " (" << i/((Float_t)nentries)*100 << " %)...";
-    }
-    
-    for(Long64_t j=eventID_startPos[allPairs[i].EventID];
-	j<(Long64_t)tracksTaggedAccepted.size();
-	j++) {
-      if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
-	break;
-      }else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
-	       allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
-	allPairs[i].IsTaggedAccepted = 1.;
-	allPairs[i].num_associatedPairs = allPairs[i].num_associatedPairs + 1;
+      if(signalRegion == "+" && input_tag_all[i] == 1 &&
+	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	tags_prefilter[j] = 1;
+      }else if(signalRegion == "-" && input_tag_all[i] == 0 &&
+	       (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+		TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	tags_prefilter[j] = 1;
       }
     }
+
   }
-  std::cout << "\r  Processing event " << nentries << " of " << nentries
-	    << " (100 %)... DONE.";
-  std::cout << " Time elapsed: " << watch->RealTime() << " seconds."
-	    << std::endl << std::endl;
-  
-  
+  std::cout << "\r  (" << nentries << " / " << nentries << ")" << std::endl;
 
-  // create histogram with the distribution of the associated track number:
-  TH1F *hist_associatedPairs_temp = new TH1F("","",nentries,0,nentries);
-  for(Long64_t i=0; i<nentries; i++) {
-    if(allPairs[i].IsTaggedAccepted == 1) {
-      hist_associatedPairs_temp->SetBinContent(i, allPairs[i].num_associatedPairs);
-    }
-  }
-  TH1F *hist_associatedPairs = new TH1F("","",100,0,hist_associatedPairs_temp->GetMaximum());
-  for(Long64_t i=0; i<nentries; i++) {
-    hist_associatedPairs->Fill(hist_associatedPairs_temp->GetBinContent(i));
-  }  
-  hist_associatedPairs->SetXTitle("number of associated pairs");
-  hist_associatedPairs->SetYTitle("counts");
-  hist_associatedPairs->GetYaxis()->SetTitleOffset(1.2);
-  TCanvas *c = new TCanvas();
-  c->SetLogy();
-  hist_associatedPairs->Draw();
-  c->SaveAs("temp_hist_numberOfAssociatedPairs.root");
-
-
-
-  // restore original order of allPairs vector:
-  std::cout << "Restoring original order of data...";
-  std::sort(allPairs.begin(), allPairs.end(), sortByOriginalPosition);
-  std::cout << " DONE." << std::endl;
   
   std::cout << "Fill new branch with appropriate tags...";
   for(Long64_t i=0; i<nentries; i++) {
-    isAccepted = allPairs[i].IsTaggedAccepted;
+    isAccepted = tags_prefilter[i];
     newBranch->Fill();
   }
   std::cout << " DONE" << std::endl << std::endl;
@@ -222,6 +140,21 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   std::cout << " DONE." << std::endl;
   std::cout << "File " << updatefile->GetName() << " updated." << std::endl;
 
-  gApplication->Terminate();
+
+  updatefile->Close();
+
+  delete [] EventID_all;
+  delete [] TrackID1_all;
+  delete [] TrackID2_all;
+  delete [] input_tag_all;
+  delete [] tags_prefilter;
+
+  EventID_all = NULL;
+  TrackID1_all = NULL;
+  TrackID2_all = NULL;
+  input_tag_all = NULL;
+  tags_prefilter = NULL;
+  
+  gSystem->Exit(0);
   
 }
