@@ -78,6 +78,9 @@ Int_t IsCorrCharmFromBottom;        // correlated charmed pair originating from 
 Int_t IsCombHF;                     // combinatorial HF pair
 Int_t ChargeSign;                   // unlike sign: 0, like sign (++): 1, like sign (--): -1
 Int_t IsTaggedRPConv_classicalCuts; // tagged as real pair conversion event: 1, otherwise: 0
+Int_t IsTaggedRPConv_classicalCuts_tight;  // RP conv. <-> (phiv>2.9 && mass<0.0035)
+Int_t IsTaggedRPConv_classicalCuts_loose1; // RP conv. <-> (phiv>2 && mass<0.04)
+Int_t IsTaggedRPConv_classicalCuts_loose2; // RP conv. <-> (phiv>pi/2 && mass<0.05)
 //Int_t IsTaggedRPConv_MVAcuts;     // tagged as real pair conversion event: 1, otherwise: 0
 Int_t IsTaggedConvTrack1;           // tagged as conversion track (by preceding...
 Int_t IsTaggedConvTrack2;           // ...MVA classification): 1, otherwise: 0
@@ -267,7 +270,10 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_rp->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_rp->Branch("IsCombHF",&IsCombHF);
+    pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_tight",&IsTaggedRPConv_classicalCuts_tight);
     pairTree_rp->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
+    pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_loose1",&IsTaggedRPConv_classicalCuts_loose1);
+    pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
     if(doConsiderMVAinfo_convTrack)
       pairTree_rp->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -326,8 +332,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("eta2",&eta2);
     pairTree_rp->Branch("pt1",&pt1);
     pairTree_rp->Branch("pt2",&pt2);
-    pairTree_rp->Branch("TrackCut1",&TrackCut1);
-    pairTree_rp->Branch("TrackCut2",&TrackCut2);
+    if(doConsiderMVAinfo_convTrack) pairTree_rp->Branch("TrackCut1",&TrackCut1);
+    if(doConsiderMVAinfo_convTrack) pairTree_rp->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_us) {
@@ -345,7 +351,10 @@ void GeneratePairTrees() {
     pairTree_us->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us->Branch("IsCombHF",&IsCombHF);
+    pairTree_us->Branch("IsTaggedRPConv_classicalCuts_tight",&IsTaggedRPConv_classicalCuts_tight);
     pairTree_us->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
+    pairTree_us->Branch("IsTaggedRPConv_classicalCuts_loose1",&IsTaggedRPConv_classicalCuts_loose1);
+    pairTree_us->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -404,8 +413,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("eta2",&eta2);
     pairTree_us->Branch("pt1",&pt1);
     pairTree_us->Branch("pt2",&pt2);
-    pairTree_us->Branch("TrackCut1",&TrackCut1);
-    pairTree_us->Branch("TrackCut2",&TrackCut2);
+    if(doConsiderMVAinfo_convTrack) pairTree_us->Branch("TrackCut1",&TrackCut1);
+    if(doConsiderMVAinfo_convTrack) pairTree_us->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_ls) {
@@ -423,7 +432,10 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_ls->Branch("IsCombHF",&IsCombHF);
+    pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_tight",&IsTaggedRPConv_classicalCuts_tight);
     pairTree_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
+    pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_loose1",&IsTaggedRPConv_classicalCuts_loose1);
+    pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
     if(doConsiderMVAinfo_convTrack)
       pairTree_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -482,8 +494,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("eta2",&eta2);
     pairTree_ls->Branch("pt1",&pt1);
     pairTree_ls->Branch("pt2",&pt2);
-    pairTree_ls->Branch("TrackCut1",&TrackCut1);
-    pairTree_ls->Branch("TrackCut2",&TrackCut2);
+    if(doConsiderMVAinfo_convTrack) pairTree_ls->Branch("TrackCut1",&TrackCut1);
+    if(doConsiderMVAinfo_convTrack) pairTree_ls->Branch("TrackCut2",&TrackCut2);
   }
 
   if(isPairTree_us_ls) {
@@ -501,7 +513,10 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsCorrBottom",&IsCorrBottom);
     pairTree_us_ls->Branch("IsCorrCharmFromBottom",&IsCorrCharmFromBottom);
     pairTree_us_ls->Branch("IsCombHF",&IsCombHF);
+    pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_tight",&IsTaggedRPConv_classicalCuts_tight);
     pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
+    pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_loose1",&IsTaggedRPConv_classicalCuts_loose1);
+			   pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -560,8 +575,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("eta2",&eta2);
     pairTree_us_ls->Branch("pt1",&pt1);
     pairTree_us_ls->Branch("pt2",&pt2);
-    pairTree_us_ls->Branch("TrackCut1",&TrackCut1);
-    pairTree_us_ls->Branch("TrackCut2",&TrackCut2);
+    if(doConsiderMVAinfo_convTrack) pairTree_us_ls->Branch("TrackCut1",&TrackCut1);
+    if(doConsiderMVAinfo_convTrack) pairTree_us_ls->Branch("TrackCut2",&TrackCut2);
   }
 
 
@@ -660,7 +675,7 @@ void GeneratePairTrees() {
       eta1 = ST_eta;
       pt1 = ST_pt;
       PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-      TrackCut1 = ST_isTrackCut;
+      if(doConsiderMVAinfo_convTrack) TrackCut1 = ST_isTrackCut;
     }else {
       EventID2 = ST_event;
       EventID2_unique = ST_eventID_unique;
@@ -690,7 +705,7 @@ void GeneratePairTrees() {
       eta2 = ST_eta;
       pt2 = ST_pt;
       PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-      TrackCut2 = ST_isTrackCut;
+      if(doConsiderMVAinfo_convTrack) TrackCut2 = ST_isTrackCut;
     }
 
     
@@ -750,7 +765,7 @@ void GeneratePairTrees() {
 	eta2 = ST_eta;
 	pt2 = ST_pt;
 	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-	TrackCut2 = ST_isTrackCut;
+	if(doConsiderMVAinfo_convTrack) TrackCut2 = ST_isTrackCut;
       }else {
 	EventID1 = ST_event;
 	EventID1_unique = ST_eventID_unique;
@@ -780,7 +795,7 @@ void GeneratePairTrees() {
 	eta1 = ST_eta;
 	pt1 = ST_pt;
 	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-	TrackCut1 = ST_isTrackCut;
+	if(doConsiderMVAinfo_convTrack) TrackCut1 = ST_isTrackCut;
       }
 
       IsRP = 0; // default value
@@ -810,6 +825,23 @@ void GeneratePairTrees() {
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
 	}
+	
+	// further (classical) prefilter cuts:
+        if(phiv>2.9 && mass < .0035) {
+          IsTaggedRPConv_classicalCuts_tight = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_tight = 0;
+        }
+        if(phiv>2 && mass<.04) {
+          IsTaggedRPConv_classicalCuts_loose1 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose1 = 0;
+        }
+        if(phiv>TMath::Pi()/2. && mass<.05) {
+          IsTaggedRPConv_classicalCuts_loose2 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose2 = 0;
+        }
 
 	
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
