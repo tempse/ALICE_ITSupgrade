@@ -110,6 +110,7 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
   Float_t mass;
   Float_t pt1, pt2;
   Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
+  Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
   TestTree->SetBranchAddress("mass", &mass);
   TestTree->SetBranchAddress("pt1", &pt1);
