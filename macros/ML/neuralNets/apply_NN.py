@@ -183,7 +183,6 @@ if __name__ == '__main__':
         
         print('Applying the trained classifier...')
         Yscore_chunk = clf.predict_proba(Xapp.as_matrix()).astype(np.float32)
-        print('\n')
     
         """
         n_chunks = 20
@@ -201,11 +200,11 @@ if __name__ == '__main__':
         print('%d%% done...' % int((i+1)*100/(n_chunks*1.0)))
         """
 
-        Yscore = np.concatenate((Yscore, Yscore_chunk))
-    
+        print('Tagging entries outside the training scope as untrustworthily classified...')
+        Yscore_chunk[np.where(dataSample_orig['mass']<0.05)] = 99
         
-    print('Tagging entries outside the training scope as untrustworthily classified...')
-    Yscore[np.where(dataSample_orig['mass']<.05)] = 99
+        Yscore = np.concatenate((Yscore, Yscore_chunk))
+        print('\n')
 
 
     # export predictions
