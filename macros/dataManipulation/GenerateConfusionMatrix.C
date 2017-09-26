@@ -24,11 +24,22 @@ void GenerateConfusionMatrix() {
 
   Int_t isTaggedSignal, isSignal;
   Float_t pt1, pt2;
-  tree->SetBranchAddress("IsTaggedRPConv_classicalCuts_prefilter",
+  Bool_t containsTrackCutInfo = kTRUE;
+  Int_t TrackCut1, TrackCut2;
+  tree->SetBranchAddress("IsTaggedRPConv_classicalCuts_prefilter_loose2",
 			 &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
   tree->SetBranchAddress("pt1", &pt1);
   tree->SetBranchAddress("pt2", &pt2);
+  if(tree->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
+     tree->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
+    tree->SetBranchAddress("TrackCut1", &TrackCut1);
+    tree->SetBranchAddress("TrackCut2", &TrackCut2);
+  }else {
+    std::cout << "  Info: No branch holding track cut information found. "
+	      << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
 
   Float_t mass;
   tree->SetBranchAddress("mass", &mass);
@@ -46,7 +57,7 @@ void GenerateConfusionMatrix() {
   // true positives, false positives, true negatives, false negatives
   Double_t TP = 0., FP = 0., TN = 0., FN = 0.;
   
-  Long64_t nentries = 16400000;//tree->GetEntries();
+  Long64_t nentries = tree->GetEntries();
   
   
   for(Long64_t i=0; i<nentries; i++) {
@@ -55,7 +66,7 @@ void GenerateConfusionMatrix() {
 			      << " %)...";
     tree->GetEntry(i);
 
-    // if(mass<.05) continue;
+    if(mass<.05) continue;
 
     Float_t sample_weight = 1.;
     if(doConsiderPIDefficiencies) {
