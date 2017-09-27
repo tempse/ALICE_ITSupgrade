@@ -25,6 +25,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 				    TString signalRegion = "+",
 				    Int_t   num_steps = 10, // number of steps in the MVA cut scan
 				    Int_t   stride_combi = 1, // stride when combining two classifiers
+                                    Float_t massCut = 0.05, // do not count events with mass < massCut
 				    Float_t MVAoutputRange_min = 0.,
 				    Float_t MVAoutputRange_max = 1.,
 				    TString outfilename = "temp_output/ROCdata_MVAplusPrefilter",
@@ -40,6 +41,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   Int_t EventID, TrackID1, TrackID2;
   Int_t IsConv, IsRP;
   Float_t pt1, pt2;
+  Float_t mass;
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
   tree_MCdatafile->SetBranchAddress("EventID1", &EventID);
@@ -49,6 +51,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   tree_MCdatafile->SetBranchAddress("IsRP", &IsRP);
   tree_MCdatafile->SetBranchAddress("pt1", &pt1);
   tree_MCdatafile->SetBranchAddress("pt2", &pt2);
+  tree_MCdatafile->SetBranchAddress("mass", &mass);
   if(tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
      tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
     tree_MCdatafile->SetBranchAddress("TrackCut1", &TrackCut1);
@@ -130,7 +133,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
   
   
-  const Long64_t nentries = tree_MCdatafile->GetEntries()/10;
+  const Long64_t nentries = 50000000; //tree_MCdatafile->GetEntries();
   std::cout << "Number of entries: " << nentries << std::endl;
 
   
@@ -141,6 +144,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   Int_t *IsRP_all = NULL;
   Float_t *pt1_all = NULL;
   Float_t *pt2_all = NULL;
+  Float_t *mass_all = NULL;
   Float_t *MVAout_prefilter_all = NULL;
   Float_t *MVAout_noPrefilter_all = NULL;
 
@@ -151,6 +155,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   IsRP_all = new Int_t[nentries];
   pt1_all = new Float_t[nentries];
   pt2_all = new Float_t[nentries];
+  mass_all = new Float_t[nentries];
   MVAout_prefilter_all = new Float_t[nentries];
   MVAout_noPrefilter_all = new Float_t[nentries];
 
@@ -162,6 +167,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     IsRP_all[i] = 0;
     pt1_all[i] = 0.;
     pt2_all[i] = 0.;
+    mass_all[i] = 0.;
     MVAout_prefilter_all[i] = 0.;
     MVAout_noPrefilter_all[i] = 0.;
   }
@@ -178,6 +184,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     IsRP_all[i] = IsRP;
     pt1_all[i] = pt1;
     pt2_all[i] = pt2;
+    mass_all[i] = mass;
   }
   std::cout << " DONE" << std::endl;
 
@@ -235,23 +242,28 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     std::cout << "Tagging pairs and applying the prefilter..."
 	      << std::endl;
     
+    std::cout << "Step 1/2:" << std::endl;
     
     for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
       if((pairs_currentPos%1000)==0) {
 	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
       }
+
+      if(mass_all[pairs_currentPos] < massCut) {
+        tags_prefilter[pairs_currentPos] = -99;
+        continue;
+      }
       
       if( (MVAout_prefilter_all[pairs_currentPos] < MVAoutputRange_min ||
 	   MVAout_prefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
+        tags_prefilter[pairs_currentPos] = -999;
 	continue;
       }
 
-      if(signalRegion == "+" && MVAout_prefilter_all[pairs_currentPos] >= MVAcut) {
+      if(signalRegion == "+" && MVAout_prefilter_all[pairs_currentPos] > MVAcut) {
 	tags_prefilter[pairs_currentPos] = 1;
-	tags_noPrefilter[pairs_currentPos] = 1;
-      }else if(signalRegion == "-" && MVAout_prefilter_all[pairs_currentPos] <= MVAcut) {
+      }else if(signalRegion == "-" && MVAout_prefilter_all[pairs_currentPos] < MVAcut) {
 	tags_prefilter[pairs_currentPos] = 1;
-	tags_noPrefilter[pairs_currentPos] = 1;
       }
 
       Int_t EventID_current = EventID_all[pairs_currentPos];
@@ -268,11 +280,11 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	  tags_prefilter[i] = 1;
 	}
 
-	if(signalRegion == "+" && MVAout_prefilter_all[i] >= MVAcut &&
+	if(signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut &&
 	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_prefilter[pairs_currentPos] = 1;
-	}else if(signalRegion == "-" && MVAout_prefilter_all[i] <= MVAcut &&
+	}else if(signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut &&
 		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_prefilter[pairs_currentPos] = 1;
@@ -280,6 +292,31 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       }
       
     }
+    std::cout << std::endl << "Step 2/2:" << std::endl;
+
+    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
+      if((pairs_currentPos%1000)==0) {
+        std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+      }
+
+      if(mass_all[pairs_currentPos] < massCut) {
+        tags_noPrefilter[pairs_currentPos] = -99;
+        continue;
+      }
+
+      if( (MVAout_noPrefilter_all[pairs_currentPos] < MVAoutputRange_min ||
+           MVAout_noPrefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
+        tags_noPrefilter[pairs_currentPos] = -999;
+        continue;
+      }
+
+      if(signalRegion == "+" && MVAout_noPrefilter_all[pairs_currentPos] > MVAcut) {
+        tags_noPrefilter[pairs_currentPos] = 1;
+      }else if(signalRegion == "-" && MVAout_noPrefilter_all[pairs_currentPos] < MVAcut) {
+        tags_noPrefilter[pairs_currentPos] = 1;
+      }
+    }
+    std::cout << std::endl;
 
     
     std::cout << std::endl << "Calculating output values...";
@@ -287,34 +324,45 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     Double_t tp_prefilter=0, fp_prefilter=0, fn_prefilter=0, tn_prefilter=0;
     
     for(Long64_t i=0; i<nentries; i++) {
-      
-      if(tags_prefilter[i]!=0 && tags_prefilter[i]!=1) {
-	pairs_IsTaggedAccepted_prefilter.push_back(-999);
-	pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
-	pairs_IsTrueConv.push_back(IsConv);
-	pairs_pairweight.push_back(0.);
-	continue;
-      }
 
       Double_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
       
-      if(tags_noPrefilter[i] && IsConv_all[i]) tn_noPrefilter += pairweight;
-      if(tags_noPrefilter[i] && !IsConv_all[i]) fn_noPrefilter += pairweight;
-      if(!tags_noPrefilter[i] && IsConv_all[i]) fp_noPrefilter += pairweight;
-      if(!tags_noPrefilter[i] && !IsConv_all[i]) tp_noPrefilter += pairweight;
-      
-      if(tags_prefilter[i] && IsConv_all[i]) tn_prefilter += pairweight;
-      if(tags_prefilter[i] && !IsConv_all[i]) fn_prefilter += pairweight;
-      if(!tags_prefilter[i] && IsConv_all[i]) fp_prefilter += pairweight;
-      if(!tags_prefilter[i] && !IsConv_all[i]) tp_prefilter += pairweight;
+      if(tags_prefilter[i]!=0 && tags_prefilter[i]!=1) {
+	pairs_IsTaggedAccepted_prefilter.push_back(-999);
+	pairs_IsTrueConv.push_back(IsConv_all[i]);
+	pairs_pairweight.push_back(pairweight);
+	continue;
+      }
+
+      if(tags_prefilter[i]==1 && IsConv_all[i]==1) tn_prefilter += pairweight;
+      if(tags_prefilter[i]==1 && IsConv_all[i]==0) fn_prefilter += pairweight;
+      if(tags_prefilter[i]==0 && IsConv_all[i]==1) fp_prefilter += pairweight;
+      if(tags_prefilter[i]==0 && IsConv_all[i]==0) tp_prefilter += pairweight;
 
       pairs_IsTaggedAccepted_prefilter.push_back(tags_prefilter[i]);
-      pairs_IsTaggedAccepted_noPrefilter.push_back(tags_noPrefilter[i]);
-      pairs_IsTrueConv.push_back(IsConv);
+      pairs_IsTrueConv.push_back(IsConv_all[i]);
       pairs_pairweight.push_back(pairweight);
       
     }
+
+    for(Long64_t i=0; i<nentries; i++) {
+
+      if(tags_noPrefilter[i]!=0 && tags_noPrefilter[i]!=1) {
+        pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
+        continue;
+      }
+
+      Double_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+
+      if(tags_noPrefilter[i]==1 && IsConv_all[i]==1) tn_noPrefilter += pairweight;
+      if(tags_noPrefilter[i]==1 && IsConv_all[i]==0) fn_noPrefilter += pairweight;
+      if(tags_noPrefilter[i]==0 && IsConv_all[i]==1) fp_noPrefilter += pairweight;
+      if(tags_noPrefilter[i]==0 && IsConv_all[i]==0) tp_noPrefilter += pairweight;
+
+      pairs_IsTaggedAccepted_noPrefilter.push_back(tags_noPrefilter[i]);
+    }
     
+
     tpr_prefilter = tp_prefilter/((Float_t)tp_prefilter+fn_prefilter);
     fpr_prefilter = fp_prefilter/((Float_t)fp_prefilter+tn_prefilter);
 
@@ -349,6 +397,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   delete [] IsRP_all;
   delete [] pt1_all;
   delete [] pt2_all;
+  delete [] mass_all;
   delete [] MVAout_prefilter_all;
   delete [] MVAout_noPrefilter_all;
     
@@ -359,6 +408,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   IsRP_all = NULL;
   pt1_all = NULL;
   pt2_all = NULL;
+  mass_all = NULL;
   MVAout_prefilter_all = NULL;
   MVAout_noPrefilter_all = NULL;
   
@@ -369,7 +419,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   std::cout << "File " << outfile->GetName() << " created." << std::endl;
 
 
-
+  outfile->Close();
   MCdatafile->Close();
   MVAoutput_prefilter_file->Close();
   MVAoutput_noPrefilter_file->Close();
@@ -442,33 +492,38 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       Double_t fp_combi = 0;
       Double_t fn_combi = 0;
       Double_t tn_combi = 0;
-      
+
       for(Long64_t k=0; k<(Long64_t)pairs_IsTaggedAccepted_noPrefilter.size(); k++) {
 
-	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
-	    pairs_IsTrueConv_combi->at(k)!=1 ) {
+        if( (pairs_prefilter_compare->at(k)!=0 && pairs_prefilter_compare->at(k)!=1) ||
+            (pairs_IsTaggedAccepted_noPrefilter_combi->at(k)!=0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)!=1) ) {
+          continue;
+        }
+
+	if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
+	    pairs_IsTrueConv_combi->at(k)==0 ) {
 	  tp_combi += pairs_pairweight_combi->at(k);
 	}
 	
 	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
-	    pairs_IsTrueConv_combi->at(k)!=1 ) {
-	  fn_combi += pairs_pairweight_combi->at(k);
+	    pairs_IsTrueConv_combi->at(k)==0 ) {
+	  fp_combi += pairs_pairweight_combi->at(k);
 	}
 	
-	if( !(pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+	if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
 	    pairs_IsTrueConv_combi->at(k)==1 ) {
-	  fp_combi += pairs_pairweight_combi->at(k);
+	  fn_combi += pairs_pairweight_combi->at(k);
 	}
 	
 	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
 	    pairs_IsTrueConv_combi->at(k)==1 ) {
 	  tn_combi += pairs_pairweight_combi->at(k);
 	}
-	
+
       }
-      
-      tpr_combi = tp_combi/(tp_combi+fn_combi*1.0);
-      fpr_combi = fp_combi/(fp_combi+tn_combi*1.0);
+
+      tpr_combi = (tp_combi+fn_combi==0) ? 0 : tp_combi/(tp_combi+fn_combi*1.0);
+      fpr_combi = (fp_combi+tn_combi==0) ? 0 : fp_combi/(fp_combi+tn_combi*1.0);
 
       outtree_combi->Fill();
       
@@ -491,7 +546,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	    << "Overall time elapsed: " << watch_overall->RealTime() << " seconds."
 	    << std::endl << std::endl;
   
-  gApplication->Terminate();
+  gSystem->Exit(0);
   
 }
 

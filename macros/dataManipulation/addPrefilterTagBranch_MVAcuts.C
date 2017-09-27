@@ -139,9 +139,9 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     if( MVAoutput_all[j] < MVAoutputRange_min ||
 	MVAoutput_all[j] > MVAoutputRange_max ) continue;
 
-    if(signalRegion == "+" && MVAoutput_all[j] >= MVAcut) {
+    if(signalRegion == "+" && MVAoutput_all[j] > MVAcut) {
       tags_prefilter[j] = 1;
-    }else if(signalRegion == "-" && MVAoutput_all[j] <= MVAcut) {
+    }else if(signalRegion == "-" && MVAoutput_all[j] < MVAcut) {
       tags_prefilter[j] = 1;
     }
 
@@ -155,11 +155,11 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 
       if(tags_prefilter[j] == 1) tags_prefilter[i] = 1;
 
-      if(signalRegion == "+" && MVAoutput_all[i] >= MVAcut &&
+      if(signalRegion == "+" && MVAoutput_all[i] > MVAcut &&
 	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	tags_prefilter[j] = 1;
-      }else if(signalRegion == "-" && MVAoutput_all[i] <= MVAcut &&
+      }else if(signalRegion == "-" && MVAoutput_all[i] < MVAcut &&
 	       (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 		TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	tags_prefilter[j] = 1;
