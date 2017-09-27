@@ -145,6 +145,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   Float_t *pt1_all = NULL;
   Float_t *pt2_all = NULL;
   Float_t *mass_all = NULL;
+  Int_t *trackCut1_all = NULL;
+  Int_t *trackCut2_all = NULL;
   Float_t *MVAout_prefilter_all = NULL;
   Float_t *MVAout_noPrefilter_all = NULL;
 
@@ -156,6 +158,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   pt1_all = new Float_t[nentries];
   pt2_all = new Float_t[nentries];
   mass_all = new Float_t[nentries];
+  trackCut1_all = new Int_t[nentries];
+  trackCut2_all = new Int_t[nentries];
   MVAout_prefilter_all = new Float_t[nentries];
   MVAout_noPrefilter_all = new Float_t[nentries];
 
@@ -168,6 +172,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     pt1_all[i] = 0.;
     pt2_all[i] = 0.;
     mass_all[i] = 0.;
+    trackCut1_all[i] = -1;
+    trackCut2_all[i] = -1;
     MVAout_prefilter_all[i] = 0.;
     MVAout_noPrefilter_all[i] = 0.;
   }
@@ -185,6 +191,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     pt1_all[i] = pt1;
     pt2_all[i] = pt2;
     mass_all[i] = mass;
+    trackCut1_all[i] = TrackCut1;
+    trackCut2_all[i] = TrackCut2;
   }
   std::cout << " DONE" << std::endl;
 
@@ -249,10 +257,10 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
       }
 
-      if(mass_all[pairs_currentPos] < massCut) {
-        tags_prefilter[pairs_currentPos] = -99;
-        continue;
-      }
+      // if(mass_all[pairs_currentPos] < massCut) {
+      //   tags_prefilter[pairs_currentPos] = -99;
+      //   continue;
+      // }
       
       if( (MVAout_prefilter_all[pairs_currentPos] < MVAoutputRange_min ||
 	   MVAout_prefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
@@ -299,10 +307,10 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
         std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
       }
 
-      if(mass_all[pairs_currentPos] < massCut) {
-        tags_noPrefilter[pairs_currentPos] = -99;
-        continue;
-      }
+      // if(mass_all[pairs_currentPos] < massCut) {
+      //   tags_noPrefilter[pairs_currentPos] = -99;
+      //   continue;
+      // }
 
       if( (MVAout_noPrefilter_all[pairs_currentPos] < MVAoutputRange_min ||
            MVAout_noPrefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
@@ -327,7 +335,9 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
       Double_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
       
-      if(tags_prefilter[i]!=0 && tags_prefilter[i]!=1) {
+      if( (tags_prefilter[i]!=0 && tags_prefilter[i]!=1) ||
+          mass_all[i]<massCut ||
+          (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
 	pairs_IsTaggedAccepted_prefilter.push_back(-999);
 	pairs_IsTrueConv.push_back(IsConv_all[i]);
 	pairs_pairweight.push_back(pairweight);
@@ -347,7 +357,9 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
     for(Long64_t i=0; i<nentries; i++) {
 
-      if(tags_noPrefilter[i]!=0 && tags_noPrefilter[i]!=1) {
+      if( (tags_noPrefilter[i]!=0 && tags_noPrefilter[i]!=1) ||
+          mass_all[i]<massCut ||
+          (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
         pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
         continue;
       }
@@ -507,12 +519,12 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	
 	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
 	    pairs_IsTrueConv_combi->at(k)==0 ) {
-	  fp_combi += pairs_pairweight_combi->at(k);
+	  fn_combi += pairs_pairweight_combi->at(k);
 	}
 	
 	if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
 	    pairs_IsTrueConv_combi->at(k)==1 ) {
-	  fn_combi += pairs_pairweight_combi->at(k);
+	  fp_combi += pairs_pairweight_combi->at(k);
 	}
 	
 	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
