@@ -9,35 +9,49 @@ import root_numpy
 from sklearn.metrics import roc_curve, auc
 
 
-filename_MCdata = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root"
+filename_MCdata = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/workingData/testSample/temp_output/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root"
 
 branches_MCdata = ['IsConv']
 
 
 
-filename_MCdata_singleTrackConvRej = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root"
+filename_MCdata_singleTrackConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/singleConvTrackRejMVA/pairing/temp_output/FT2_ITSup_pairTree_us_part2_538163tightCutEvents_wSingleConvTrackMVAoutput.root"
 
-branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutput_convTrack2', 'PIDeff1', 'PIDeff2']
+branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutput_convTrack2', 'PIDeff1', 'PIDeff2', 'TrackCut1', 'TrackCut2']
 
 
 
-filename_ROCdata_CombConvRej_RPConvRej = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/ROCdata_50steps_stride1/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_CombConvRej_RPConvRej = ['tpr_prefilter', 'fpr_prefilter', 'tpr_noPrefilter', 'fpr_noPrefilter', 'MVAcut']
 
 
-filename_ROCdata_combined = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/ROCdata_MVAplusPrefilter_combined.root"
+filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts/ROCdata_tightCuts_looseCuts_50steps_invalidNoPrefilterData/temp_output/ROCdata_MVAplusPrefilter.root"
+
+branches_ROCdata_RPConvRej_wLooseCuts = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
+
+
+filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts_allTracks/ROCdata_tightCuts_looseCuts_allTracks_50steps_invalidNoPrefilterData/temp_output/ROCdata_MVAplusPrefilter.root"
+
+branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
+
+
+filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/ROCdata_50steps_stride1/temp_output/ROCdata_MVAplusPrefilter_combined.root"
 
 branches_ROCdata_combined = ['tpr_combi', 'fpr_combi']
 
 
-MVAcut_opt_CombConvRejMVA = .21
-MVAcut_opt_singleConvTrackRejMVA = .41
-MVAcut_opt_RPConvRejMVA = .43
+MVAcut_opt_CombConvRejMVA = .23
+MVAcut_opt_singleConvTrackRejMVA = .44
+MVAcut_opt_RPConvRejMVA = .38
+MVAcut_opt_RPConvRejMVA_wLooseCuts = .32
+MVAcut_opt_RPConvRejMVA_wLooseCuts_wAllTracks = .33
 
 
 color_RPConvRejClass = 'black'
 color_RPConvRejMVA = '#4444ff'
+color_RPConvRejMVA_wLooseCuts = 'black'
+color_RPConvRejMVA_wLooseCuts_wAllTracks = 'black'
 color_singleConvTrackRej = '#dd0000'
 color_CombConvRej = 'green'
 color_combined = '#edbd00'
@@ -50,13 +64,14 @@ fig_dpi = 150
 
 # range delimiters for file inputs
 start = 0
-stop = 16400000
+stop = 50000000
 
 
 data_MCdata_singleTrackConvRej = pd.DataFrame(root_numpy.root2array(filename_MCdata_singleTrackConvRej,
                                                                     branches=branches_MCdata_singleTrackConvRej,
                                                                     start=start,
-                                                                    stop=stop
+                                                                    stop=stop,
+                                                                    selection='TrackCut1==2 && TrackCut2==2 && MVAoutput_convTrack1>=0 && MVAoutput_convTrack1<=1 && MVAoutput_convTrack2>=0 && MVAoutput_convTrack2<=1'
 ))
 
 data_MCdata = pd.DataFrame(root_numpy.root2array(filename_MCdata,
@@ -65,6 +80,12 @@ data_MCdata = pd.DataFrame(root_numpy.root2array(filename_MCdata,
 
 data_ROCdata_CombConvRej_RPConvRej = pd.DataFrame(root_numpy.root2array(filename_ROCdata_CombConvRej_RPConvRej,
                                                                         branches=branches_ROCdata_CombConvRej_RPConvRej))
+
+data_ROCdata_RPConvRej_wLooseCuts = pd.DataFrame(root_numpy.root2array(filename_ROCdata_RPConvRej_wLooseCuts,
+                                                                       branches=branches_ROCdata_RPConvRej_wLooseCuts))
+
+data_ROCdata_RPConvRej_wLooseCuts_wAllTracks = pd.DataFrame(root_numpy.root2array(filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks,
+                                                                                  branches=branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks))
 
 data_ROCdata_combined = pd.DataFrame(root_numpy.root2array(filename_ROCdata_combined,
                                                            branches=branches_ROCdata_combined))
@@ -91,6 +112,12 @@ pos_workingpoint_opt_CombConvRejMVA = np.argmin(np.abs(data_ROCdata_CombConvRej_
 
 pos_workingpoint_opt_RPConvRejMVA = np.argmin(np.abs(data_ROCdata_CombConvRej_RPConvRej['MVAcut'] -
                                                      MVAcut_opt_RPConvRejMVA))
+
+pos_workingpoint_opt_RPConvRejMVA_wLooseCuts = np.argmin(np.abs(data_ROCdata_RPConvRej_wLooseCuts['MVAcut'] -
+                                                                MVAcut_opt_RPConvRejMVA_wLooseCuts))
+
+pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks = np.argmin(np.abs(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['MVAcut'] -
+                                                                           MVAcut_opt_RPConvRejMVA_wLooseCuts_wAllTracks))
 
 
 plt.figure(figsize=(fig_width,fig_height), dpi=fig_dpi)
@@ -146,7 +173,7 @@ print('singleTrackConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (tpr_si
 
 h_RPConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
                          label='MVA 3 (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
-                                                                                                    data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'])),
+                                                                 data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'])),
                          color=color_RPConvRejMVA)
 
 ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter'],
@@ -160,7 +187,43 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMV
 print('RPConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['tpr_prefilter'],
                                                                  data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter']))
 
+h_RPConvRejMVA_wLooseCuts = ax.plot(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'],
+                                    label='MVA 3 with loose-cuts tracks (AUC = %.3f)' % (-np.trapz(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'],
+                                                                                                   data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'])),
+                                    color=color_RPConvRejMVA_wLooseCuts,
+                                    linestyle='-',
+                                    alpha=.3)
 
+ax.plot(data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['fpr_prefilter'],
+        data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['tpr_prefilter'],
+        color=color_RPConvRejMVA_wLooseCuts,
+        marker='o',
+        markersize=7,
+        fillstyle='none',
+        mew=1,
+        linestyle='none',
+        alpha=.45)
+print('RPConvRejMVA (w/ loose tracks): working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['tpr_prefilter'],
+                                                                                   data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['fpr_prefilter']))
+
+h_RPConvRejMVA_wLooseCuts_wAllTracks = ax.plot(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'],
+                                                label='MVA 3 with loose-cuts and all other tracks (AUC = %.3f)' % (-np.trapz(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'],
+                                                                                                                             data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'])),
+                                                color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
+                                               linestyle=':',
+                                               alpha=.55)
+
+ax.plot(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['fpr_prefilter'],
+        data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['tpr_prefilter'],
+        color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
+        marker='o',
+        markersize=7,
+        fillstyle='none',
+        mew=1,
+        linestyle='none',
+        alpha=.8)
+print('RPConvRejMVA (w/ loose tracks, all other tracks): working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['tpr_prefilter'],
+                                                                                                     data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['fpr_prefilter']))
 
 # dummy point
 h_optMarker = ax.plot(-99, -99,
@@ -175,14 +238,14 @@ h_optMarker = ax.plot(-99, -99,
 
 
 
-h_RPConvRejClass_1 = ax.plot(.490, .596, 'o', color=color_RPConvRejClass,
-        label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.6)
-h_RPConvRejClass_2 = ax.plot(.614, .776, 'o', color=color_RPConvRejClass,
-        label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.6)
-h_RPConvRejClass_3 = ax.plot(.721, .912, 'o', color=color_RPConvRejClass,
-        label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.6)
-h_RPConvRejClass_4 = ax.plot(.936, .986, 'o', color=color_RPConvRejClass,
-        label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.6)
+h_RPConvRejClass_1 = ax.plot(.078, .194, 'o', color=color_RPConvRejClass,
+                             label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.8)
+h_RPConvRejClass_2 = ax.plot(.155, .344, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.8)
+h_RPConvRejClass_3 = ax.plot(.474, .773, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.8)
+h_RPConvRejClass_4 = ax.plot(.857, .962, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.8)
 
 
 
@@ -195,7 +258,7 @@ plt.ylabel('True Positive Rate', fontsize=18)
 handles, labels = ax.get_legend_handles_labels()
 handles_temp, labels_temp = handles[0], labels[0]
 handles, labels = np.delete(handles, 0), np.delete(labels, 0)
-handles, labels = np.insert(handles, 4, handles_temp), np.insert(labels, 4, labels_temp)
+handles, labels = np.insert(handles, 5, handles_temp), np.insert(labels, 5, labels_temp)
 
 plt.legend(handles, labels, loc=4, fontsize=7)
 
