@@ -259,7 +259,7 @@ void createSignificanceData(TString MCdatafilename,
       tags_singleConvTrackRejMVA[i] = 0;
     }
 
-    Float_t MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
+    MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
 
     std::cout << std::endl << "---------- Step " << scan << " of " << num_steps
 	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
