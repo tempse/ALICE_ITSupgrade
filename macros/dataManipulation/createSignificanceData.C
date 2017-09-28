@@ -11,39 +11,6 @@
 #include <TStopwatch.h>
 
 
-// stores all relevant information of a particle pair:
-struct particlePair {
-  Long64_t EventID;
-  Long64_t TrackID1;
-  Long64_t TrackID2;
-  Int_t    IsTaggedAccepted_RPConvRejMVA;
-  Int_t    IsTaggedAccepted_CombConvRejMVA;
-  Int_t    IsTaggedAccepted_singleTrackConvRejMVA;
-  Int_t    IsTrueConv;
-  Int_t    IsTrueRP;
-  Float_t  pt1;
-  Float_t  pt2;
-  Long64_t originalPosition;
-};
-
-bool sortPairsByEventID(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
-
-bool sortByOriginalPosition(const particlePair &lhs, const particlePair &rhs) {
-  return lhs.originalPosition < rhs.originalPosition;
-}
-
-// store all relevant information of a particle track:
-struct particleTrack {
-  Long64_t EventID;
-  Long64_t TrackID;
-};
-
-bool sortTracksByEventID(const particleTrack &lhs, const particleTrack &rhs) {
-  return lhs.EventID < rhs.EventID;
-}
-
 
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
@@ -61,13 +28,13 @@ void createSignificanceData(TString MCdatafilename,
 			    TString treename_MVAoutput_CombConvRejMVA_file,
 			    TString branchname_MVAoutput_CombConvRej_file,
 			    
-			    TString MVAoutput_singleTrackConvRejMVA_filename,
-			    TString treename_MVAoutput_singleTrackConvRejMVA_file,
-			    TString branchname_MVAoutput_singleTrackConvRejMVA_file_1,
-			    TString branchname_MVAoutput_singleTrackConvRejMVA_file_2,
+			    TString MVAoutput_singleConvTrackRejMVA_filename,
+			    TString treename_MVAoutput_singleConvTrackRejMVA_file,
+			    TString branchname_MVAoutput_singleConvTrackRejMVA_file_1,
+			    TString branchname_MVAoutput_singleConvTrackRejMVA_file_2,
 			    
-			    TString signalRegion = "+",
 			    Int_t   num_steps = 10, // number of steps in the MVA cut scan
+			    Float_t massCut = 0.05, // do not count events with mass < massCut
 			    Float_t MVAoutputRange_min = 0.,
 			    Float_t MVAoutputRange_max = 1.,
 			    TString outfilename = "temp_output/significance_data",
@@ -75,10 +42,10 @@ void createSignificanceData(TString MCdatafilename,
 
 
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = -1; // process this number of entries (if "-1", all entries are selected)
-  
+  Long64_t processDataEntries = 50000000; // process this number of entries (if "-1", all entries are selected)
+
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
-  Float_t MVAout_singleTrackConvRejMVA_1, MVAout_singleTrackConvRejMVA_2;
+  Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
   Int_t isAccepted;
 
 
@@ -88,6 +55,9 @@ void createSignificanceData(TString MCdatafilename,
   Int_t EventID, TrackID1, TrackID2;
   Int_t IsConv, IsRP;
   Float_t pt1, pt2;
+  Float_t mass;
+  Int_t TrackCut1, TrackCut2;
+  Bool_t containsTrackCutInfo = kTRUE;
   tree_MCdatafile->SetBranchAddress("EventID1", &EventID);
   tree_MCdatafile->SetBranchAddress("TrackID1", &TrackID1);
   tree_MCdatafile->SetBranchAddress("TrackID2", &TrackID2);
@@ -95,6 +65,16 @@ void createSignificanceData(TString MCdatafilename,
   tree_MCdatafile->SetBranchAddress("IsRP", &IsRP);
   tree_MCdatafile->SetBranchAddress("pt1", &pt1);
   tree_MCdatafile->SetBranchAddress("pt2", &pt2);
+  tree_MCdatafile->SetBranchAddress("mass", &mass);
+  if(tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
+     tree_MCdatafile->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
+    tree_MCdatafile->SetBranchAddress("TrackCut1", &TrackCut1);
+    tree_MCdatafile->SetBranchAddress("TrackCut2", &TrackCut2);
+  }else {
+    std::cout << "  Warning: No branch holding track cut information found. "
+	      << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
 
 
   TFile *MVAoutput_RPConvRejMVA_file = new TFile(MVAoutput_RPConvRejMVA_filename, "READ");
@@ -132,19 +112,19 @@ void createSignificanceData(TString MCdatafilename,
 
   
 
-  TFile *MVAoutput_singleTrackConvRejMVA_file = new TFile(MVAoutput_singleTrackConvRejMVA_filename, "READ");
-  TTree *tree_MVAoutput_singleTrackConvRejMVA_file = (TTree*)MVAoutput_singleTrackConvRejMVA_file->Get(treename_MVAoutput_singleTrackConvRejMVA_file);
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleTrackConvRejMVA_file_1,
-   							      &MVAout_singleTrackConvRejMVA_1);
-  tree_MVAoutput_singleTrackConvRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleTrackConvRejMVA_file_2,
-							      &MVAout_singleTrackConvRejMVA_2);
+  TFile *MVAoutput_singleConvTrackRejMVA_file = new TFile(MVAoutput_singleConvTrackRejMVA_filename, "READ");
+  TTree *tree_MVAoutput_singleConvTrackRejMVA_file = (TTree*)MVAoutput_singleConvTrackRejMVA_file->Get(treename_MVAoutput_singleConvTrackRejMVA_file);
+  tree_MVAoutput_singleConvTrackRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleConvTrackRejMVA_file_1,
+   							      &MVAout_singleConvTrackRejMVA_1);
+  tree_MVAoutput_singleConvTrackRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleConvTrackRejMVA_file_2,
+							      &MVAout_singleConvTrackRejMVA_2);
   
 
-  if(tree_MCdatafile->GetEntries() != tree_MVAoutput_singleTrackConvRejMVA_file->GetEntries()) {
+  if(tree_MCdatafile->GetEntries() != tree_MVAoutput_singleConvTrackRejMVA_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
   	      << "    Size of tree " << tree_MCdatafile->GetEntries()
   	      << std::endl
-  	      << "    Size of tree " << tree_MVAoutput_singleTrackConvRejMVA_file->GetEntries()
+  	      << "    Size of tree " << tree_MVAoutput_singleConvTrackRejMVA_file->GetEntries()
   	      << std::endl << std::endl;
     gApplication->Terminate();
   }
@@ -164,26 +144,26 @@ void createSignificanceData(TString MCdatafilename,
   Float_t MVAcut;
   Float_t Seff_RPConvRejMVA, Beff_RPConvRejMVA;
   Float_t Seff_CombConvRejMVA, Beff_CombConvRejMVA;
-  Float_t Seff_singleTrackConvRejMVA, Beff_singleTrackConvRejMVA;
+  Float_t Seff_singleConvTrackRejMVA, Beff_singleConvTrackRejMVA;
   Float_t significance_RPConvRejMVA;
   Float_t significance_CombConvRejMVA;
-  Float_t significance_singleTrackConvRejMVA;
+  Float_t significance_singleConvTrackRejMVA;
   Float_t significance_gain_RPConvRejMVA;
   Float_t significance_gain_CombConvRejMVA;
-  Float_t significance_gain_singleTrackConvRejMVA;
+  Float_t significance_gain_singleConvTrackRejMVA;
   outtree->Branch("MVAcut", &MVAcut, "MVAcut/F");
   outtree->Branch("S_eff_RPConvRejMVA", &Seff_RPConvRejMVA, "S_eff_RPConvRejMVA/F");
   outtree->Branch("B_eff_RPConvRejMVA", &Beff_RPConvRejMVA, "B_eff_RPConvRejMVA/F");
   outtree->Branch("S_eff_CombConvRejMVA", &Seff_CombConvRejMVA, "S_eff_CombConvRejMVA/F");
   outtree->Branch("B_eff_CombConvRejMVA", &Beff_CombConvRejMVA, "B_eff_CombConvRejMVA/F");
-  outtree->Branch("S_eff_singleTrackConvRejMVA", &Seff_singleTrackConvRejMVA, "S_eff_singleTrackConvRejMVA/F");
-  outtree->Branch("B_eff_singleTrackConvRejMVA", &Beff_singleTrackConvRejMVA, "B_eff_singleTrackConvRejMVA/F");
+  outtree->Branch("S_eff_singleConvTrackRejMVA", &Seff_singleConvTrackRejMVA, "S_eff_singleConvTrackRejMVA/F");
+  outtree->Branch("B_eff_singleConvTrackRejMVA", &Beff_singleConvTrackRejMVA, "B_eff_singleConvTrackRejMVA/F");
   outtree->Branch("significance_RPConvRejMVA", &significance_RPConvRejMVA, "significance_RPConvRejMVA/F");
   outtree->Branch("significance_CombConvRejMVA", &significance_CombConvRejMVA, "significance_CombConvRejMVA/F");
-  outtree->Branch("significance_singleTrackConvRejMVA", &significance_singleTrackConvRejMVA, "significance_singleTrackConvRejMVA/F");
+  outtree->Branch("significance_singleConvTrackRejMVA", &significance_singleConvTrackRejMVA, "significance_singleConvTrackRejMVA/F");
   outtree->Branch("significance_gain_RPConvRejMVA", &significance_gain_RPConvRejMVA, "significance_gain_RPConvRejMVA/F");
   outtree->Branch("significance_gain_CombConvRejMVA", &significance_gain_CombConvRejMVA, "significance_gain_CombConvRejMVA/F");
-  outtree->Branch("significance_gain_singleTrackConvRejMVA", &significance_gain_singleTrackConvRejMVA, "significance_gain_singleTrackConvRejMVA/F");
+  outtree->Branch("significance_gain_singleConvTrackRejMVA", &significance_gain_singleConvTrackRejMVA, "significance_gain_singleConvTrackRejMVA/F");
 
 
   TFile *infile_PIDeffs = new TFile(PIDeffs_filename, "READ");
@@ -195,13 +175,65 @@ void createSignificanceData(TString MCdatafilename,
   Long64_t nentries = tree_MCdatafile->GetEntries();
   if(processDataFraction != -1) nentries = nentries*processDataFraction;
   else if(processDataEntries != -1) nentries = processDataEntries;
-
+  
+  Int_t *EventID_all = NULL;
+  Int_t *TrackID1_all = NULL;
+  Int_t *TrackID2_all = NULL;
+  Int_t *IsConv_all = NULL;
+  Int_t *IsRP_all = NULL;
+  Float_t *pt1_all = NULL;
+  Float_t *pt2_all = NULL;
+  Float_t *mass_all = NULL;
+  Int_t *trackCut1_all = NULL;
+  Int_t *trackCut2_all = NULL;
+  Float_t *MVAout_RPConvRejMVA_all = NULL;
+  Float_t *MVAout_CombConvRejMVA_all = NULL;
+  Float_t *MVAout_singleConvTrackRejMVA_1_all = NULL;
+  Float_t *MVAout_singleConvTrackRejMVA_2_all = NULL;
+  
+  EventID_all = new Int_t[nentries];
+  TrackID1_all = new Int_t[nentries];
+  TrackID2_all = new Int_t[nentries];
+  IsConv_all = new Int_t[nentries];
+  IsRP_all = new Int_t[nentries];
+  pt1_all = new Float_t[nentries];
+  pt2_all = new Float_t[nentries];
+  mass_all = new Float_t[nentries];
+  trackCut1_all = new Int_t[nentries];
+  trackCut2_all = new Int_t[nentries];
+  MVAout_RPConvRejMVA_all = new Float_t[nentries];
+  MVAout_CombConvRejMVA_all = new Float_t[nentries];
+  MVAout_singleConvTrackRejMVA_1_all = new Float_t[nentries];
+  MVAout_singleConvTrackRejMVA_2_all = new Float_t[nentries];
+  
+  for(Long64_t i=0; i<nentries; i++) {
+    tree_MCdatafile->GetEntry(i);
+    tree_MVAoutput_RPConvRejMVA_file->GetEntry(i);
+    tree_MVAoutput_CombConvRejMVA_file->GetEntry(i);
+    tree_MVAoutput_singleConvTrackRejMVA_file->GetEntry(i);
+    
+    EventID_all[i] = EventID;
+    TrackID1_all[i] = TrackID1;
+    TrackID2_all[i] = TrackID2;
+    IsConv_all[i] = IsConv;
+    IsRP_all[i] = IsRP;
+    pt1_all[i] = pt1;
+    pt2_all[i] = pt2;
+    mass_all[i] = mass;
+    trackCut1_all[i] = TrackCut1;
+    trackCut2_all[i] = TrackCut2;
+    MVAout_RPConvRejMVA_all[i] = MVAout_RPConvRejMVA;
+    MVAout_CombConvRejMVA_all[i] = MVAout_CombConvRejMVA;
+    MVAout_singleConvTrackRejMVA_1_all[i] = MVAout_singleConvTrackRejMVA_1;
+    MVAout_singleConvTrackRejMVA_2_all[i] = MVAout_singleConvTrackRejMVA_2;
+  }
+  
 
   // significances in case of (1) ideal and (2) no background rejection:
   Float_t significance_ideal;
   Float_t significance_RPConvRejMVA_all;
   Float_t significance_CombConvRejMVA_all;
-  Float_t significance_singleTrackConvRejMVA_all;
+  Float_t significance_singleConvTrackRejMVA_all;
   
   
   TStopwatch *watch_overall = new TStopwatch();
@@ -213,297 +245,231 @@ void createSignificanceData(TString MCdatafilename,
     TStopwatch *watch_step = new TStopwatch();
     watch_step->Start();
     
-    
-    // Collection of all particle pairs (of all events):
-    std::vector<particlePair> allPairs;
-    
-    // Collection of all accepted particle tracks (of all events):
-    std::vector<particleTrack> tracksTaggedAccepted;
+    Int_t *tags_RPConvRejMVA = NULL;
+    Int_t *tags_CombConvRejMVA = NULL;
+    Int_t *tags_singleConvTrackRejMVA = NULL;
 
-    
-    MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
-
-
-    std::cout << std::endl << std::endl
-	      << "---------- Step " << scan << " of " << num_steps
-	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
-
-    
-    std::cout << "Tagging pairs based on MVA output..." << std::endl;
-  
-    for(Long64_t j=0; j<nentries; j++) {
-      if((j%10000)==0) {
-	std::cout << "\r  Processing event " << j << " of " << nentries
-		  << " (" << j/((Float_t)nentries)*100 << " %)...";
-      }
-
-
-      tree_MCdatafile->GetEntry(j);
-      tree_MVAoutput_RPConvRejMVA_file->GetEntry(j);
-      tree_MVAoutput_CombConvRejMVA_file->GetEntry(j);
-      tree_MVAoutput_singleTrackConvRejMVA_file->GetEntry(j);
-      
-    
-      particlePair currentPair;
-      currentPair.EventID = EventID;
-      currentPair.TrackID1 = TrackID1;
-      currentPair.TrackID2 = TrackID2;
-      currentPair.IsTrueConv = IsConv;
-      currentPair.IsTrueRP = IsRP;
-      currentPair.pt1 = pt1;
-      currentPair.pt2 = pt2;
-      currentPair.originalPosition = j;
-    
-      if(signalRegion == "+") {
-
-	if(MVAout_RPConvRejMVA < MVAoutputRange_min || MVAout_RPConvRejMVA > MVAoutputRange_max) {
-	  currentPair.IsTaggedAccepted_RPConvRejMVA = -999;
-	}else if(MVAout_RPConvRejMVA >= MVAcut) {
-	  currentPair.IsTaggedAccepted_RPConvRejMVA = 1;
-
-	  particleTrack currentTrack1 = {EventID, TrackID1};
-	  particleTrack currentTrack2 = {EventID, TrackID2};
-	  tracksTaggedAccepted.push_back(currentTrack1);
-	  tracksTaggedAccepted.push_back(currentTrack2);
-	}else currentPair.IsTaggedAccepted_RPConvRejMVA = 0;
-
-	if(MVAout_CombConvRejMVA < MVAoutputRange_min || MVAout_CombConvRejMVA > MVAoutputRange_max) {
-	  currentPair.IsTaggedAccepted_CombConvRejMVA = -999;
-	}else if(MVAout_CombConvRejMVA >= MVAcut) {
-	  currentPair.IsTaggedAccepted_CombConvRejMVA = 1;
-	}else currentPair.IsTaggedAccepted_CombConvRejMVA = 0;
-
-	if((MVAout_singleTrackConvRejMVA_1 < MVAoutputRange_min || MVAout_singleTrackConvRejMVA_1 > MVAoutputRange_max) ||
-	   (MVAout_singleTrackConvRejMVA_2 < MVAoutputRange_min || MVAout_singleTrackConvRejMVA_2 > MVAoutputRange_max)) {
-	  currentPair.IsTaggedAccepted_singleTrackConvRejMVA = -999;
-	}else if(TMath::Max(MVAout_singleTrackConvRejMVA_1, MVAout_singleTrackConvRejMVA_2) >= MVAcut) {
-	  currentPair.IsTaggedAccepted_singleTrackConvRejMVA = 1;
-	}else currentPair.IsTaggedAccepted_singleTrackConvRejMVA = 0;
-	
-      }else if(signalRegion == "-") {
-
-	if(MVAout_RPConvRejMVA < MVAoutputRange_min || MVAout_RPConvRejMVA > MVAoutputRange_max) {
-	  currentPair.IsTaggedAccepted_RPConvRejMVA = -999;
-	}else if(MVAout_RPConvRejMVA <= MVAcut) {
-	  currentPair.IsTaggedAccepted_RPConvRejMVA = 1;
-
-	  particleTrack currentTrack1 = {EventID, TrackID1};
-	  particleTrack currentTrack2 = {EventID, TrackID2};
-	  tracksTaggedAccepted.push_back(currentTrack1);
-	  tracksTaggedAccepted.push_back(currentTrack2);
-	}else currentPair.IsTaggedAccepted_RPConvRejMVA = 0;
-
-	if(MVAout_CombConvRejMVA < MVAoutputRange_min || MVAout_CombConvRejMVA > MVAoutputRange_max) {
-	  currentPair.IsTaggedAccepted_CombConvRejMVA = -999;
-	}else if(MVAout_CombConvRejMVA <= MVAcut) {
-	  currentPair.IsTaggedAccepted_CombConvRejMVA = 1;
-	}else currentPair.IsTaggedAccepted_CombConvRejMVA = 0;
-
-	if((MVAout_singleTrackConvRejMVA_1 < MVAoutputRange_min || MVAout_singleTrackConvRejMVA_1 > MVAoutputRange_max) ||
-	   (MVAout_singleTrackConvRejMVA_2 < MVAoutputRange_min || MVAout_singleTrackConvRejMVA_2 > MVAoutputRange_max)) {
-	  currentPair.IsTaggedAccepted_singleTrackConvRejMVA = -999;
-	}else if(TMath::Min(MVAout_singleTrackConvRejMVA_1, MVAout_singleTrackConvRejMVA_2) <= MVAcut) {
-	  currentPair.IsTaggedAccepted_singleTrackConvRejMVA = 1;
-	}else currentPair.IsTaggedAccepted_singleTrackConvRejMVA = 0;
-	
-      }else {
-	std::cout << "  ERROR: 'signalRegion' definition is wrong. "
-		  << "(It should be either '+' (default) or '-'.)" << std::endl;
-	std::cout << "  Abort." << std::endl << std::endl;
-	gApplication->Terminate();
-      }
-
-      allPairs.push_back(currentPair);
-    }
-    std::cout << "\r  Processing event " << nentries << " of " << nentries
-	      << " (100 %)... DONE" << std::endl;
-
-    std::cout << "Number of pairs (RPConvRejMVA): " << allPairs.size() << std::endl;
-    std::cout << "Number of accepted tracks (RPConvRejMVA): " << tracksTaggedAccepted.size() << std::endl;
-    std::cout << std::endl;
-
-
-    // sort pairs and tracks by event ID:
-    std::cout << "Sorting data...";
-    std::sort(allPairs.begin(), allPairs.end(), sortPairsByEventID);
-    std::sort(tracksTaggedAccepted.begin(), tracksTaggedAccepted.end(), sortTracksByEventID);
-    std::cout << " DONE." << std::endl;
-  
-
-    // store start positions of new events:
-    std::cout << "Finding new event start positions...";
-    std::map<Long64_t, Long64_t> eventID_startPos;
-    Long64_t EventID_prev = -1;
-    for(Long64_t i=0; i<(Long64_t)tracksTaggedAccepted.size(); i++) {
-      if(tracksTaggedAccepted[i].EventID != EventID_prev) {
-	eventID_startPos[tracksTaggedAccepted[i].EventID] = i;
-      }
-      EventID_prev = tracksTaggedAccepted[i].EventID;
-    }
-    std::cout << " DONE." << std::endl;
-  
-
-
-    std::cout << "Propagate tag information to other pairs..." << std::endl;
-  
+    tags_RPConvRejMVA = new Int_t[nentries];
+    tags_CombConvRejMVA = new Int_t[nentries];
+    tags_singleConvTrackRejMVA = new Int_t[nentries];
 
     for(Long64_t i=0; i<nentries; i++) {
-      if((i%10000)==0) {
-	std::cout << "\r  Processing event " << i << " of " << nentries
-		  << " (" << i/((Float_t)nentries)*100 << " %)...";
+      tags_RPConvRejMVA[i] = 0;
+      tags_CombConvRejMVA[i] = 0;
+      tags_singleConvTrackRejMVA[i] = 0;
+    }
+
+    Float_t MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
+
+    std::cout << std::endl << "---------- Step " << scan << " of " << num_steps
+	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
+
+    std::cout << "Reading the data...";
+
+    Int_t EventID_prev = -1;
+
+    Int_t accTracks_startPos = 0, accTracks_nextStartPos;
+
+    std::cout << "Tagging pairs and applying the prefilter..."
+	      << std::endl;
+    
+    std::cout << "Step 1/3:" << std::endl;
+
+    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
+      if((pairs_currentPos%5000)==0) {
+	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
       }
-    
-      if( allPairs[i].IsTaggedAccepted_RPConvRejMVA == -999 ) continue; // skip irrelevant entries
-    
-      for(Long64_t j=eventID_startPos[allPairs[i].EventID];
-	  j<(Long64_t)tracksTaggedAccepted.size();
-	  j++) {
-	if( allPairs[i].EventID != tracksTaggedAccepted[j].EventID ) {
-	  break;
-	}else if(allPairs[i].TrackID1==tracksTaggedAccepted[j].TrackID ||
-		 allPairs[i].TrackID2==tracksTaggedAccepted[j].TrackID) {
-	  allPairs[i].IsTaggedAccepted_RPConvRejMVA = 1.;
+
+      if( (MVAout_RPConvRejMVA_all[pairs_currentPos] < MVAoutputRange_min ||
+	   MVAout_RPConvRejMVA_all[pairs_currentPos] > MVAoutputRange_max) ) {
+	tags_RPConvRejMVA[pairs_currentPos] = -999;
+	continue;
+      }
+
+      if(MVAout_RPConvRejMVA_all[pairs_currentPos] < MVAcut) {
+	tags_RPConvRejMVA[pairs_currentPos] = 1;
+      }
+      
+      Int_t EventID_current = EventID_all[pairs_currentPos];
+      Int_t TrackID1_current = TrackID1_all[pairs_currentPos];
+      Int_t TrackID2_current = TrackID2_all[pairs_currentPos];
+
+      for(Long64_t i=pairs_currentPos+1; i<nentries; i++) {
+	
+	if(EventID_all[i] != EventID_current) break;
+	
+	if(tags_RPConvRejMVA[pairs_currentPos] == 1) {
+	  tags_RPConvRejMVA[i] = 1;
+	}
+
+        if(MVAout_RPConvRejMVA_all[i] < MVAcut &&
+		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	  tags_RPConvRejMVA[pairs_currentPos] = 1;
 	}
       }
     }
-    std::cout << "\r  Processing event " << nentries << " of " << nentries
-	      << " (100 %)... DONE." << std::endl;
-
-
-    // restore original order of allPairs vector:
-    std::cout << "Restoring original order of data...";
-    std::sort(allPairs.begin(), allPairs.end(), sortByOriginalPosition);
-    std::cout << " DONE." << std::endl;
-
-
+    std::cout << std::endl;
     
-    std::cout << "Calculating signal and background efficiencies...";
+
+    std::cout << "Step 2/3:" << std::endl;
+
+    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
+      if((pairs_currentPos%5000)==0) {
+	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+      }
+
+      if( (MVAout_CombConvRejMVA_all[pairs_currentPos] < MVAoutputRange_min ||
+	   MVAout_CombConvRejMVA_all[pairs_currentPos] > MVAoutputRange_max) ) {
+	tags_CombConvRejMVA[pairs_currentPos] = -999;
+	continue;
+      }
+
+      if(MVAout_CombConvRejMVA_all[pairs_currentPos] < MVAcut) {
+	tags_CombConvRejMVA[pairs_currentPos] = 1;
+      }
+    }
+    std::cout << std::endl;
+
+    std::cout << "Step 3/3:" << std::endl;
+
+    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
+      if((pairs_currentPos%5000)==0) {
+	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+      }
+
+      if( (MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] < MVAoutputRange_min ||
+	   MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] < MVAoutputRange_min ||
+	   MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] > MVAoutputRange_max ||
+	   MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] > MVAoutputRange_max) ) {
+	tags_singleConvTrackRejMVA[pairs_currentPos] = -999;
+	continue;
+      }
+
+      if((MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] < MVAcut ||
+				       MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] < MVAcut)) {
+	tags_singleConvTrackRejMVA[pairs_currentPos] = 1;
+      }
+    }
+
+
 
     // determine significance in case of (1) ideal and (2) no background rejection:
     if(scan==0) {
-      
+
       Float_t num_S_ideal_temp=0., num_B_ideal_temp=0.;
-      Float_t num_S_ideal_singleTrackConvRejMVA_temp=0., num_B_ideal_singleTrackConvRejMVA_temp=0.;
+      Float_t num_S_ideal_singleConvTrackRejMVA_temp=0., num_B_ideal_singleConvTrackRejMVA_temp=0.;
       
       Float_t num_S_RPConvRejMVA_temp=0., num_B_RPConvRejMVA_temp=0.;
       Float_t num_S_CombConvRejMVA_temp=0., num_B_CombConvRejMVA_temp=0.;
-      Float_t num_S_singleTrackConvRejMVA_temp=0., num_B_singleTrackConvRejMVA_temp=0.;
-      
+      Float_t num_S_singleConvTrackRejMVA_temp=0., num_B_singleConvTrackRejMVA_temp=0.;
+
       for(Long64_t i=0; i<nentries; i++) {
-	
-	Float_t pairweight_temp = getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
 
-	if(!allPairs[i].IsTrueConv) num_S_ideal_temp += pairweight_temp;
-	if(allPairs[i].IsTrueConv) num_B_ideal_temp += pairweight_temp;
-	
-	if(signalRegion == "+") {
-	  if(allPairs[i].IsTaggedAccepted_RPConvRejMVA && !allPairs[i].IsTrueConv) num_S_RPConvRejMVA_temp += pairweight_temp;
-	  if(allPairs[i].IsTaggedAccepted_RPConvRejMVA && allPairs[i].IsTrueConv) num_B_RPConvRejMVA_temp += pairweight_temp;
-
-	  if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA_temp += pairweight_temp;
-	  if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA_temp += pairweight_temp;
-
-	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_temp;
-	  if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_temp;
+	if( mass_all[i]<massCut ||
+	    (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	  continue;
 	}
 	
-	if(signalRegion == "-") {
-	  if(!allPairs[i].IsTaggedAccepted_RPConvRejMVA && !allPairs[i].IsTrueConv) num_S_RPConvRejMVA_temp += pairweight_temp;
-	  if(!allPairs[i].IsTaggedAccepted_RPConvRejMVA && allPairs[i].IsTrueConv) num_B_RPConvRejMVA_temp += pairweight_temp;
+	Float_t pairweight_temp = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
-	  if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA_temp += pairweight_temp;
-	  if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA_temp += pairweight_temp;
-
-	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA_temp += pairweight_temp;
-	  if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA_temp += pairweight_temp;
+	if(IsConv_all[i]==0) {
+	  num_S_ideal_temp += pairweight_temp;
+	}else {
+	  num_B_ideal_temp += pairweight_temp;
 	}
+
+	if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_RPConvRejMVA_temp += pairweight_temp;
+	if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_RPConvRejMVA_temp += pairweight_temp;
+
+	if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_CombConvRejMVA_temp += pairweight_temp;
+	if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_CombConvRejMVA_temp += pairweight_temp;
+
+	if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==0) num_S_singleConvTrackRejMVA_temp += pairweight_temp;
+	if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==1) num_B_singleConvTrackRejMVA_temp += pairweight_temp;
       }
-      
+
 
       if(num_S_ideal_temp!=0) {
 	significance_ideal = num_S_ideal_temp/TMath::Sqrt(num_S_ideal_temp);
       }else significance_ideal = 0.;
-	
-      if(num_S_RPConvRejMVA_temp!=0 || num_B_RPConvRejMVA_temp!=0) {
+
+      if(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp>0) {
 	significance_RPConvRejMVA_all = num_S_RPConvRejMVA_temp/TMath::Sqrt(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp);
       }else significance_RPConvRejMVA_all = 0.;
-      
-      if(num_S_CombConvRejMVA_temp!=0 || num_B_CombConvRejMVA_temp!=0) {
+
+      if(num_S_CombConvRejMVA_temp+num_B_CombConvRejMVA_temp>0) {
 	significance_CombConvRejMVA_all = num_S_CombConvRejMVA_temp/TMath::Sqrt(num_S_CombConvRejMVA_temp+num_B_CombConvRejMVA_temp);
       }else significance_CombConvRejMVA_all = 0.;
-      
-      if(num_S_singleTrackConvRejMVA_temp!=0 || num_B_singleTrackConvRejMVA_temp!=0) {
-	significance_singleTrackConvRejMVA_all = num_S_singleTrackConvRejMVA_temp/TMath::Sqrt(num_S_singleTrackConvRejMVA_temp+num_B_singleTrackConvRejMVA_temp);
-      }else significance_singleTrackConvRejMVA_all = 0.;
+
+      if(num_S_singleConvTrackRejMVA_temp+num_B_singleConvTrackRejMVA_temp>0) {
+	significance_singleConvTrackRejMVA_all = num_S_singleConvTrackRejMVA_temp/TMath::Sqrt(num_S_singleConvTrackRejMVA_temp+num_B_singleConvTrackRejMVA_temp);
+      }else significance_singleConvTrackRejMVA_all = 0.;
 
       //testing
       std::cout << " Ideal significance: " << significance_ideal << std::endl
 		<< " Significance (no backgr. rej., RPConvRejMVA): " << significance_RPConvRejMVA_all << std::endl
 		<< " Significance (no backgr. rej., CombConvRejMVA): " << significance_CombConvRejMVA_all << std::endl
-		<< " Significance (no backgr. rej., singleTrackConvRejMVA): " << significance_singleTrackConvRejMVA_all << std::endl;
-	
-	
-      
+		<< " Significance (no backgr. rej., singleConvTrackRejMVA): " << significance_singleConvTrackRejMVA_all << std::endl;
+
     }
-    
-    Float_t num_totalConvs=0, num_totalNonConvs=0;
+      
+
+    Float_t num_totalConvs = 0, num_totalNonConvs = 0;
     for(Long64_t i=0; i<nentries; i++) {
-      if(allPairs[i].IsTrueConv) num_totalConvs += getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
-      else num_totalNonConvs += getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
+
+      if( mass_all[i]<massCut ||
+	  (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	continue;
+      }
+      
+      if(IsConv_all[i]==1) num_totalConvs += getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+      else num_totalNonConvs += getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
     }
 
     Float_t num_S_RPConvRejMVA=0., num_B_RPConvRejMVA=0.;
     Float_t num_S_CombConvRejMVA=0., num_B_CombConvRejMVA=0.;
-    Float_t num_S_singleTrackConvRejMVA=0., num_B_singleTrackConvRejMVA=0.;
-    
+    Float_t num_S_singleConvTrackRejMVA=0., num_B_singleConvTrackRejMVA=0.;
+
     for(Long64_t i=0; i<nentries; i++) {
 
-      Float_t pairweight = getPairPIDefficiency(allPairs[i].pt1, allPairs[i].pt2, *h_PIDeffs);
-	
-      if(signalRegion == "+") {
-	
-	if(allPairs[i].IsTaggedAccepted_RPConvRejMVA && !allPairs[i].IsTrueConv) num_S_RPConvRejMVA += pairweight;
-	if(allPairs[i].IsTaggedAccepted_RPConvRejMVA && allPairs[i].IsTrueConv) num_B_RPConvRejMVA += pairweight;
-
-	if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA += pairweight;
-	if(allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA += pairweight;
-
-	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA += pairweight;
-	if(allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA += pairweight;
-	
-      }else if(signalRegion == "-") {
-	
-	if(!allPairs[i].IsTaggedAccepted_RPConvRejMVA && !allPairs[i].IsTrueConv) num_S_RPConvRejMVA += pairweight;
-	if(!allPairs[i].IsTaggedAccepted_RPConvRejMVA && allPairs[i].IsTrueConv) num_B_RPConvRejMVA += pairweight;
-
-	if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && !allPairs[i].IsTrueConv) num_S_CombConvRejMVA += pairweight;
-	if(!allPairs[i].IsTaggedAccepted_CombConvRejMVA && allPairs[i].IsTrueConv) num_B_CombConvRejMVA += pairweight;
-
-	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && !allPairs[i].IsTrueConv) num_S_singleTrackConvRejMVA += pairweight;
-	if(!allPairs[i].IsTaggedAccepted_singleTrackConvRejMVA && allPairs[i].IsTrueConv) num_B_singleTrackConvRejMVA += pairweight;
-	
+      if( mass_all[i]<massCut ||
+	  (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	continue;
       }
+      
+      Float_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+
+      if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_RPConvRejMVA += pairweight;
+      if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_RPConvRejMVA += pairweight;
+
+      if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_CombConvRejMVA += pairweight;
+      if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_CombConvRejMVA += pairweight;
+
+      if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==0) num_S_singleConvTrackRejMVA += pairweight;
+      if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==1) num_B_singleConvTrackRejMVA += pairweight;
+	
     }
 
-    Seff_RPConvRejMVA = num_S_RPConvRejMVA/(num_totalNonConvs*1.0);
-    Beff_RPConvRejMVA = num_B_RPConvRejMVA/(num_totalConvs*1.0);
-    if(num_S_RPConvRejMVA!=0 || num_B_RPConvRejMVA!=0)
+    Seff_RPConvRejMVA = num_S_RPConvRejMVA / num_totalNonConvs;
+    Beff_RPConvRejMVA = num_B_RPConvRejMVA / num_totalConvs;
+    if(num_S_RPConvRejMVA+num_B_RPConvRejMVA>0) {
       significance_RPConvRejMVA = num_S_RPConvRejMVA/TMath::Sqrt(num_S_RPConvRejMVA+num_B_RPConvRejMVA);
-    else significance_RPConvRejMVA = 0.;
-    
-    Seff_CombConvRejMVA = num_S_CombConvRejMVA/(num_totalNonConvs*1.0);
-    Beff_CombConvRejMVA = num_B_CombConvRejMVA/(num_totalConvs*1.0);
-    if(num_S_CombConvRejMVA!=0 || num_B_CombConvRejMVA!=0)
+    }else significance_RPConvRejMVA = 0.;
+
+    Seff_CombConvRejMVA = num_S_CombConvRejMVA / num_totalNonConvs;
+    Beff_CombConvRejMVA = num_B_CombConvRejMVA / num_totalConvs;
+    if(num_S_CombConvRejMVA+num_B_CombConvRejMVA>0) {
       significance_CombConvRejMVA = num_S_CombConvRejMVA/TMath::Sqrt(num_S_CombConvRejMVA+num_B_CombConvRejMVA);
-    else significance_CombConvRejMVA = 0.;
+    }else significance_CombConvRejMVA = 0.;
 
-    Seff_singleTrackConvRejMVA = num_S_singleTrackConvRejMVA/(num_totalNonConvs*1.0);
-    Beff_singleTrackConvRejMVA = num_B_singleTrackConvRejMVA/(num_totalConvs*1.0);
-    if(num_S_singleTrackConvRejMVA!=0 || num_B_singleTrackConvRejMVA!=0)
-      significance_singleTrackConvRejMVA = num_S_singleTrackConvRejMVA/TMath::Sqrt(num_S_singleTrackConvRejMVA+num_B_singleTrackConvRejMVA);
-    else significance_singleTrackConvRejMVA = 0.;
+    Seff_singleConvTrackRejMVA = num_S_singleConvTrackRejMVA / num_totalNonConvs;
+    Beff_singleConvTrackRejMVA = num_B_singleConvTrackRejMVA / num_totalConvs;
+    if(num_S_singleConvTrackRejMVA+num_B_singleConvTrackRejMVA>0) {
+      significance_singleConvTrackRejMVA = num_S_singleConvTrackRejMVA/TMath::Sqrt(num_S_singleConvTrackRejMVA+num_B_singleConvTrackRejMVA);
+    }else significance_singleConvTrackRejMVA = 0.;
 
-
+      
     if(significance_ideal-significance_RPConvRejMVA_all != 0) {
       significance_gain_RPConvRejMVA = (significance_RPConvRejMVA-significance_RPConvRejMVA_all) / (significance_ideal-significance_RPConvRejMVA_all);
     }else significance_gain_RPConvRejMVA = 0.;
@@ -512,9 +478,10 @@ void createSignificanceData(TString MCdatafilename,
       significance_gain_CombConvRejMVA = (significance_CombConvRejMVA-significance_CombConvRejMVA_all) / (significance_ideal-significance_CombConvRejMVA_all);
     }else significance_gain_CombConvRejMVA = 0.;
 
-    if(significance_ideal-significance_singleTrackConvRejMVA_all != 0) {
-      significance_gain_singleTrackConvRejMVA = (significance_singleTrackConvRejMVA-significance_singleTrackConvRejMVA_all) / (significance_ideal-significance_singleTrackConvRejMVA_all);
-    }else significance_gain_singleTrackConvRejMVA = 0.;
+    if(significance_ideal-significance_singleConvTrackRejMVA_all != 0) {
+      significance_gain_singleConvTrackRejMVA = (significance_singleConvTrackRejMVA-significance_singleConvTrackRejMVA_all) / (significance_ideal-significance_singleConvTrackRejMVA_all);
+    }else significance_gain_singleConvTrackRejMVA = 0.;
+
 
 
     outtree->Fill();
@@ -524,15 +491,25 @@ void createSignificanceData(TString MCdatafilename,
 	      << ",\tsignificance_RPConvRejMVA = " << significance_RPConvRejMVA << std::endl;
     std::cout << "  S_eff_CombConvRejMVA = " << Seff_CombConvRejMVA << ",\tB_eff_CombConvRejMVA = " << Beff_CombConvRejMVA
 	      << ",\tsignificance_CombConvRejMVA = " << significance_CombConvRejMVA << std::endl;
-    std::cout << "  S_eff_singleTrackConvRejMVA = " << Seff_singleTrackConvRejMVA << ",\tB_eff_singleTrackConvRejMVA = " << Beff_singleTrackConvRejMVA
-	      << ",\tsignificance_singleTrackConvRej = " << significance_singleTrackConvRejMVA << std::endl;
+    std::cout << "  S_eff_singleConvTrackRejMVA = " << Seff_singleConvTrackRejMVA << ",\tB_eff_singleConvTrackRejMVA = " << Beff_singleConvTrackRejMVA
+	      << ",\tsignificance_singleConvTrackRej = " << significance_singleConvTrackRejMVA << std::endl;
     std::cout << "  significance_gain_RPConvRejMVA = " << significance_gain_RPConvRejMVA << std::endl;
     std::cout << "  significance_gain_CombConvRejMVA = " << significance_gain_CombConvRejMVA << std::endl;
-    std::cout << "  significance_gain_singleTrackConvRejMVA = " << significance_gain_singleTrackConvRejMVA << std::endl;
+    std::cout << "  significance_gain_singleConvTrackRejMVA = " << significance_gain_singleConvTrackRejMVA << std::endl;
 
     std::cout << std::endl << "Time elapsed: " << watch_step->RealTime()
 	      << " seconds." << std::endl;
+
+
+    delete [] tags_RPConvRejMVA;
+    delete [] tags_CombConvRejMVA;
+    delete [] tags_singleConvTrackRejMVA;
+
+    tags_RPConvRejMVA = NULL;
+    tags_CombConvRejMVA = NULL;
+    tags_singleConvTrackRejMVA = NULL;
   }
+    
 
 
   std::cout << "Write data...";
@@ -545,9 +522,42 @@ void createSignificanceData(TString MCdatafilename,
 
   MCdatafile->Close();
   MVAoutput_RPConvRejMVA_file->Close();
+  MVAoutput_CombConvRejMVA_file->Close();
+  MVAoutput_singleConvTrackRejMVA_file->Close();
+
+  delete [] EventID_all;
+  delete [] TrackID1_all;
+  delete [] TrackID2_all;
+  delete [] IsConv_all;
+  delete [] IsRP_all;
+  delete [] pt1_all;
+  delete [] pt2_all;
+  delete [] mass_all;
+  delete [] trackCut1_all;
+  delete [] trackCut2_all;
+  delete [] MVAout_RPConvRejMVA_all;
+  delete [] MVAout_CombConvRejMVA_all;
+  delete [] MVAout_singleConvTrackRejMVA_1_all;
+  delete [] MVAout_singleConvTrackRejMVA_2_all;
+
+  EventID_all = NULL;
+  TrackID1_all = NULL;
+  TrackID2_all = NULL;
+  IsConv_all = NULL;
+  IsRP_all = NULL;
+  pt1_all = NULL;
+  pt2_all = NULL;
+  mass_all = NULL;
+  trackCut1_all = NULL;
+  trackCut2_all = NULL;
+  MVAout_RPConvRejMVA_all = NULL;
+  MVAout_CombConvRejMVA_all = NULL;
+  MVAout_singleConvTrackRejMVA_1_all = NULL;
+  MVAout_singleConvTrackRejMVA_2_all = NULL;
+
+
+  gSystem->Exit(0);
 }
-
-
 
 
 
@@ -560,5 +570,4 @@ Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
     h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt2));
 
   return PIDeff1 * PIDeff2;
-  
 }
