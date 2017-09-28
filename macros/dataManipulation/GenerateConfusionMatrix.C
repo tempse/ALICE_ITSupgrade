@@ -67,6 +67,7 @@ void GenerateConfusionMatrix() {
     tree->GetEntry(i);
 
     if(mass<.05) continue;
+    if(TrackCut1!=2 || TrackCut2!=2) continue;
 
     Float_t sample_weight = 1.;
     if(doConsiderPIDefficiencies) {
