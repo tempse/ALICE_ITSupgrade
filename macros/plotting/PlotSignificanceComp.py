@@ -7,9 +7,9 @@ import pandas as pd
 import root_numpy
 
 
-filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_50steps_tightCuts/temp_output/significance_data.root"
-filename_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_50steps_tightCuts_looseCuts/temp_output/significance_data.root"
-filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_50steps_tightCuts_looseCuts_allTracks/temp_output/significance_data.root"
+filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts/temp_output/significance_data.root"
+filename_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts_looseCuts/temp_output/significance_data.root"
+filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts_looseCuts_allTracks/temp_output/significance_data.root"
 
 color_RPConvRejMVA = '#4444ff'
 color_RPConvRejMVA_wLooseCuts = 'black'
@@ -178,7 +178,7 @@ ax.plot(data_wLooseCuts_wAllTracks['MVAcut'], data_wLooseCuts_wAllTracks['signif
         linestyle=':',
         alpha=.55)
 
-plt.legend()
+plt.legend(fontsize=7, loc=3)
 
 plt.xlabel('MVA cut', fontsize=18)
 plt.ylabel('Significance', fontsize=18)
@@ -255,7 +255,7 @@ o = [6,7,3,4,5]
 handles = [handles_all[O] for O in o]
 labels = [labels_all[O] for O in o]
 
-plt.legend(handles, labels)
+plt.legend(handles, labels, fontsize=7)
 
 plt.xlabel('MVA cut', fontsize=18)
 plt.ylabel('Signal (background) efficiency', fontsize=18)
@@ -294,7 +294,7 @@ ax.plot(data_wLooseCuts_wAllTracks['MVAcut'], data_wLooseCuts_wAllTracks['signif
         linestyle=':',
         alpha=.55)
 
-plt.legend()
+plt.legend(fontsize=7, loc=3)
 plt.xlabel('MVA cut', fontsize=18)
 plt.ylabel('Significance gain', fontsize=18)
 plt.savefig('temp_output/significancegain_MVAcut.png')

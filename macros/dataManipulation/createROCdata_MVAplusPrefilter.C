@@ -280,9 +280,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       
       for(Int_t i=pairs_currentPos+1; i<nentries; i++) {
 	  
-	if(EventID_all[i] != EventID_current) {
-	  break;
-	}
+	if(EventID_all[i] != EventID_current) break;
 
 	if(tags_prefilter[pairs_currentPos] == 1) {
 	  tags_prefilter[i] = 1;

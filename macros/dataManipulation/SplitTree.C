@@ -20,7 +20,7 @@ void SplitTree() {
   // tree name
   TString treeName = "outputITSup/tracks";
 
-  // size of test sample (int/float)  
+  // size of test sample (int/float)
   TString test_sample_size = "538273";
 
   // choose what to write to disk ("train"/"test"/"train+test")
@@ -32,8 +32,8 @@ void SplitTree() {
   // branch name with event IDs in case test_sample_size is type int
   TString ev_id_branchname = "event";
 
-  // branch name with information about the looseness of the track cuts
-  TString trackCut_branchname = "isTrackCut";
+  // branch name with information about the looseness of the track cuts ([name] / "none")
+  TString trackCut_branchname = "none";
 
   
 
@@ -95,7 +95,7 @@ void SplitTree() {
   Long64_t ev_id;
   Int_t isTrackCut;
   if(doSplitByEvent) infileTree->SetBranchAddress(ev_id_branchname, &ev_id);
-  if(doSplitByEvent) infileTree->SetBranchAddress(trackCut_branchname, &isTrackCut);
+  if(doSplitByEvent && trackCut_branchname!="none") infileTree->SetBranchAddress(trackCut_branchname, &isTrackCut);
 
   
   TFile *outfile_part1 = new TFile(output_prefix + "output_splitTree_train.root", "RECREATE");
@@ -208,7 +208,8 @@ void SplitTree() {
       infileTree->GetEntry(en);
 
       // monitor whether there is a "standard-cut" track in the event
-      if(isTrackCut == 2) doCountEvent = kTRUE;
+      if(trackCut_branchname!="none" && isTrackCut == 2) doCountEvent = kTRUE;
+      else if(trackCut_branchname=="none") doCountEvent = kTRUE;
 
       if(ev_id != ev_id_prev) {
 	if(doCountEvent) cnt_passedEvents++;
