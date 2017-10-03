@@ -29,7 +29,7 @@ Float_t SoverBError(Float_t S, Float_t B) {
 }
 
 
-void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
+void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
   // File containing the input pairtree (test) data:
   TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
@@ -302,6 +302,8 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
     // linear mapping of the MVA output values to the range [0,1]:
     MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
+    if(MVAoutput < MVAoutputRange_min || MVAoutput > MVAoutputRange_max) continue;
+
     Float_t sample_weight = 1.;
     if(doConsiderPIDefficiencies) {
       sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
@@ -429,7 +431,8 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
     }else { // if(!useTags)
       
       if(!useTwoVars) {
-	if(signalRegion == "+" && variable1 >= MVAcut) {
+	if(signalRegion == "+" && variable1 >= MVAcut &&
+	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
 	  h_SB_afterCut->Fill(mass, sample_weight);
 	  for(Int_t b=0; b<b_max; b++) {
 	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
@@ -465,7 +468,8 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
 	    }
 	  }
 	}
-	if(signalRegion == "-" && variable1 <= MVAcut) {
+	if(signalRegion == "-" && variable1 <= MVAcut &&
+	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
 	  h_SB_afterCut->Fill(mass, sample_weight);
 	  for(Int_t b=0; b<b_max; b++) {
 	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
@@ -504,7 +508,9 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
       }else { // if(useTwoVars)
 	if(signalRegion == "+" &&
 	   variable1 >= MVAcut &&
-	   variable2 >= MVAcut) {
+	   variable2 >= MVAcut &&
+	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
+	   variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
 	  h_SB_afterCut->Fill(mass, sample_weight);
 	  for(Int_t b=0; b<b_max; b++) {
 	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
@@ -542,7 +548,9 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
 	}
 	if(signalRegion == "-" &&
 	   variable1 <= MVAcut &&
-	   variable2 <= MVAcut) {
+	   variable2 <= MVAcut &&
+	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
+	   variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
 	  h_SB_afterCut->Fill(mass, sample_weight);
 	  for(Int_t b=0; b<b_max; b++) {
 	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
@@ -1260,7 +1268,7 @@ void PlotMass(Int_t num_subsamples=30, Bool_t doBootstrap=kTRUE) {
   h_significance_exp_noCuts->Sumw2();
   h_significance_exp_norm->Divide(h_significance_exp_noCuts);
 
-  h_SoverB_class_norm = (TH1D*)h_SoverB_exp->Clone("h_SoverB_class_norm");
+  h_SoverB_class_norm = (TH1D*)h_SoverB_class->Clone("h_SoverB_class_norm");
   h_SoverB_class_norm->Sumw2();
   h_SoverB_class_noCuts->Sumw2();
   h_SoverB_class_norm->Divide(h_SoverB_class_noCuts);
