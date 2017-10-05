@@ -15,7 +15,7 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 				   TString treename_updatefile,
 				   TString branchname_updatefile,
 				   Float_t MVAcut,
-				   TString signalRegion = "+") {
+				   TString signalRegion = "-") {
 
   Float_t MVAoutput;
   Int_t isAccepted;
@@ -122,11 +122,6 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     MVAoutput_all[i] = MVAoutput;
   }
   std::cout << "(" << nentries << " / " << nentries << ")" << std::endl;
-  
-
-  Int_t EventID_prev = -1;
-
-  Int_t accTracks_startPos = 0, accTracks_nextStartPos;
 
   
   std::cout << "Tagging pairs and applying the prefilter..." << std::endl;
@@ -137,7 +132,10 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     if((j%1000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
 
     if( MVAoutput_all[j] < MVAoutputRange_min ||
-	MVAoutput_all[j] > MVAoutputRange_max ) continue;
+	MVAoutput_all[j] > MVAoutputRange_max ) {
+      tags_prefilter[j] = -999;
+      continue;
+    }
 
     if(signalRegion == "+" && MVAoutput_all[j] > MVAcut) {
       tags_prefilter[j] = 1;
@@ -149,19 +147,23 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     Int_t TrackID1_current = TrackID1_all[j];
     Int_t TrackID2_current = TrackID2_all[j];
 
-    for(Int_t i=j; i<nentries; i++) {
+    for(Int_t i=j+1; i<nentries; i++) {
 
       if(EventID_all[i] != EventID_current) break;
 
-      if(tags_prefilter[j] == 1) tags_prefilter[i] = 1;
-
-      if(signalRegion == "+" && MVAoutput_all[i] > MVAcut &&
+      // 'forward propagation' of tag information:
+      if(((signalRegion == "+" && MVAoutput_all[j] > MVAcut) ||
+	  (signalRegion == "-" && MVAoutput_all[j] < MVAcut)) &&
 	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[j] = 1;
-      }else if(signalRegion == "-" && MVAoutput_all[i] < MVAcut &&
-	       (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-		TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	tags_prefilter[i] = 1;
+      }
+
+      // 'backward propagation' of tag information:
+      if(((signalRegion == "+" && MVAoutput_all[i] > MVAcut) ||
+	  (signalRegion == "-" && MVAoutput_all[i] < MVAcut)) &&
+	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	tags_prefilter[j] = 1;
       }
     }

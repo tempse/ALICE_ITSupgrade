@@ -12,14 +12,13 @@
 void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 					 TString treename_updatefile,
 					 TString branchname_read,
-					 TString branchname_add,
-					 TString signalRegion = "+") {
+					 TString branchname_add) {
   
   Int_t input_tag;
   Int_t isAccepted;
 
-  Float_t input_tag_min = 0.;
-  Float_t input_tag_max = 1.;
+  Int_t input_tag_min = 0;
+  Int_t input_tag_max = 1;
   
   std::cout << "Reading file...";
   TFile *updatefile = new TFile(updatefilename, "UPDATE");
@@ -48,20 +47,20 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   Int_t *EventID_all = NULL;
   Int_t *TrackID1_all = NULL;
   Int_t *TrackID2_all = NULL;
-  Float_t *input_tag_all = NULL;
+  Int_t *input_tag_all = NULL;
   Int_t *tags_prefilter = NULL;
   
   EventID_all = new Int_t[nentries];
   TrackID1_all = new Int_t[nentries];
   TrackID2_all = new Int_t[nentries];
-  input_tag_all = new Float_t[nentries];
+  input_tag_all = new Int_t[nentries];
   tags_prefilter = new Int_t[nentries];
   
   for(Long64_t i=0; i<nentries; i++) {
     EventID_all[i] = 0;
     TrackID1_all[i] = 0;
     TrackID2_all[i] = 0;
-    input_tag_all[i] = 0.;
+    input_tag_all[i] = 0;
     tags_prefilter[i] = 0;
   }
 
@@ -79,45 +78,41 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   }
   std::cout << "\r  (" << nentries << " / " << nentries << ")" << std::endl;
 
-
-  Int_t EventID_prev = -1;
-
-  Int_t accTracks_startPos = 0, accTracks_nextStartPos;
-
   
   std::cout << "Tagging pairs and applying the prefilter..." << std::endl;
 
 
   for(Long64_t j=0; j<nentries; j++) {
 
-    if((j%1000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
+    if((j%5000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
 
-    if( input_tag_all[j] < input_tag_min ||
-	input_tag_all[j] > input_tag_max ) continue;
-
-    if(signalRegion == "+" && input_tag_all[j] == 1) {
-      tags_prefilter[j] = 1;
-    }else if(signalRegion == "-" && input_tag_all[j] == 0) {
-      tags_prefilter[j] = 1;
+    if( input_tag_all[j] != input_tag_min &&
+	input_tag_all[j] != input_tag_max ) {
+      tags_prefilter[j] = -999;
+      continue;
     }
+
+    if(input_tag_all[j] == 1) tags_prefilter[j] = 1;
 
     Int_t EventID_current = EventID_all[j];
     Int_t TrackID1_current = TrackID1_all[j];
     Int_t TrackID2_current = TrackID2_all[j];
 
-    for(Int_t i=j; i<nentries; i++) {
+    for(Int_t i=j+1; i<nentries; i++) {
 
       if(EventID_all[i] != EventID_current) break;
 
-      if(tags_prefilter[j] == 1) tags_prefilter[i] = 1;
-
-      if(signalRegion == "+" && input_tag_all[i] == 1 &&
+      // 'forward propagation' of tag information:
+      if(input_tag_all[j] == 1 &&
 	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[j] = 1;
-      }else if(signalRegion == "-" && input_tag_all[i] == 0 &&
-	       (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-		TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	tags_prefilter[i] = 1;
+      }
+
+      // 'backward propagation' of tag information:
+      if(input_tag_all[i] == 1 &&
+	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	tags_prefilter[j] = 1;
       }
     }

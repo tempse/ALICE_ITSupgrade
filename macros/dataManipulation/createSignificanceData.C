@@ -42,7 +42,7 @@ void createSignificanceData(TString MCdatafilename,
 
 
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 50000000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = 5000000; // process this number of entries (if "-1", all entries are selected)
 
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
@@ -266,46 +266,46 @@ void createSignificanceData(TString MCdatafilename,
 
     std::cout << "Reading the data...";
 
-    Int_t EventID_prev = -1;
-
-    Int_t accTracks_startPos = 0, accTracks_nextStartPos;
-
     std::cout << "Tagging pairs and applying the prefilter..."
 	      << std::endl;
     
     std::cout << "Step 1/3:" << std::endl;
 
-    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
-      if((pairs_currentPos%5000)==0) {
-	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+    for(Long64_t j=0; j<nentries; j++) {
+      if((j%5000)==0) {
+	std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
-      if( (MVAout_RPConvRejMVA_all[pairs_currentPos] < MVAoutputRange_min ||
-	   MVAout_RPConvRejMVA_all[pairs_currentPos] > MVAoutputRange_max) ) {
-	tags_RPConvRejMVA[pairs_currentPos] = -999;
+      if( (MVAout_RPConvRejMVA_all[j] < MVAoutputRange_min ||
+	   MVAout_RPConvRejMVA_all[j] > MVAoutputRange_max) ) {
+	tags_RPConvRejMVA[j] = -999;
 	continue;
       }
 
-      if(MVAout_RPConvRejMVA_all[pairs_currentPos] < MVAcut) {
-	tags_RPConvRejMVA[pairs_currentPos] = 1;
+      if(MVAout_RPConvRejMVA_all[j] < MVAcut) {
+	tags_RPConvRejMVA[j] = 1;
       }
       
-      Int_t EventID_current = EventID_all[pairs_currentPos];
-      Int_t TrackID1_current = TrackID1_all[pairs_currentPos];
-      Int_t TrackID2_current = TrackID2_all[pairs_currentPos];
+      Int_t EventID_current = EventID_all[j];
+      Int_t TrackID1_current = TrackID1_all[j];
+      Int_t TrackID2_current = TrackID2_all[j];
 
-      for(Long64_t i=pairs_currentPos+1; i<nentries; i++) {
+      for(Long64_t i=j+1; i<nentries; i++) {
 	
 	if(EventID_all[i] != EventID_current) break;
-	
-	if(tags_RPConvRejMVA[pairs_currentPos] == 1) {
+
+	// 'forward propagation' of tag information:
+	if(MVAout_RPConvRejMVA_all[j] < MVAcut &&
+	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_RPConvRejMVA[i] = 1;
 	}
 
+	// 'backward propagation' of tag information:
         if(MVAout_RPConvRejMVA_all[i] < MVAcut &&
 		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_RPConvRejMVA[pairs_currentPos] = 1;
+	  tags_RPConvRejMVA[j] = 1;
 	}
       }
     }
@@ -314,41 +314,41 @@ void createSignificanceData(TString MCdatafilename,
 
     std::cout << "Step 2/3:" << std::endl;
 
-    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
-      if((pairs_currentPos%5000)==0) {
-	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+    for(Long64_t j=0; j<nentries; j++) {
+      if((j%5000)==0) {
+	std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
-      if( (MVAout_CombConvRejMVA_all[pairs_currentPos] < MVAoutputRange_min ||
-	   MVAout_CombConvRejMVA_all[pairs_currentPos] > MVAoutputRange_max) ) {
-	tags_CombConvRejMVA[pairs_currentPos] = -999;
+      if( (MVAout_CombConvRejMVA_all[j] < MVAoutputRange_min ||
+	   MVAout_CombConvRejMVA_all[j] > MVAoutputRange_max) ) {
+	tags_CombConvRejMVA[j] = -999;
 	continue;
       }
 
-      if(MVAout_CombConvRejMVA_all[pairs_currentPos] < MVAcut) {
-	tags_CombConvRejMVA[pairs_currentPos] = 1;
+      if(MVAout_CombConvRejMVA_all[j] < MVAcut) {
+	tags_CombConvRejMVA[j] = 1;
       }
     }
     std::cout << std::endl;
 
     std::cout << "Step 3/3:" << std::endl;
 
-    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
-      if((pairs_currentPos%5000)==0) {
-	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+    for(Long64_t j=0; j<nentries; j++) {
+      if((j%5000)==0) {
+	std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
-      if( (MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] < MVAoutputRange_min ||
-	   MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] < MVAoutputRange_min ||
-	   MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] > MVAoutputRange_max ||
-	   MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] > MVAoutputRange_max) ) {
-	tags_singleConvTrackRejMVA[pairs_currentPos] = -999;
+      if( (MVAout_singleConvTrackRejMVA_1_all[j] < MVAoutputRange_min ||
+	   MVAout_singleConvTrackRejMVA_2_all[j] < MVAoutputRange_min ||
+	   MVAout_singleConvTrackRejMVA_1_all[j] > MVAoutputRange_max ||
+	   MVAout_singleConvTrackRejMVA_2_all[j] > MVAoutputRange_max) ) {
+	tags_singleConvTrackRejMVA[j] = -999;
 	continue;
       }
 
-      if((MVAout_singleConvTrackRejMVA_1_all[pairs_currentPos] < MVAcut ||
-				       MVAout_singleConvTrackRejMVA_2_all[pairs_currentPos] < MVAcut)) {
-	tags_singleConvTrackRejMVA[pairs_currentPos] = 1;
+      if((MVAout_singleConvTrackRejMVA_1_all[j] < MVAcut ||
+				       MVAout_singleConvTrackRejMVA_2_all[j] < MVAcut)) {
+	tags_singleConvTrackRejMVA[j] = 1;
       }
     }
 
@@ -366,7 +366,7 @@ void createSignificanceData(TString MCdatafilename,
 
       for(Long64_t i=0; i<nentries; i++) {
 
-	if( mass_all[i]<massCut ||
+	if( mass_all[i] < massCut ||
 	    (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
 	  continue;
 	}

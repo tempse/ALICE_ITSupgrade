@@ -242,84 +242,71 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     }
     std::cout << " DONE" << std::endl;
 
-    
-    Int_t EventID_prev = -1;
-
-    Int_t accTracks_startPos = 0, accTracks_nextStartPos;
-
     std::cout << "Tagging pairs and applying the prefilter..."
 	      << std::endl;
     
     std::cout << "Step 1/2:" << std::endl;
     
-    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
-      if((pairs_currentPos%1000)==0) {
-	std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+    for(Long64_t j=0; j<nentries; j++) {
+      if((j%1000)==0) {
+	std::cout << "\r  (" << j << " / " << nentries << ")";
       }
-
-      // if(mass_all[pairs_currentPos] < massCut) {
-      //   tags_prefilter[pairs_currentPos] = -99;
-      //   continue;
-      // }
       
-      if( (MVAout_prefilter_all[pairs_currentPos] < MVAoutputRange_min ||
-	   MVAout_prefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
-        tags_prefilter[pairs_currentPos] = -999;
+      if( (MVAout_prefilter_all[j] < MVAoutputRange_min ||
+	   MVAout_prefilter_all[j] > MVAoutputRange_max) ) {
+        tags_prefilter[j] = -999;
 	continue;
       }
 
-      if(signalRegion == "+" && MVAout_prefilter_all[pairs_currentPos] > MVAcut) {
-	tags_prefilter[pairs_currentPos] = 1;
-      }else if(signalRegion == "-" && MVAout_prefilter_all[pairs_currentPos] < MVAcut) {
-	tags_prefilter[pairs_currentPos] = 1;
+      if(signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) {
+	tags_prefilter[j] = 1;
+      }else if(signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut) {
+	tags_prefilter[j] = 1;
       }
 
-      Int_t EventID_current = EventID_all[pairs_currentPos];
-      Int_t TrackID1_current = TrackID1_all[pairs_currentPos];
-      Int_t TrackID2_current = TrackID2_all[pairs_currentPos];
+      Int_t EventID_current = EventID_all[j];
+      Int_t TrackID1_current = TrackID1_all[j];
+      Int_t TrackID2_current = TrackID2_all[j];
       
-      for(Int_t i=pairs_currentPos+1; i<nentries; i++) {
+      for(Int_t i=j+1; i<nentries; i++) {
 	  
 	if(EventID_all[i] != EventID_current) break;
 
-	if(tags_prefilter[pairs_currentPos] == 1) {
-	  tags_prefilter[i] = 1;
-	}
-
-	if(signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut &&
+	// 'forward propagation' of tag information:
+	if(((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
+	    (signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut)) &&
 	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_prefilter[pairs_currentPos] = 1;
-	}else if(signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut &&
-		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_prefilter[pairs_currentPos] = 1;
+	  tags_prefilter[i] = 1;
+	}
+	
+	// 'backward propagation' of tag information:
+	if(((signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut) ||
+	    (signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut)) &&
+	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+	  tags_prefilter[j] = 1;
 	}
       }
       
     }
     std::cout << std::endl << "Step 2/2:" << std::endl;
 
-    for(Long64_t pairs_currentPos=0; pairs_currentPos<nentries; pairs_currentPos++) {
-      if((pairs_currentPos%1000)==0) {
-        std::cout << "\r  (" << pairs_currentPos << " / " << nentries << ")";
+    for(Long64_t j=0; j<nentries; j++) {
+      if((j%1000)==0) {
+        std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
-      // if(mass_all[pairs_currentPos] < massCut) {
-      //   tags_noPrefilter[pairs_currentPos] = -99;
-      //   continue;
-      // }
-
-      if( (MVAout_noPrefilter_all[pairs_currentPos] < MVAoutputRange_min ||
-           MVAout_noPrefilter_all[pairs_currentPos] > MVAoutputRange_max) ) {
-        tags_noPrefilter[pairs_currentPos] = -999;
+      if( (MVAout_noPrefilter_all[j] < MVAoutputRange_min ||
+           MVAout_noPrefilter_all[j] > MVAoutputRange_max) ) {
+        tags_noPrefilter[j] = -999;
         continue;
       }
 
-      if(signalRegion == "+" && MVAout_noPrefilter_all[pairs_currentPos] > MVAcut) {
-        tags_noPrefilter[pairs_currentPos] = 1;
-      }else if(signalRegion == "-" && MVAout_noPrefilter_all[pairs_currentPos] < MVAcut) {
-        tags_noPrefilter[pairs_currentPos] = 1;
+      if(signalRegion == "+" && MVAout_noPrefilter_all[j] > MVAcut) {
+        tags_noPrefilter[j] = 1;
+      }else if(signalRegion == "-" && MVAout_noPrefilter_all[j] < MVAcut) {
+        tags_noPrefilter[j] = 1;
       }
     }
     std::cout << std::endl;
