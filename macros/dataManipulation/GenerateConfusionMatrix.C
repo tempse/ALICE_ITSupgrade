@@ -13,10 +13,10 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
 void GenerateConfusionMatrix() {
-  TString infileName = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_ROOT_TMVA_BDT/applicationPhase1/output_pairtrees_veryVeryTightClassicalCuts.root";
+  TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/RPConvRejMVA/tightCuts/prefiltering/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
 
   // "+"...signal-like events are near 1,
-  // "-"...signal-like events are near 0 or -1
+  // "-"...signal-like events are near 0
   TString signalRegion = "-";
   
   TFile *infile = new TFile(infileName, "READ");
@@ -26,7 +26,7 @@ void GenerateConfusionMatrix() {
   Float_t pt1, pt2;
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
-  tree->SetBranchAddress("IsTaggedRPConv_classicalCuts_prefilter_loose2",
+  tree->SetBranchAddress("IsTaggedRPConv_MVAcuts_prefilter",
 			 &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
   tree->SetBranchAddress("pt1", &pt1);
@@ -57,7 +57,7 @@ void GenerateConfusionMatrix() {
   // true positives, false positives, true negatives, false negatives
   Double_t TP = 0., FP = 0., TN = 0., FN = 0.;
   
-  Long64_t nentries = tree->GetEntries();
+  Long64_t nentries = 50000000; //tree->GetEntries();
   
   
   for(Long64_t i=0; i<nentries; i++) {
@@ -67,23 +67,23 @@ void GenerateConfusionMatrix() {
     tree->GetEntry(i);
 
     if(mass<.05) continue;
-    if(TrackCut1!=2 || TrackCut2!=2) continue;
+    if(containsTrackCutInfo && (TrackCut1!=2 || TrackCut2!=2)) continue;
 
-    Float_t sample_weight = 1.;
+    Float_t pair_weight = 1.;
     if(doConsiderPIDefficiencies) {
-      sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
+      pair_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
     }
     
     if(signalRegion == "+") {
-      if(isTaggedSignal && isSignal) TP += sample_weight;
-      if(!isTaggedSignal && isSignal) FN += sample_weight;
-      if(isTaggedSignal && !isSignal) FP += sample_weight;
-      if(!isTaggedSignal && !isSignal) TN += sample_weight;
+      if(isTaggedSignal==1 && isSignal==1) TP += pair_weight;
+      if(isTaggedSignal==0 && isSignal==1) FN += pair_weight;
+      if(isTaggedSignal==1 && isSignal==0) FP += pair_weight;
+      if(isTaggedSignal==0 && isSignal==0) TN += pair_weight;
     }else if(signalRegion == "-") {
-      if(!isTaggedSignal && !isSignal) TP += sample_weight;
-      if(isTaggedSignal && !isSignal) FN += sample_weight;
-      if(!isTaggedSignal && isSignal) FP += sample_weight;
-      if(isTaggedSignal && isSignal) TN += sample_weight;
+      if(isTaggedSignal==0 && isSignal==0) TP += pair_weight;
+      if(isTaggedSignal==1 && isSignal==0) FN += pair_weight;
+      if(isTaggedSignal==0 && isSignal==1) FP += pair_weight;
+      if(isTaggedSignal==1 && isSignal==1) TN += pair_weight;
     }
   }
   std::cout << "\rProcessing entry " << nentries << " of " << nentries
