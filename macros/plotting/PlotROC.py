@@ -21,22 +21,22 @@ branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutp
 
 
 
-filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/ROCdata_50steps_stride1/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_CombConvRej_RPConvRej = ['tpr_prefilter', 'fpr_prefilter', 'tpr_noPrefilter', 'fpr_noPrefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts/ROCdata_tightCuts_looseCuts_50steps_invalidNoPrefilterData/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts_allTracks/ROCdata_tightCuts_looseCuts_allTracks_50steps_invalidNoPrefilterData/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts_allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/ROCdata_50steps_stride1/temp_output/ROCdata_MVAplusPrefilter_combined.root"
+filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/temp_output/ROCdata_MVAplusPrefilter_combined.root"
 
 branches_ROCdata_combined = ['tpr_combi', 'fpr_combi']
 
@@ -171,9 +171,10 @@ print('singleTrackConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (tpr_si
                                                                           fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA]))
 
 
-h_RPConvRejMVA = ax.plot(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
-                         label='MVA 3 (AUC = %.3f)' % (-np.trapz(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'],
-                                                                 data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'])),
+h_RPConvRejMVA = ax.plot(pd.Series.append(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], pd.Series([0])),
+                         pd.Series.append(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'], pd.Series([0])),
+                         label='MVA 3 (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_CombConvRej_RPConvRej['tpr_prefilter'], pd.Series([0])),
+                                                                 pd.Series.append(data_ROCdata_CombConvRej_RPConvRej['fpr_prefilter'], pd.Series([0])))),
                          color=color_RPConvRejMVA)
 
 ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter'],
@@ -187,9 +188,10 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMV
 print('RPConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['tpr_prefilter'],
                                                                  data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter']))
 
-h_RPConvRejMVA_wLooseCuts = ax.plot(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'],
-                                    label='MVA 3 with loose-cuts tracks (AUC = %.3f)' % (-np.trapz(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'],
-                                                                                                   data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'])),
+h_RPConvRejMVA_wLooseCuts = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])),
+                                    pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'], pd.Series([0])),
+                                    label='MVA 3 with loose-cuts tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'], pd.Series([0])),
+                                                                                                   pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])))),
                                     color=color_RPConvRejMVA_wLooseCuts,
                                     linestyle='-',
                                     alpha=.3)
@@ -206,9 +208,10 @@ ax.plot(data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA
 print('RPConvRejMVA (w/ loose tracks): working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['tpr_prefilter'],
                                                                                    data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['fpr_prefilter']))
 
-h_RPConvRejMVA_wLooseCuts_wAllTracks = ax.plot(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'],
-                                                label='MVA 3 with loose-cuts and all other tracks (AUC = %.3f)' % (-np.trapz(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'],
-                                                                                                                             data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'])),
+h_RPConvRejMVA_wLooseCuts_wAllTracks = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])),
+                                               pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'], pd.Series([0])),
+                                                label='MVA 3 with loose-cuts and all other tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'], pd.Series([0])),
+                                                                                                                             pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])))),
                                                 color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
                                                linestyle=':',
                                                alpha=.55)
@@ -238,13 +241,13 @@ h_optMarker = ax.plot(-99, -99,
 
 
 
-h_RPConvRejClass_1 = ax.plot(.078, .194, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_1 = ax.plot(.4527, .5547, 'o', color=color_RPConvRejClass,
                              label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.8)
-h_RPConvRejClass_2 = ax.plot(.155, .344, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_2 = ax.plot(.5620, .7086, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.8)
-h_RPConvRejClass_3 = ax.plot(.474, .773, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_3 = ax.plot(.7200, .9110, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.8)
-h_RPConvRejClass_4 = ax.plot(.857, .962, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_4 = ax.plot(.9367, .9860, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.8)
 
 
@@ -260,7 +263,7 @@ handles_temp, labels_temp = handles[0], labels[0]
 handles, labels = np.delete(handles, 0), np.delete(labels, 0)
 handles, labels = np.insert(handles, 5, handles_temp), np.insert(labels, 5, labels_temp)
 
-plt.legend(handles, labels, loc=4, fontsize=7)
+plt.legend(handles, labels, loc=4, fontsize=7.5)
 
 plt.tight_layout()
 

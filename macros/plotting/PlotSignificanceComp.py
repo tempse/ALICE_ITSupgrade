@@ -7,9 +7,9 @@ import pandas as pd
 import root_numpy
 
 
-filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts/temp_output/significance_data.root"
-filename_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts_looseCuts/temp_output/significance_data.root"
-filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/significanceData_100steps_tightCuts_looseCuts_allTracks/temp_output/significance_data.root"
+filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/tightCuts/temp_output/significance_data.root"
+filename_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/tightCuts_looseCuts/temp_output/significance_data.root"
+filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/significanceData/tightCuts_looseCuts_allTracks/temp_output/significance_data.root"
 
 color_RPConvRejMVA = '#4444ff'
 color_RPConvRejMVA_wLooseCuts = 'black'
@@ -23,11 +23,11 @@ fig_height = 5.12
 fig_dpi = 150
 
 # working point efficiencies:
-workingpoint_eff_RPConvRejMVA = .8662
-workingpoint_eff_RPConvRejMVA_wLooseTracks = .8462
-workingpoint_eff_RPConvRejMVA_wLooseTracks_wAllTracks = .8343
+workingpoint_eff_RPConvRejMVA = .9450
+workingpoint_eff_RPConvRejMVA_wLooseTracks = .9382
+workingpoint_eff_RPConvRejMVA_wLooseTracks_wAllTracks = .9331
 workingpoint_eff_singleConvTrackRej = .9859
-workingpoint_eff_CombConvRej = .979
+workingpoint_eff_CombConvRej = .9790
 
 
 data = pd.DataFrame(root_numpy.root2array(filename))
@@ -110,28 +110,28 @@ ax.plot(-99,0,
         linestyle='none')
 
 # classical-cut points
-ax.plot(.1944, 180.13, #.5963, 214.9077,
+ax.plot(.5547, 250.374, #.5963, 214.9077,
         label=r'RP conv. rej. (class. cuts) + prefiltering $\varphi_V>\pi/2$, $m_{ee}<0.05$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=8,
         linestyle='none',
         alpha=.8)
-ax.plot(.3438, 233.30, #.7751, 246.6994,
+ax.plot(.7086, 285.565, #.7751, 246.6994,
         label=r'     $\varphi_V>2$, $m_{ee}<0.04$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=6,
         linestyle='none',
         alpha=.8)
-ax.plot(.7733, 322.44, #.9115, 267.7348,
+ax.plot(.9110, 324.177, #.9115, 267.7348,
         label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=4,
         linestyle='none',
         alpha=.8)
-ax.plot(.9623, 320.59, #.9860, 263.7709,
+ax.plot(.9860, 317.608, #.9860, 263.7709,
         label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$',
         color=color_RPConvRejClass,
         marker='o',
@@ -376,29 +376,29 @@ ax.plot(-99,0,
         mew=1,
         linestyle='none')
 
-# classical-cut points (calculated from a sample with exactly 16.4M pairs)
-ax.plot(.1943, -.5479, #.5968, -.2321,
+# classical-cut points
+ax.plot(.5547, -.2611, #.5968, -.2321,
         label=r'RP conv. rej. (class. cuts) + prefiltering $\varphi_V>\pi/2$, $m_{ee}<0.05$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=8,
         linestyle='none',
         alpha=.8)
-ax.plot(.3438, -.3308, #.7751, -.0659,
+ax.plot(.7086, -.1174, #.7751, -.0659,
         label=r'     $\varphi_V>2$, $m_{ee}<0.04$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=6,
         linestyle='none',
         alpha=.8)
-ax.plot(.7733, .0331, #.9115, .0400,
+ax.plot(.9110, .0402, #.9115, .0400,
         label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=4,
         linestyle='none',
         alpha=.8)
-ax.plot(.9623, .0256, #.9860, .0137,
+ax.plot(.9860, .0134, #.9860, .0137,
         label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$',
         color=color_RPConvRejClass,
         marker='o',
