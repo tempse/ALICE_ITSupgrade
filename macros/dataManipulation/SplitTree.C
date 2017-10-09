@@ -14,7 +14,7 @@
 void SplitTree() {
   
   // directory containing the input ROOT files
-  const char *input_dirname = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_wLooseTrackCuts_iGeo12.root/";
+  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/inputData/FT2_AnalysisResults_prefilter_allTracks_iGeo12/";
   const char *file_ext = ".root";
 
   // tree name
@@ -217,11 +217,11 @@ void SplitTree() {
 	doCountEvent = kFALSE;
       }
 
-      if(cnt_passedEvents < splitTree_testSample_nEvents) {
-	if(doTestSplit) splitTree_part2->Fill();
+      if(cnt_passedEvents < splitTree_testSample_nEvents && doTestSplit) {
+	splitTree_part2->Fill();
 	cnt_testEntries++;
-      }else {
-	if(doTrainSplit) splitTree_part1->Fill();
+      }else if(doTrainSplit) {
+	splitTree_part1->Fill();
 	cnt_trainEntries++;
       }
     }
