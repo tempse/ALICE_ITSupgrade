@@ -54,6 +54,8 @@ Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 // Loose track cuts settings: set kTRUE if the tree also contains tracks with looser cuts:
 const Bool_t doContainLooseTracks = kFALSE;
 
+// Online prefilter setting: kTRUE if tree contains the branch taggedByPrefilter
+const Bool_t doContainOnlinePrefilter = kTRUE;
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
@@ -118,6 +120,10 @@ Float_t phi1, phi2;
 Float_t eta1, eta2;
 Float_t pt1, pt2;
 Int_t TrackCut1, TrackCut2; // 0: ITS standalone tracks, 1: loose track cuts, 2: normal (tight) track cuts
+Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter;
+Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter_tight;
+Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1;
+Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2;
 
 TVector3 pv1, pv2;
 TVector3 z(0,0,1);
@@ -126,16 +132,16 @@ TVector3 temp;
 
 // program control parameters:
 bool isPairTree_rp = false;      // }
-bool isPairTree_us = true;      // } set/unset the
+bool isPairTree_us = true;       // } set/unset the
 bool isPairTree_ls = false;      // } output trees here
-bool isPairTree_us_ls = false;    // }
+bool isPairTree_us_ls = false;   // }
 
 
 
 void GeneratePairTrees() {
 
-  const char *input_dirname = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
-  const char *file_ext = "FT2_ITSup_singleTree_part2_1-9-split.root";
+  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
+  const char *file_ext = "FT2_ITSup_onlinePrefilter-allTracks_singleTree_part2_538273events.root";
   TSystemDirectory input_dir(input_dirname, input_dirname);
   TList *input_files = input_dir.GetListOfFiles();
   
@@ -162,7 +168,7 @@ void GeneratePairTrees() {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
   }
 
-  TString infile_PIDefficiencies_name = "/media/smirr/stempl/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -218,6 +224,10 @@ void GeneratePairTrees() {
   Double_t ST_ITSchi2;
   Double_t ST_TPCchi2;
   Int_t ST_isTrackCut;
+  Int_t ST_taggedByPrefilter;
+  Int_t ST_taggedByPrefilter_tight;
+  Int_t ST_taggedByPrefilter_loose1;
+  Int_t ST_taggedByPrefilter_loose2;
   
   TParticle* ST_particle = NULL;
   
@@ -252,6 +262,10 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("ITSchi2",&ST_ITSchi2);
   singleTree->SetBranchAddress("TPCchi2",&ST_TPCchi2);
   if(doContainLooseTracks) singleTree->SetBranchAddress("isTrackCut",&ST_isTrackCut);
+  if(doContainOnlinePrefilter) singleTree->SetBranchAddress("taggedByPrefilter_standardCuts",&ST_taggedByPrefilter);
+  if(doContainOnlinePrefilter) singleTree->SetBranchAddress("taggedByPrefilter_tighterCuts",&ST_taggedByPrefilter_tight);
+  if(doContainOnlinePrefilter) singleTree->SetBranchAddress("taggedByPrefilter_looserCuts1",&ST_taggedByPrefilter_loose1);
+  if(doContainOnlinePrefilter) singleTree->SetBranchAddress("taggedByPrefilter_looserCuts2",&ST_taggedByPrefilter_loose2);
   
 
 
@@ -332,8 +346,12 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("eta2",&eta2);
     pairTree_rp->Branch("pt1",&pt1);
     pairTree_rp->Branch("pt2",&pt2);
-    if(doConsiderMVAinfo_convTrack) pairTree_rp->Branch("TrackCut1",&TrackCut1);
-    if(doConsiderMVAinfo_convTrack) pairTree_rp->Branch("TrackCut2",&TrackCut2);
+    if(doContainLooseTracks) pairTree_rp->Branch("TrackCut1",&TrackCut1);
+    if(doContainLooseTracks) pairTree_rp->Branch("TrackCut2",&TrackCut2);
+    if(doContainOnlinePrefilter) pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter",&IsTaggedRPConv_classicalCuts_onlinePrefilter);
+    if(doContainOnlinePrefilter) pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_tight",&IsTaggedRPConv_classicalCuts_onlinePrefilter_tight);
+    if(doContainOnlinePrefilter) pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1);
+    if(doContainOnlinePrefilter) pairTree_rp->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2);
   }
 
   if(isPairTree_us) {
@@ -413,8 +431,12 @@ void GeneratePairTrees() {
     pairTree_us->Branch("eta2",&eta2);
     pairTree_us->Branch("pt1",&pt1);
     pairTree_us->Branch("pt2",&pt2);
-    if(doConsiderMVAinfo_convTrack) pairTree_us->Branch("TrackCut1",&TrackCut1);
-    if(doConsiderMVAinfo_convTrack) pairTree_us->Branch("TrackCut2",&TrackCut2);
+    if(doContainLooseTracks) pairTree_us->Branch("TrackCut1",&TrackCut1);
+    if(doContainLooseTracks) pairTree_us->Branch("TrackCut2",&TrackCut2);
+    if(doContainOnlinePrefilter) pairTree_us->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter",&IsTaggedRPConv_classicalCuts_onlinePrefilter);
+    if(doContainOnlinePrefilter) pairTree_us->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_tight",&IsTaggedRPConv_classicalCuts_onlinePrefilter_tight);
+    if(doContainOnlinePrefilter) pairTree_us->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1);
+    if(doContainOnlinePrefilter) pairTree_us->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2);
   }
 
   if(isPairTree_ls) {
@@ -494,8 +516,12 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("eta2",&eta2);
     pairTree_ls->Branch("pt1",&pt1);
     pairTree_ls->Branch("pt2",&pt2);
-    if(doConsiderMVAinfo_convTrack) pairTree_ls->Branch("TrackCut1",&TrackCut1);
-    if(doConsiderMVAinfo_convTrack) pairTree_ls->Branch("TrackCut2",&TrackCut2);
+    if(doContainLooseTracks) pairTree_ls->Branch("TrackCut1",&TrackCut1);
+    if(doContainLooseTracks) pairTree_ls->Branch("TrackCut2",&TrackCut2);
+    if(doContainOnlinePrefilter) pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter",&IsTaggedRPConv_classicalCuts_onlinePrefilter);
+    if(doContainOnlinePrefilter) pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_tight",&IsTaggedRPConv_classicalCuts_onlinePrefilter_tight);
+    if(doContainOnlinePrefilter) pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1);
+    if(doContainOnlinePrefilter) pairTree_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2);
   }
 
   if(isPairTree_us_ls) {
@@ -575,10 +601,20 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("eta2",&eta2);
     pairTree_us_ls->Branch("pt1",&pt1);
     pairTree_us_ls->Branch("pt2",&pt2);
-    if(doConsiderMVAinfo_convTrack) pairTree_us_ls->Branch("TrackCut1",&TrackCut1);
-    if(doConsiderMVAinfo_convTrack) pairTree_us_ls->Branch("TrackCut2",&TrackCut2);
+    if(doContainLooseTracks) pairTree_us_ls->Branch("TrackCut1",&TrackCut1);
+    if(doContainLooseTracks) pairTree_us_ls->Branch("TrackCut2",&TrackCut2);
+    if(doContainOnlinePrefilter) pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter",&IsTaggedRPConv_classicalCuts_onlinePrefilter);
+    if(doContainOnlinePrefilter) pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_tight",&IsTaggedRPConv_classicalCuts_onlinePrefilter_tight);
+    if(doContainOnlinePrefilter) pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1);
+    if(doContainOnlinePrefilter) pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2",&IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2);
   }
 
+
+  Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter1, IsTaggedRPConv_classicalCuts_onlinePrefilter2;
+  Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight, IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight;
+  Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1, IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1;
+  Int_t IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2, IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2;
+  
 
   Float_t MVAoutput_convTrack;
   if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->SetBranchAddress("BDT", &MVAoutput_convTrack);
@@ -588,7 +624,7 @@ void GeneratePairTrees() {
   Int_t nTracks; // total number of tracks in given event
 
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries();
+  Long64_t singleTree_nEvents = singleTree->GetEntries()/10;
 
   Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
 
@@ -675,7 +711,11 @@ void GeneratePairTrees() {
       eta1 = ST_eta;
       pt1 = ST_pt;
       PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-      if(doConsiderMVAinfo_convTrack) TrackCut1 = ST_isTrackCut;
+      if(doContainLooseTracks) TrackCut1 = ST_isTrackCut;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1 = ST_taggedByPrefilter;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight = ST_taggedByPrefilter_tight;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 = ST_taggedByPrefilter_loose1;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 = ST_taggedByPrefilter_loose2;
     }else {
       EventID2 = ST_event;
       EventID2_unique = ST_eventID_unique;
@@ -705,7 +745,11 @@ void GeneratePairTrees() {
       eta2 = ST_eta;
       pt2 = ST_pt;
       PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-      if(doConsiderMVAinfo_convTrack) TrackCut2 = ST_isTrackCut;
+      if(doContainLooseTracks) TrackCut2 = ST_isTrackCut;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2 = ST_taggedByPrefilter;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight = ST_taggedByPrefilter_tight;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 = ST_taggedByPrefilter_loose1;
+      if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 = ST_taggedByPrefilter_loose2;
     }
 
     
@@ -765,7 +809,11 @@ void GeneratePairTrees() {
 	eta2 = ST_eta;
 	pt2 = ST_pt;
 	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doConsiderMVAinfo_convTrack) TrackCut2 = ST_isTrackCut;
+	if(doContainLooseTracks) TrackCut2 = ST_isTrackCut;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2 = ST_taggedByPrefilter;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight = ST_taggedByPrefilter_tight;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 = ST_taggedByPrefilter_loose1;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 = ST_taggedByPrefilter_loose2;
       }else {
 	EventID1 = ST_event;
 	EventID1_unique = ST_eventID_unique;
@@ -795,7 +843,11 @@ void GeneratePairTrees() {
 	eta1 = ST_eta;
 	pt1 = ST_pt;
 	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doConsiderMVAinfo_convTrack) TrackCut1 = ST_isTrackCut;
+	if(doContainLooseTracks) TrackCut1 = ST_isTrackCut;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1 = ST_taggedByPrefilter;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight = ST_taggedByPrefilter_tight;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 = ST_taggedByPrefilter_loose1;
+	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 = ST_taggedByPrefilter_loose2;
       }
 
       IsRP = 0; // default value
@@ -837,11 +889,39 @@ void GeneratePairTrees() {
         }else {
           IsTaggedRPConv_classicalCuts_loose1 = 0;
         }
-        if(phiv>TMath::Pi()/2. && mass<.05) {
+        if(phiv>TMath::Pi()*.5 && mass<.05) {
           IsTaggedRPConv_classicalCuts_loose2 = 1;
         }else {
           IsTaggedRPConv_classicalCuts_loose2 = 0;
         }
+
+	// online prefilter cuts:
+	if(doContainOnlinePrefilter) {
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
+	}
+	
 
 	
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
@@ -886,7 +966,50 @@ void GeneratePairTrees() {
 	}else {
 	  IsTaggedRPConv_classicalCuts = 0;
 	}
-	
+
+	// further (classical) prefilter cuts:
+        if(phiv>2.9 && mass < .0035) {
+          IsTaggedRPConv_classicalCuts_tight = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_tight = 0;
+        }
+        if(phiv>2 && mass<.04) {
+          IsTaggedRPConv_classicalCuts_loose1 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose1 = 0;
+        }
+        if(phiv>TMath::Pi()*.5 && mass<.05) {
+          IsTaggedRPConv_classicalCuts_loose2 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose2 = 0;
+        }
+
+	// online prefilter cuts:
+	if(doContainOnlinePrefilter) {
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
+
+	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
+	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
+	  else
+	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
+	}
 
 	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
 	  IsRP = 1;
