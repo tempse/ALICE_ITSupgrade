@@ -1189,16 +1189,18 @@ void calculatePhiv() {
   
   // phiv implementation following the PHENIX approach
   // (PHYSICAL REVIEW C 81, 034911 (2010)):
-  if(pdg1 < 0) {
-    temp = pv1;
-    pv1 = pv2;
-    pv2 = temp;
-  }
+
+  // if(pdg1 < 0) {
+  //   temp = pv1;
+  //   pv1 = pv2;
+  //   pv2 = temp;
+  // }
   
   u = pv1 + pv2;
   u = u.Unit();
 
   v = pv1.Cross(pv2);
+  if(pdg1 < 0) v = -v; // equivalent to exchanging pv1 and pv2
 
   w = u.Cross(v);
 
