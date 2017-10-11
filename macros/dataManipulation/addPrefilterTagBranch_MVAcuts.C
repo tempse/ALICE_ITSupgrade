@@ -6,7 +6,11 @@
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TRandom.h>
 #include <TStopwatch.h>
+
+
+Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 				   TString treename_branchfile,
@@ -15,7 +19,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 				   TString treename_updatefile,
 				   TString branchname_updatefile,
 				   Float_t MVAcut,
-				   TString signalRegion = "-") {
+				   TString signalRegion = "-",
+				   TString PIDefficiencies_fileName = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root") {
 
   Float_t MVAoutput;
   Int_t isAccepted;
@@ -24,16 +29,27 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   Float_t MVAoutputRange_max = 1.;
   
 
+  // File containing the pt-dependent PID efficiencies:
+  TFile *infile_PIDefficiencies = new TFile(PIDefficiencies_fileName, "READ");
+  TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
+  h_PIDeff->GetXaxis()->SetRangeUser(0,5);
+
+  TH1D *h_sample_weight = new TH1D("h_sample_weight","",1000,0,1);
+  
+  
   std::cout << "Reading file...";
   TFile *updatefile = new TFile(updatefilename, "UPDATE");
   TTree *tree_updatefile = (TTree*)updatefile->Get(treename_updatefile);
   Long64_t EventID;
   Int_t TrackID1, TrackID2;
+  Float_t pt1, pt2;
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
   tree_updatefile->SetBranchAddress("EventID1_unique", &EventID);
   tree_updatefile->SetBranchAddress("TrackID1", &TrackID1);
   tree_updatefile->SetBranchAddress("TrackID2", &TrackID2);
+  tree_updatefile->SetBranchAddress("pt1", &pt1);
+  tree_updatefile->SetBranchAddress("pt2", &pt2);
   if(tree_updatefile->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
      tree_updatefile->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
     tree_updatefile->SetBranchAddress("TrackCut1", &TrackCut1);
@@ -85,6 +101,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   Int_t *TrackID2_all = NULL;
   Int_t *TrackCut1_all = NULL;
   Int_t *TrackCut2_all = NULL;
+  Float_t *pt1_all = NULL;
+  Float_t *pt2_all = NULL;
   Float_t *MVAoutput_all = NULL;
   Int_t *tags_prefilter = NULL;
   
@@ -93,6 +111,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   TrackID2_all = new Int_t[nentries];
   if(containsTrackCutInfo) TrackCut1_all = new Int_t[nentries];
   if(containsTrackCutInfo) TrackCut2_all = new Int_t[nentries];
+  pt1_all = new Float_t[nentries];
+  pt2_all = new Float_t[nentries];
   MVAoutput_all = new Float_t[nentries];
   tags_prefilter = new Int_t[nentries];
   
@@ -102,6 +122,8 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     TrackID2_all[i] = 0;
     if(containsTrackCutInfo) TrackCut1_all[i] = 0;
     if(containsTrackCutInfo) TrackCut2_all[i] = 0;
+    pt1_all[i] = 0.;
+    pt2_all[i] = 0.;
     MVAoutput_all[i] = 0.;
     tags_prefilter[i] = 0;
   }
@@ -119,10 +141,15 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     TrackID2_all[i] = TrackID2;
     if(containsTrackCutInfo) TrackCut1_all[i] = TrackCut1;
     if(containsTrackCutInfo) TrackCut2_all[i] = TrackCut2;
+    pt1_all[i] = pt1;
+    pt2_all[i] = pt2;
     MVAoutput_all[i] = MVAoutput;
   }
   std::cout << "(" << nentries << " / " << nentries << ")" << std::endl;
 
+
+  TRandom *rand = new TRandom();
+  
   
   std::cout << "Tagging pairs and applying the prefilter..." << std::endl;
 
@@ -130,7 +157,7 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   for(Long64_t j=0; j<nentries; j++) {
 
     if((j%1000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
-
+    
     if( MVAoutput_all[j] < MVAoutputRange_min ||
 	MVAoutput_all[j] > MVAoutputRange_max ) {
       tags_prefilter[j] = -999;
@@ -147,20 +174,31 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     Int_t TrackID1_current = TrackID1_all[j];
     Int_t TrackID2_current = TrackID2_all[j];
 
+    Float_t pairWeight_j = getPairPIDefficiency(pt1_all[j], pt2_all[j], *h_PIDeff);
+
+    Bool_t doForwardProp = (rand->Uniform() < pairWeight_j) ? kTRUE : kFALSE;
+    
+
     for(Int_t i=j+1; i<nentries; i++) {
 
       if(EventID_all[i] != EventID_current) break;
 
       // 'forward propagation' of tag information:
-      if(((signalRegion == "+" && MVAoutput_all[j] > MVAcut) ||
+      if(doForwardProp &&
+	 ((signalRegion == "+" && MVAoutput_all[j] > MVAcut) ||
 	  (signalRegion == "-" && MVAoutput_all[j] < MVAcut)) &&
 	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	tags_prefilter[i] = 1;
       }
 
+      Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeff);
+
+      Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
+      
       // 'backward propagation' of tag information:
-      if(((signalRegion == "+" && MVAoutput_all[i] > MVAcut) ||
+      if(doBackwardProp &&
+	 ((signalRegion == "+" && MVAoutput_all[i] > MVAcut) ||
 	  (signalRegion == "-" && MVAoutput_all[i] < MVAcut)) &&
 	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
@@ -206,5 +244,18 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   tags_prefilter = NULL;
   
   gSystem->Exit(0);
+  
+}
+
+
+Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
+
+  Float_t PIDeff1 = (pt1 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt1));
+
+  Float_t PIDeff2 = (pt2 >= h_PIDeff.GetBinLowEdge(h_PIDeff.GetNbinsX())) ?
+    h_PIDeff.GetBinContent(h_PIDeff.GetNbinsX()) : h_PIDeff.GetBinContent(h_PIDeff.FindBin(pt2));
+
+  return PIDeff1 * PIDeff2;
   
 }

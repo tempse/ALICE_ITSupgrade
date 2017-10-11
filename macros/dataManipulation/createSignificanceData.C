@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1D.h>
+#include <TRandom.h>
 #include <TStopwatch.h>
 
 
@@ -42,7 +43,7 @@ void createSignificanceData(TString MCdatafilename,
 
 
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 5000000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = 50000000; // process this number of entries (if "-1", all entries are selected)
 
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
@@ -266,6 +267,9 @@ void createSignificanceData(TString MCdatafilename,
 
     std::cout << "Reading the data...";
 
+
+    TRandom *rand = new TRandom();
+    
     std::cout << "Tagging pairs and applying the prefilter..."
 	      << std::endl;
     
@@ -290,19 +294,30 @@ void createSignificanceData(TString MCdatafilename,
       Int_t TrackID1_current = TrackID1_all[j];
       Int_t TrackID2_current = TrackID2_all[j];
 
+      Float_t pairWeight_j = getPairPIDefficiency(pt1_all[j], pt2_all[j], *h_PIDeffs);
+
+      Bool_t doForwardProp = (rand->Uniform() < pairWeight_j) ? kTRUE : kFALSE;
+
+      
       for(Long64_t i=j+1; i<nentries; i++) {
 	
 	if(EventID_all[i] != EventID_current) break;
 
 	// 'forward propagation' of tag information:
-	if(MVAout_RPConvRejMVA_all[j] < MVAcut &&
+	if(doForwardProp &&
+	   MVAout_RPConvRejMVA_all[j] < MVAcut &&
 	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_RPConvRejMVA[i] = 1;
 	}
 
+	Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+
+	Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
+
 	// 'backward propagation' of tag information:
-        if(MVAout_RPConvRejMVA_all[i] < MVAcut &&
+        if(doBackwardProp &&
+	   MVAout_RPConvRejMVA_all[i] < MVAcut &&
 		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_RPConvRejMVA[j] = 1;

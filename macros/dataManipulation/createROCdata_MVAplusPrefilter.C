@@ -7,6 +7,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1D.h>
+#include <TRandom.h>
 #include <TStopwatch.h>
 
 
@@ -242,6 +243,9 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     }
     std::cout << " DONE" << std::endl;
 
+
+    TRandom *rand = new TRandom();
+    
     std::cout << "Tagging pairs and applying the prefilter..."
 	      << std::endl;
     
@@ -267,21 +271,32 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       Int_t EventID_current = EventID_all[j];
       Int_t TrackID1_current = TrackID1_all[j];
       Int_t TrackID2_current = TrackID2_all[j];
+
+      Float_t pairWeight_j = getPairPIDefficiency(pt1_all[j], pt2_all[j], *h_PIDeffs);
+
+      Bool_t doForwardProp = (rand->Uniform() < pairWeight_j) ? kTRUE : kFALSE;
+      
       
       for(Int_t i=j+1; i<nentries; i++) {
 	  
 	if(EventID_all[i] != EventID_current) break;
 
 	// 'forward propagation' of tag information:
-	if(((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
+	if(doForwardProp &&
+	   ((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
 	    (signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut)) &&
 	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
 	  tags_prefilter[i] = 1;
 	}
+
+	Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+
+	Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
 	
 	// 'backward propagation' of tag information:
-	if(((signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut) ||
+	if(doBackwardProp &&
+	   ((signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut) ||
 	    (signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut)) &&
 	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
 	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
