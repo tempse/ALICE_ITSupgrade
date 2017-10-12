@@ -21,22 +21,22 @@ branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutp
 
 
 
-filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_CombConvRej_RPConvRej = ['tpr_prefilter', 'fpr_prefilter', 'tpr_noPrefilter', 'fpr_noPrefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs_wLooseTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts_looseCuts_allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs_wLooseTracks_allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/ROCdata/tightCuts/temp_output/ROCdata_MVAplusPrefilter_combined.root"
+filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs/temp_output/ROCdata_MVAplusPrefilter_combined.root"
 
 branches_ROCdata_combined = ['tpr_combi', 'fpr_combi']
 
@@ -240,7 +240,8 @@ h_optMarker = ax.plot(-99, -99,
 
 
 
-
+"""
+# case: prefilter w/o PID effs
 h_RPConvRejClass_1 = ax.plot(.4527, .5547, 'o', color=color_RPConvRejClass,
                              label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.8)
 h_RPConvRejClass_2 = ax.plot(.5620, .7086, 'o', color=color_RPConvRejClass,
@@ -248,6 +249,17 @@ h_RPConvRejClass_2 = ax.plot(.5620, .7086, 'o', color=color_RPConvRejClass,
 h_RPConvRejClass_3 = ax.plot(.7200, .9110, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.8)
 h_RPConvRejClass_4 = ax.plot(.9367, .9860, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.8)
+"""
+
+# case: prefilter w/ PID effs
+h_RPConvRejClass_1 = ax.plot(.9424, .9585, 'o', color=color_RPConvRejClass,
+                             label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.8)
+h_RPConvRejClass_2 = ax.plot(.9540, .9737, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.8)
+h_RPConvRejClass_3 = ax.plot(.9691, .9909, 'o', color=color_RPConvRejClass,
+                             label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.8)
+h_RPConvRejClass_4 = ax.plot(.9934, .9986, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.8)
 
 
