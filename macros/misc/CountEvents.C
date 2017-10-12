@@ -14,13 +14,13 @@ void CountEvents() {
 
   // directory containing the input ROOT files
   const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
-  const char *file_ext = "FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
+  const char *file_ext = "FT2_ITSup_onlinePrefilter-eeonly_singleTree_part1.root";
 
   // tree name
   TString treeName = "pairTree_us";
 
   // branch name with event IDs in case test_sample_size is type int
-  TString ev_id_branchname = "EventID1";
+  TString ev_id_branchname = "event";
 
   // branch name with information about the looseness of the track cuts
   TString trackCut_branchname = "TrackCut1";
@@ -53,9 +53,17 @@ void CountEvents() {
   Int_t ev_id;
   Int_t TrackCut;
   Int_t TrackCut_2;
+  Bool_t containsTrackCutInfo = kTRUE;
   infileTree->SetBranchAddress(ev_id_branchname, &ev_id);
-  infileTree->SetBranchAddress(trackCut_branchname, &TrackCut);
-  infileTree->SetBranchAddress(trackcut_branchname_2, &TrackCut_2);
+  if(infileTree->GetListOfBranches()->FindObject(trackcut_branchname) != NULL &&
+     infileTree->GetListOfBranches()->FindObject(trackcut_branchname_2) != NULL) {
+    infileTree->SetBranchAddress(trackCut_branchname, &TrackCut);
+    infileTree->SetBranchAddress(trackcut_branchname_2, &TrackCut_2);
+  }else {
+    std::cout << "  Info: No branch holding track cut information found. "
+	      << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
   
   Int_t infileTree_nEntries = infileTree->GetEntries();
   std::cout << "Processing " << infileTree_nEntries << " entries..." << std::endl;
@@ -80,7 +88,8 @@ void CountEvents() {
 
     infileTree->GetEntry(en);
 
-    if(TrackCut != 1 && TrackCut_2 != 1) doCountEvent = kTRUE;
+    if(containsTrackCutInfo && TrackCut == 2 && TrackCut_2 == 2) doCountEvent = kTRUE;
+    else if(!containsTrackCutInfo) doCountEvent = kTRUE;
     
     if(ev_id != ev_id_prev) {
       if(doCountEvent) cnt_passedEvents++;

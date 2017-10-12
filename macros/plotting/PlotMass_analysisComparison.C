@@ -591,7 +591,7 @@ void PlotMass_analysisComparison() {
   TString drawOptions_eff = "hist p x0 e1";
   TString drawOptions_eff_same = drawOptions_eff + " same";
 
-  TString drawOptions_ratio = "hist p e1 x0";
+  TString drawOptions_ratio = "hist p x0";
   TString drawOptions_ratio_same = drawOptions_ratio + " same";
   
   TCanvas *c_significance_class = new TCanvas("c_significance_class","",1024,768);
@@ -781,8 +781,8 @@ void PlotMass_analysisComparison() {
   p_SoverB_class_norm->Draw();
   p_SoverB_class_norm->cd();
 
-  // h_SoverB_class_1_norm->SetMinimum(0.);
-  // h_SoverB_class_1_norm->SetMaximum(2.05);
+  h_SoverB_class_1_norm->SetMinimum(.8);
+  h_SoverB_class_1_norm->SetMaximum(2.25);
   h_SoverB_class_1_norm->SetTitle("");
 
   h_SoverB_class_1_norm->SetMarkerStyle(kMarkerStyle_1);

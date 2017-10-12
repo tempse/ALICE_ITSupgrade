@@ -54,7 +54,7 @@ Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 // Loose track cuts settings: set kTRUE if the tree also contains tracks with looser cuts:
 const Bool_t doContainLooseTracks = kFALSE;
 
-// Online prefilter setting: kTRUE if tree contains the branch taggedByPrefilter
+// Online prefilter setting: kTRUE if tree contains branches with online prefilter tags
 const Bool_t doContainOnlinePrefilter = kTRUE;
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
@@ -624,7 +624,7 @@ void GeneratePairTrees() {
   Int_t nTracks; // total number of tracks in given event
 
   
-  Long64_t singleTree_nEvents = singleTree->GetEntries()/10;
+  Long64_t singleTree_nEvents = singleTree->GetEntries();
 
   Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
 
