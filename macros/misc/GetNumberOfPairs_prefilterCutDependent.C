@@ -78,7 +78,7 @@ void GetNumberOfPairs_prefilterCutDependent(TString infile_name,
     
     infile_tree->GetEntry(i);
 
-    if(TrackCut1 != 2 || TrackCut2 != 2) continue;
+    if(containsTrackCutInfo && (TrackCut1 != 2 || TrackCut2 != 2)) continue;
     
     Double_t pairWeight = doConsiderPIDefficiencies ? getPairPIDefficiency(pt1, pt2, *h_PIDeff) : 1.;
 
