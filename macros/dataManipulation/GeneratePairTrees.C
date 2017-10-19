@@ -627,6 +627,7 @@ void GeneratePairTrees() {
   Long64_t singleTree_nEvents = singleTree->GetEntries();
 
   Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
+  if(singleTree_nEvents_1percent==0) singleTree_nEvents_1percent = 1;
 
 
   Long64_t ev_prev = -1;
@@ -640,7 +641,7 @@ void GeneratePairTrees() {
 
   for(Long64_t tr1=0; tr1<singleTree_nEvents-1; tr1++) { // first track loop, do not search partner tracks in the last event of the tree
     if((tr1%singleTree_nEvents_1percent)==0)
-      std::cout << "\rProcessing event " << tr1 << " of " << singleTree_nEvents
+      std::cout << "\rProcessing entry " << tr1 << " of " << singleTree_nEvents
 		<< " (" << tr1*100/singleTree_nEvents << "%)...";
 
     singleTree->GetEntry(tr1);
@@ -656,9 +657,6 @@ void GeneratePairTrees() {
 
     // pdg cut:
     if(abs(ST_pdg) != 11) continue; // keep electrons/positrons only
-
-    // cut to ignore unphysical DCAz values (specific to prior analysis):
-    if(ST_dcaZ == 999) continue;
 
     
     // prepare random pair swapping if doRandPairSwap==kTRUE:
@@ -764,9 +762,6 @@ void GeneratePairTrees() {
 
       // pdg cut:
       if(abs(ST_pdg) != 11) { tr2++; continue; }
-      
-      // cut to ignore unphysical DCAz values (specific to prior analysis):
-      if(ST_dcaZ == 999) { tr2++; continue; }
 
       // MVA cut tagging (conversion track identification):
       if(doConsiderMVAinfo_convTrack) {
