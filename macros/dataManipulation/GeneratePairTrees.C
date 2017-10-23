@@ -758,7 +758,7 @@ void GeneratePairTrees() {
 
       // exit loop over remaining tracks if event number changes or if the last
       // event of the tree is reached:
-      if(ev_temp != ST_event || tr2 == singleTree_nEvents-1) break;
+      if(ev_temp != ST_event || tr2 >= singleTree_nEvents) break;
 
       // pdg cut:
       if(abs(ST_pdg) != 11) { tr2++; continue; }
