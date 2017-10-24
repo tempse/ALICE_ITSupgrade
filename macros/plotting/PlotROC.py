@@ -9,13 +9,13 @@ import root_numpy
 from sklearn.metrics import roc_curve, auc
 
 
-filename_MCdata = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/workingData/testSample/temp_output/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root"
+filename_MCdata = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root"
 
 branches_MCdata = ['IsConv']
 
 
 
-filename_MCdata_singleTrackConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/singleConvTrackRejMVA/pairing/temp_output/FT2_ITSup_pairTree_us_part2_538163tightCutEvents_wSingleConvTrackMVAoutput.root"
+filename_MCdata_singleTrackConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/singleConvTrackRejMVA/pairing/temp_output/FT2_ITSup_pairTree_us_part2_538163tightCutEvents_wSingleConvTrackMVAoutput.root"
 
 branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutput_convTrack2', 'PIDeff1', 'PIDeff2', 'TrackCut1', 'TrackCut2']
 
@@ -266,6 +266,8 @@ h_RPConvRejClass_4 = ax.plot(.9934, .9986, 'o', color=color_RPConvRejClass,
 
 plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
+#plt.xlim([.90,1.01])
+#plt.ylim([.90,1.01])
 plt.xlabel('False Positive Rate', fontsize=18)
 plt.ylabel('True Positive Rate', fontsize=18)
 #plt.title('Receiver operating characteristics')

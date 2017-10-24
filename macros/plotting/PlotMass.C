@@ -57,8 +57,8 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
-  const Int_t wantedPrefilterTagValue1 = 0.;
-  const Int_t wantedPrefilterTagValue2 = 0.;
+  const Int_t wantedPrefilterTagValue1 = 0;
+  const Int_t wantedPrefilterTagValue2 = 0;
   
   // set the used MVA method:
   const Bool_t isMLP = kTRUE;

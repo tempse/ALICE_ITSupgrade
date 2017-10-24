@@ -11,17 +11,20 @@
 
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
-void PlotPhiv() {
+void PlotPhiv(TString filename,
+	      TString branchname,
+	      Bool_t doConsiderPIDefficiency,
+	      Bool_t doExcludeTaggedPairs) {
 
   gROOT->ForceStyle();
   SetStyle();
   
-  TString filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/RPConvRejClassicalCuts_prefiltering_PIDeffs/prefiltering/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
+  // TString filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/onlinePrefiltering/RPConvRejClassicalCuts_onlinePrefilter_eeonly/FT2_ITSup_onlinePrefilter-eeonly_pairTree-us_part2_538273events.root";
   TString treename = "pairTree_us";
 
-  Bool_t doConsiderPIDefficiency = kTRUE;
-  Bool_t doExcludeTaggedPairs = kTRUE;
-  Float_t massCut_low = 0., massCut_up = 0.01;
+  // Bool_t doConsiderPIDefficiency = kFALSE;
+  // Bool_t doExcludeTaggedPairs = kFALSE;
+  Float_t massCut_low = 0., massCut_up = 10.;
   
   
   TFile *infile = new TFile(filename, "READ");
@@ -48,7 +51,7 @@ void PlotPhiv() {
 	      << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
-  if(doExcludeTaggedPairs) tree->SetBranchAddress("IsTaggedRPConv_classicalCuts_prefilter", &IsTaggedRPConv);
+  if(doExcludeTaggedPairs) tree->SetBranchAddress(branchname, &IsTaggedRPConv);
   
   
   // File containing the pt-dependent PID efficiencies:
@@ -63,7 +66,7 @@ void PlotPhiv() {
   TH1D *nonconvs = new TH1D("nonconvs","",100,0,TMath::Pi());
 
 
-  Long64_t nentries = 50000000; //tree->GetEntries();
+  Long64_t nentries = 10000000; //tree->GetEntries();
 
   for(Long64_t i=0; i<nentries; i++) {
     if((i%5000)==0) std::cout << "\r(" << i << " / " << nentries << ")";
@@ -95,7 +98,7 @@ void PlotPhiv() {
   convs->SetLineWidth(lineWidth);
   convs->SetXTitle(XTitle);
   convs->SetYTitle(YTitle);
-  convs->GetYaxis()->SetTitleOffset(1.5);
+  convs->GetYaxis()->SetTitleOffset(1.55);
   
   nonconvs->SetLineColor(kGreen+1);
   nonconvs->SetLineWidth(lineWidth);
@@ -105,7 +108,7 @@ void PlotPhiv() {
   hs.Draw("nostack");
   hs.GetXaxis()->SetTitle(XTitle);
   hs.GetYaxis()->SetTitle(YTitle);
-  hs.GetYaxis()->SetTitleOffset(1.5);
+  hs.GetYaxis()->SetTitleOffset(1.55);
   c->Modified();
 
   TLatex *l_ALICE = new TLatex(.19,.82,"ALICE work in progress");
@@ -120,9 +123,16 @@ void PlotPhiv() {
   l_info->SetNDC();
   l_info->Draw();
 
+  TLatex *l_addInfo = new TLatex(.19,.74,"#it{m}_{ee} < 50 MeV/#it{c}^{2}");
+  l_addInfo->SetTextSize(.027);
+  l_addInfo->SetTextFont(42);
+  l_addInfo->SetNDC();
+  l_addInfo->Draw();
+
   TLegend *leg = new TLegend(.21,.56,.75,.74);
   leg->AddEntry(convs, "MC e^{+}e^{-} pairs from secondary conversions", "l");
-  leg->AddEntry(nonconvs, "MC e^{+}e^{-} pairs from primary hadron decays", "l");
+  leg->AddEntry(nonconvs, "all other MC e^{+}e^{-} pairs", "l");
+  // leg->AddEntry(nonconvs, "MC e^{+}e^{-} pairs from primary hadron decays", "l");
   leg->SetFillStyle(0);
   leg->Draw();
 

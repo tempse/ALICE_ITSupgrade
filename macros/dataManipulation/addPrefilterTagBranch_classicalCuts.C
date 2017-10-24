@@ -5,7 +5,7 @@
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TRandom.>
+#include <TRandom.h>
 #include <TStopwatch.h>
 #include <TH1F.h>
 #include <TCanvas.h>

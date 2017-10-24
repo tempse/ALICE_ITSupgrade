@@ -12,8 +12,10 @@
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
-void GenerateConfusionMatrix() {
-  TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering/RPConvRejMVA/tightCuts/prefiltering/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
+void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/RPConvRejClassicalCuts/prefilter/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root",
+			     TString branchname = "IsTaggedRPConv_classicalCuts_prefilter") {
+  
+  // TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/RPConvRejClassicalCuts/prefilter/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
 
   // "+"...signal-like events are near 1,
   // "-"...signal-like events are near 0
@@ -26,7 +28,7 @@ void GenerateConfusionMatrix() {
   Float_t pt1, pt2;
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
-  tree->SetBranchAddress("IsTaggedRPConv_MVAcuts_prefilter",
+  tree->SetBranchAddress(branchname,
 			 &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
   tree->SetBranchAddress("pt1", &pt1);
@@ -44,7 +46,7 @@ void GenerateConfusionMatrix() {
   Float_t mass;
   tree->SetBranchAddress("mass", &mass);
 
-  const Bool_t doConsiderPIDefficiencies = kTRUE;
+  const Bool_t doConsiderPIDefficiencies = kFALSE;
 
   // File containing the pt-dependent PID efficiencies:
   TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";

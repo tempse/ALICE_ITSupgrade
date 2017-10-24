@@ -141,7 +141,7 @@ bool isPairTree_us_ls = false;   // }
 void GeneratePairTrees() {
 
   const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
-  const char *file_ext = "FT2_ITSup_onlinePrefilter-allTracks_singleTree_part2_538273events.root";
+  const char *file_ext = "FT2_ITSup_onlinePrefilter-eeonly_singleTree_part2_538273events.root";
   TSystemDirectory input_dir(input_dirname, input_dirname);
   TList *input_files = input_dir.GetListOfFiles();
   
@@ -656,7 +656,7 @@ void GeneratePairTrees() {
     }
 
     // pdg cut:
-    if(abs(ST_pdg) != 11) continue; // keep electrons/positrons only
+    if(TMath::Abs(ST_pdg) != 11) continue; // keep electrons/positrons only
 
     
     // prepare random pair swapping if doRandPairSwap==kTRUE:
@@ -1026,7 +1026,7 @@ void GeneratePairTrees() {
       tr2++;
     }
   }
-  std::cout << "\rProcessing event " << singleTree_nEvents << " of " << singleTree_nEvents
+  std::cout << "\rProcessing entry " << singleTree_nEvents << " of " << singleTree_nEvents
 	    << " (100%)... DONE." << std::endl;
   std::cout << "Time elapsed since begin of event processing: " << std::endl;
   std::cout << "\t";
