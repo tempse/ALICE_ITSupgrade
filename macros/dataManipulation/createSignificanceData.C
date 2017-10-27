@@ -200,8 +200,8 @@ void createSignificanceData(TString MCdatafilename,
   pt1_all = new Float_t[nentries];
   pt2_all = new Float_t[nentries];
   mass_all = new Float_t[nentries];
-  trackCut1_all = new Int_t[nentries];
-  trackCut2_all = new Int_t[nentries];
+  if(containsTrackCutInfo) trackCut1_all = new Int_t[nentries];
+  if(containsTrackCutInfo) trackCut2_all = new Int_t[nentries];
   MVAout_RPConvRejMVA_all = new Float_t[nentries];
   MVAout_CombConvRejMVA_all = new Float_t[nentries];
   MVAout_singleConvTrackRejMVA_1_all = new Float_t[nentries];
@@ -221,8 +221,8 @@ void createSignificanceData(TString MCdatafilename,
     pt1_all[i] = pt1;
     pt2_all[i] = pt2;
     mass_all[i] = mass;
-    trackCut1_all[i] = TrackCut1;
-    trackCut2_all[i] = TrackCut2;
+    if(containsTrackCutInfo) trackCut1_all[i] = TrackCut1;
+    if(containsTrackCutInfo) trackCut2_all[i] = TrackCut2;
     MVAout_RPConvRejMVA_all[i] = MVAout_RPConvRejMVA;
     MVAout_CombConvRejMVA_all[i] = MVAout_CombConvRejMVA;
     MVAout_singleConvTrackRejMVA_1_all[i] = MVAout_singleConvTrackRejMVA_1;
@@ -340,12 +340,18 @@ void createSignificanceData(TString MCdatafilename,
 	continue;
       }
 
+      if(containsTrackCutInfo && (trackCut1_all[j] != 2 || trackCut2_all[j] != 2)) {
+	tags_CombConvRejMVA[j] = -999;
+	continue;
+      }
+
       if(MVAout_CombConvRejMVA_all[j] < MVAcut) {
 	tags_CombConvRejMVA[j] = 1;
       }
     }
     std::cout << std::endl;
 
+    
     std::cout << "Step 3/3:" << std::endl;
 
     for(Long64_t j=0; j<nentries; j++) {
@@ -361,8 +367,13 @@ void createSignificanceData(TString MCdatafilename,
 	continue;
       }
 
+      if(containsTrackCutInfo && (trackCut1_all[j] != 2 || trackCut2_all[j] != 2)) {
+	tags_singleConvTrackRejMVA[j] = -999;
+	continue;
+      }
+
       if((MVAout_singleConvTrackRejMVA_1_all[j] < MVAcut ||
-				       MVAout_singleConvTrackRejMVA_2_all[j] < MVAcut)) {
+	  MVAout_singleConvTrackRejMVA_2_all[j] < MVAcut)) {
 	tags_singleConvTrackRejMVA[j] = 1;
       }
     }

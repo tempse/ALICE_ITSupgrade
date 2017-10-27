@@ -337,7 +337,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       
       if( (tags_prefilter[i]!=0 && tags_prefilter[i]!=1) ||
           mass_all[i]<massCut ||
-          (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+          (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
 	pairs_IsTaggedAccepted_prefilter.push_back(-999);
 	pairs_IsTrueConv.push_back(IsConv_all[i]);
 	pairs_pairweight.push_back(pairweight);
@@ -359,7 +359,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
       if( (tags_noPrefilter[i]!=0 && tags_noPrefilter[i]!=1) ||
           mass_all[i]<massCut ||
-          (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+          (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
         pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
         continue;
       }
