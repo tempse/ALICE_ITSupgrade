@@ -393,7 +393,7 @@ void createSignificanceData(TString MCdatafilename,
       for(Long64_t i=0; i<nentries; i++) {
 
 	if( mass_all[i] < massCut ||
-	    (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	    (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
 	  continue;
 	}
 	
@@ -445,7 +445,7 @@ void createSignificanceData(TString MCdatafilename,
     for(Long64_t i=0; i<nentries; i++) {
 
       if( mass_all[i]<massCut ||
-	  (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	  (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
 	continue;
       }
       
@@ -460,7 +460,7 @@ void createSignificanceData(TString MCdatafilename,
     for(Long64_t i=0; i<nentries; i++) {
 
       if( mass_all[i]<massCut ||
-	  (trackCut1_all[i]!=2 || trackCut2_all[i]!=2) ) {
+	  (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
 	continue;
       }
       
