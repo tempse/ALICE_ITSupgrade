@@ -4,6 +4,7 @@ import sys
 from select import select
 import os
 import time
+import argparse
 
 import matplotlib
 matplotlib.use('agg')
@@ -101,9 +102,10 @@ class callback_ROC(keras.callbacks.Callback):
         loss = logs.get('val_loss')
         self.losses.append(loss)
         global roc_auc_val
-        if(epoch%self.interval_evaluate_trainAUC != 0):
         
-            y_pred_val = self.model.predict(X_val)
+        if(epoch%self.interval_evaluate_trainAUC != 0):
+
+            y_pred_val = self.model.predict(self.validation_data[0])
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
             self.aucs_val.append(roc_auc_val)
             self.aucs_train.append(0)
@@ -113,7 +115,7 @@ class callback_ROC(keras.callbacks.Callback):
             print("   VAL AUC: {:.3f} %".format( roc_auc_val * 100))    
             
         if(epoch%self.interval_evaluate_trainAUC == 0):
-            y_pred_val = self.model.predict(X_val)
+            y_pred_val = self.model.predict(self.validation_data[0])
             
             roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
             self.aucs_val.append(roc_auc_val)
@@ -238,17 +240,12 @@ def plot_metrics_history(hist):
 # ----------------------------------------------------------
 
 
-if __name__ == '__main__':
-
-    output_prefix, keras_models_prefix = get_output_paths()
+def main():
     
     # fix random seed for reproducibility
     np.random.seed(7)
 
     sys.stdout = logger()
-
-    load_pretrained_model = False
-    pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
     
     branches_pairTree = [
         'px1','py1','pz1',
@@ -283,14 +280,16 @@ if __name__ == '__main__':
         'PIDeff1',
         'PIDeff2',
         'IsRP',
-        'IsConv'
+        'IsConv',
+        'TrackCut1',
+        'TrackCut2'
     ]
     
-    data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/FT2_AnalysisResults_Upgrade_DCAvec_PIDeffs_pairtree_us_part1_1-9-split_correctedPIDeffs.root",
+    data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
                           branches=branches_pairTree,
                           start=0,
-                          stop=500000,
-                          selection='mass>0.05')
+                          stop=num_rows,
+                          selection='mass>0.05 && TrackCut1==2 && TrackCut2==2')
     
     # target vector setup
     Y = pd.DataFrame()
@@ -376,6 +375,9 @@ if __name__ == '__main__':
     
     print('Splitting the data in training, validation and test samples...')
 
+    # hacky way to make training data accessible to the keras callback
+    global X_train, y_train
+    
     X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
 
     X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=1/2., random_state=43)
@@ -405,7 +407,7 @@ if __name__ == '__main__':
         print(model.summary())
     else:
         
-        timeout = 15
+        timeout = 5
         print('\nInfo: The model will be trained anew. Existing saves will be overwritten.')
         print('      (Program paused for %d seconds. Enter an arbitrary string to abort the training.)' % timeout)
         rlist = select([sys.stdin], [], [], timeout)[0]
@@ -417,10 +419,10 @@ if __name__ == '__main__':
             print('No input received. Continue running the program...')
         
             print('Creating the model...')
-            model = create_model(nr_of_layers=4,
+            model = create_model(nr_of_layers=6,
                                  first_layer_size=100,
                                  layers_slope_coeff=1.,
-                                 dropout=0.4,
+                                 dropout=0.2,
                                  normalize_batch=False,
                                  noise=0.,
                                  activation='relu',
@@ -430,10 +432,10 @@ if __name__ == '__main__':
             
             print('Fitting the model...')
             hist = model.fit(X_train, y_train,
-                             batch_size=1000,
-                             epochs=11,
+                             batch_size=batchsize,
+                             epochs=num_epochs,
                              callbacks=[callback_ROC()],
-                             verbose=0,
+                             verbose=verbose_setting,
                              validation_data=(X_val, y_val))
             
             plot_metrics_history(hist)
@@ -483,3 +485,54 @@ if __name__ == '__main__':
     plot_ROCcurve(y_test, y_test_score, sample_weight_test, label='test')
 
     del y_test_score
+
+
+    
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Basic framework for training of machine learning algorithms')
+
+    parser.add_argument('-p',
+                        help='load pretrained model instead of performing the training',
+                        action="store_true",
+                        dest='load_pretrained_model',
+                        default=False)
+
+    parser.add_argument('-nrows',
+                        help='specify number of rows to read from the datafile',
+                        action='store',
+                        dest='num_rows',
+                        default=None,
+                        type=int)
+
+    parser.add_argument('-nepochs',
+                        help='specify number of epochs for the training',
+                        action='store',
+                        dest='num_epochs',
+                        default=101,
+                        type=int)
+
+    parser.add_argument('-batchsize',
+                        help='specify number of entries per training batch',
+                        action='store',
+                        dest='batchsize',
+                        default=1000,
+                        type=int)
+
+    parser.add_argument('-verbose',
+                        help='make the program more chatty',
+                        action='store_true',
+                        dest='verbose_setting',
+                        default=False)
+
+    parser_results = parser.parse_args()
+    load_pretrained_model = parser_results.load_pretrained_model
+    num_rows = parser_results.num_rows
+    num_epochs = parser_results.num_epochs
+    batchsize = parser_results.batchsize
+    verbose_setting = parser_results.verbose_setting
+    
+    output_prefix, keras_models_prefix = get_output_paths()
+    pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
+
+    main()
