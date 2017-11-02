@@ -368,9 +368,6 @@ def main():
     del data_orig
 
     
-    X = preprocess_data(X, output_prefix) # X is a numpy array from now on
-
-    
     # Data Split in Training, Validation and Test Samples
     
     print('Splitting the data in training, validation and test samples...')
@@ -394,7 +391,12 @@ def main():
           (y_test[y_test==1].shape[0], y_test[y_test==1].shape[0]*100/y_test.shape[0]))
     print('Number of backgr events in test sample: %d (%.2f percent)' %
           (y_test[y_test==0].shape[0], y_test[y_test==0].shape[0]*100/y_test.shape[0]))
-    
+
+
+    # Data preprocessing (the arrays are numpy arrays from now on)
+    X_train = preprocess_data(X_train, output_prefix)
+    X_val = preprocess_data(X_val, output_prefix, load_fitted_attributes=True)
+    X_test = preprocess_data(X_test, output_prefix, load_fitted_attributes=True)
     
 
     if load_pretrained_model:
