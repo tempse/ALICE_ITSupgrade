@@ -375,9 +375,9 @@ def main():
     # hacky way to make training data accessible to the keras callback
     global X_train, y_train
     
-    X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=1/3., random_state=42)
+    X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=test_sample_size, random_state=42)
 
-    X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=1/2., random_state=43)
+    X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=val_sample_size, random_state=43)
 
     print('Number of signal events in training sample: %d (%.2f percent)' %
           (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
@@ -393,10 +393,18 @@ def main():
           (y_test[y_test==0].shape[0], y_test[y_test==0].shape[0]*100/y_test.shape[0]))
 
 
-    # Data preprocessing (the arrays are numpy arrays from now on)
+    # Data preprocessing
     X_train = preprocess_data(X_train, output_prefix)
     X_val = preprocess_data(X_val, output_prefix, load_fitted_attributes=True)
     X_test = preprocess_data(X_test, output_prefix, load_fitted_attributes=True)
+
+    # Convert pandas to numpy arrays
+    X_train = np.array(X_train)
+    X_val = np.array(X_val)
+    X_test = np.array(X_test)
+    y_train = np.array(y_train)
+    y_val = np.array(y_val)
+    y_test = np.array(y_test)
     
 
     if load_pretrained_model:
@@ -421,16 +429,21 @@ def main():
             print('No input received. Continue running the program...')
         
             print('Creating the model...')
-            model = create_model(nr_of_layers=6,
-                                 first_layer_size=100,
-                                 layers_slope_coeff=1.,
-                                 dropout=0.2,
-                                 normalize_batch=False,
-                                 noise=0.,
-                                 activation='relu',
-                                 kernel_initializer='glorot_normal',
-                                 bias_initializer='glorot_normal',
-                                 input_dim=X_train.shape[1])
+            model_args = {
+                "nr_of_layers": 6,
+                "first_layer_size": 100,
+                "layers_slope_coeff": 1.0,
+                "dropout": 0.2,
+                "normalize_batch": False,
+                "noise": 0.0,
+                "activation": "relu",
+                "kernel_initializer": "glorot_normal",
+                "bias_initializer": "glorot_normal",
+                "input_dim": X_train.shape[1]
+            }
+            print("Model parameters: ", model_args)
+            
+            model = create_model(**model_args)
             
             print('Fitting the model...')
             hist = model.fit(X_train, y_train,
@@ -494,18 +507,46 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Basic framework for training of machine learning algorithms')
 
-    parser.add_argument('-p',
+    parser.add_argument('-p', '-pretrained',
                         help='load pretrained model instead of performing the training',
                         action="store_true",
                         dest='load_pretrained_model',
                         default=False)
 
-    parser.add_argument('-nrows',
+    parser.add_argument('-nrows', '-nentries',
                         help='specify number of rows to read from the datafile',
                         action='store',
                         dest='num_rows',
                         default=None,
                         type=int)
+
+    parser.add_argument('-num_val_sample',
+                        help='specify number of entries in the validation sample',
+                        action='store',
+                        dest='num_val_sample',
+                        default=-1,
+                        type=int)
+
+    parser.add_argument('-num_test_sample',
+                        help='specify number of entries in the test sample',
+                        action='store',
+                        dest='num_test_sample',
+                        default=-1,
+                        type=int)
+
+    parser.add_argument('-frac_val_sample',
+                        help='fraction of entries in the validation sample',
+                        action='store',
+                        dest='frac_val_sample',
+                        default=0.5,
+                        type=float)
+
+    parser.add_argument('-frac_test_sample',
+                        help='fraction of entries in the test sample',
+                        action='store',
+                        dest='frac_test_sample',
+                        default=1/3.,
+                        type=float)
 
     parser.add_argument('-nepochs',
                         help='specify number of epochs for the training',
@@ -521,6 +562,13 @@ if __name__ == "__main__":
                         default=1000,
                         type=int)
 
+    # parser.add_argument('-njobs',
+    #                     help='specify number of parallel processes (default: -1)',
+    #                     action='store',
+    #                     dest='num_jobs',
+    #                     default=-1,
+    #                     type=int)
+
     parser.add_argument('-verbose',
                         help='make the program more chatty',
                         action='store_true',
@@ -528,11 +576,28 @@ if __name__ == "__main__":
                         default=False)
 
     parser_results = parser.parse_args()
+    print('Received input arguments: ', parser_results)
+    
     load_pretrained_model = parser_results.load_pretrained_model
     num_rows = parser_results.num_rows
+    num_val_sample = parser_results.num_val_sample
+    num_test_sample = parser_results.num_test_sample
+    frac_val_sample = parser_results.frac_val_sample
+    frac_test_sample = parser_results.frac_test_sample
     num_epochs = parser_results.num_epochs
     batchsize = parser_results.batchsize
+    # num_jobs = parser_results.num_jobs
     verbose_setting = parser_results.verbose_setting
+
+    if(num_val_sample == -1):
+        val_sample_size = frac_val_sample
+    else:
+        val_sample_size = num_val_sample
+
+    if(num_test_sample == -1):
+        test_sample_size = frac_test_sample
+    else:
+        test_sample_size = num_test_sample
     
     output_prefix, keras_models_prefix = get_output_paths()
     pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
