@@ -65,11 +65,15 @@ Bool_t doSwapCurrentPair = kFALSE;
 // some counting variables:
 Int_t cnt_ls = 0, cnt_us = 0, cnt_us_ls = 0, cnt_rp = 0;
 
+// testing
+Int_t cnt_labelCheckErrors = 0;
+
 
 // output variables (1,2 <-> 1st leg, 2nd leg):
 Int_t TrackID1, TrackID2;
 Int_t EventID1, EventID2;
 Long64_t EventID1_unique, EventID2_unique; // continuously assigned, unique event IDs
+Int_t generator;
 Int_t IsRP;                         // real pairs: 1, combinatorial pairs: 0
 Int_t IsUS;                         // pair with unlike sign (regardless of IsRP)
 Int_t IsConv;                       // both mother particles are gammas (can still be comb. pairs)
@@ -107,6 +111,7 @@ Int_t motherLabel1, motherLabel2;
 Int_t firstMotherLabel1, firstMotherLabel2;
 Int_t firstMotherLabel1_min, firstMotherLabel2_min;
 Int_t firstMotherLabel1_max, firstMotherLabel2_max;
+Int_t firstMothersInfo1, firstMothersInfo2;
 Float_t DCAxy1_norm, DCAxy2_norm;
 Float_t DCAz1_norm, DCAz2_norm;
 Float_t DCAx1, DCAx2, DCAy1, DCAy2, DCAz1, DCAz2;
@@ -200,6 +205,7 @@ void GeneratePairTrees() {
   
   // variables of input tree ("ST" <-> "single tree"):
   Int_t ST_event;
+  Int_t ST_generator;
   Double_t ST_IP;
   Int_t ST_global;
   Double_t ST_eta;
@@ -212,6 +218,7 @@ void GeneratePairTrees() {
   Int_t ST_labelFirstMother;
   Int_t ST_labelMinFirstMother;
   Int_t ST_labelMaxFirstMother;
+  Int_t ST_firstMothersInfo;
   Double_t ST_mcEta;
   Double_t ST_mcPhi;
   Double_t ST_mcPt;
@@ -235,6 +242,7 @@ void GeneratePairTrees() {
   
   
   singleTree->SetBranchAddress("event",&ST_event);
+  singleTree->SetBranchAddress("generator",&ST_generator);
   singleTree->SetBranchAddress("IP",&ST_IP);
   singleTree->SetBranchAddress("global",&ST_global);
   singleTree->SetBranchAddress("eta",&ST_eta);
@@ -250,6 +258,7 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("labelFirstMother",&ST_labelFirstMother);
   singleTree->SetBranchAddress("labelMinFirstMother",&ST_labelMinFirstMother);
   singleTree->SetBranchAddress("labelMaxFirstMother",&ST_labelMaxFirstMother);
+  singleTree->SetBranchAddress("firstMothersInfo",&ST_firstMothersInfo);
   singleTree->SetBranchAddress("mcEta",&ST_mcEta);
   singleTree->SetBranchAddress("mcPhi",&ST_mcPhi);
   singleTree->SetBranchAddress("mcPt",&ST_mcPt);
@@ -276,6 +285,7 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("EventID2",&EventID2);
     pairTree_rp->Branch("EventID1_unique",&EventID1_unique);
     pairTree_rp->Branch("EventID2_unique",&EventID2_unique);
+    pairTree_rp->Branch("generator",&generator);
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
@@ -318,6 +328,8 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("motherPdg2",&motherPdg2);
     pairTree_rp->Branch("pdg1",&pdg1);
     pairTree_rp->Branch("pdg2",&pdg2);
+    pairTree_rp->Branch("firstMothersInfo1",&firstMothersInfo1);
+    pairTree_rp->Branch("firstMothersInfo2",&firstMothersInfo2);
     pairTree_rp->Branch("PIDeff1",&PIDeff1);
     pairTree_rp->Branch("PIDeff2",&PIDeff2);
     pairTree_rp->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -361,6 +373,7 @@ void GeneratePairTrees() {
     pairTree_us->Branch("EventID2",&EventID2);
     pairTree_us->Branch("EventID1_unique",&EventID1_unique);
     pairTree_us->Branch("EventID2_unique",&EventID2_unique);
+    pairTree_us->Branch("generator",&generator);
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
@@ -403,6 +416,8 @@ void GeneratePairTrees() {
     pairTree_us->Branch("motherPdg2",&motherPdg2);
     pairTree_us->Branch("pdg1",&pdg1);
     pairTree_us->Branch("pdg2",&pdg2);
+    pairTree_us->Branch("firstMothersInfo1",&firstMothersInfo1);
+    pairTree_us->Branch("firstMothersInfo2",&firstMothersInfo2);
     pairTree_us->Branch("PIDeff1",&PIDeff1);
     pairTree_us->Branch("PIDeff2",&PIDeff2);
     pairTree_us->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -446,6 +461,7 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("EventID2",&EventID2);
     pairTree_ls->Branch("EventID1_unique",&EventID1_unique);
     pairTree_ls->Branch("EventID2_unique",&EventID2_unique);
+    pairTree_ls->Branch("generator",&generator);
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
@@ -488,6 +504,8 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_ls->Branch("pdg1",&pdg1);
     pairTree_ls->Branch("pdg2",&pdg2);
+    pairTree_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
+    pairTree_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
     pairTree_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -531,6 +549,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("EventID2",&EventID2);
     pairTree_us_ls->Branch("EventID1_unique",&EventID1_unique);
     pairTree_us_ls->Branch("EventID2_unique",&EventID2_unique);
+    pairTree_us_ls->Branch("generator",&generator);
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
@@ -573,6 +592,8 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_us_ls->Branch("pdg1",&pdg1);
     pairTree_us_ls->Branch("pdg2",&pdg2);
+    pairTree_us_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
+    pairTree_us_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
     pairTree_us_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_us_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_us_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -655,6 +676,9 @@ void GeneratePairTrees() {
       ev_prev = ev_temp;
     }
 
+    // cross-checking:
+    Int_t generator_temp = ST_generator;
+    
     // pdg cut:
     if(TMath::Abs(ST_pdg) != 11) continue; // keep electrons/positrons only
 
@@ -683,6 +707,7 @@ void GeneratePairTrees() {
     if(!doSwapCurrentPair) {
       EventID1 = ST_event;
       EventID1_unique = ST_eventID_unique;
+      generator = ST_generator;
       TrackID1 = tr1;
       MVAoutput_convTrack1 = MVAoutput_convTrack;
       mcPx1 = ST_particle->Px();
@@ -695,6 +720,7 @@ void GeneratePairTrees() {
       firstMotherLabel1 = ST_labelFirstMother;
       firstMotherLabel1_min = ST_labelMinFirstMother;
       firstMotherLabel1_max = ST_labelMaxFirstMother;
+      firstMothersInfo1 = ST_firstMothersInfo;
       DCAxy1_norm = ST_dcaR_norm;
       DCAz1_norm = ST_dcaZ_norm;
       DCAx1 = ST_dcaX;
@@ -717,6 +743,7 @@ void GeneratePairTrees() {
     }else {
       EventID2 = ST_event;
       EventID2_unique = ST_eventID_unique;
+      generator = ST_generator;
       TrackID2 = tr1;
       MVAoutput_convTrack2 = MVAoutput_convTrack;
       mcPx2 = ST_particle->Px();
@@ -729,6 +756,7 @@ void GeneratePairTrees() {
       firstMotherLabel2 = ST_labelFirstMother;
       firstMotherLabel2_min = ST_labelMinFirstMother;
       firstMotherLabel2_max = ST_labelMaxFirstMother;
+      firstMothersInfo2 = ST_firstMothersInfo;
       DCAxy2_norm = ST_dcaR_norm;
       DCAz2_norm = ST_dcaZ_norm;
       DCAx2 = ST_dcaX;
@@ -763,6 +791,12 @@ void GeneratePairTrees() {
       // pdg cut:
       if(abs(ST_pdg) != 11) { tr2++; continue; }
 
+      // cross-checking:
+      if(generator_temp != ST_generator) {
+              std::cout << "ERROR: different generator IDs" << std::endl;
+              gSystem->Exit(0);
+      }
+
       // MVA cut tagging (conversion track identification):
       if(doConsiderMVAinfo_convTrack) {
 	if(MVAoutput_convTrack < MVAcut_convTrack) {
@@ -790,6 +824,7 @@ void GeneratePairTrees() {
 	firstMotherLabel2 = ST_labelFirstMother;
 	firstMotherLabel2_min = ST_labelMinFirstMother;
 	firstMotherLabel2_max = ST_labelMaxFirstMother;
+        firstMothersInfo2 = ST_firstMothersInfo;
 	DCAxy2_norm = ST_dcaR_norm;
 	DCAz2_norm = ST_dcaZ_norm;
 	DCAx2 = ST_dcaX;
@@ -824,6 +859,7 @@ void GeneratePairTrees() {
 	firstMotherLabel1 = ST_labelFirstMother;
 	firstMotherLabel1_min = ST_labelMinFirstMother;
 	firstMotherLabel1_max = ST_labelMaxFirstMother;
+        firstMothersInfo1 = ST_firstMothersInfo;
 	DCAxy1_norm = ST_dcaR_norm;
 	DCAz1_norm = ST_dcaZ_norm;
 	DCAx1 = ST_dcaX;
@@ -1255,7 +1291,7 @@ void calculateHF() {
   // check heavy flavor of first mothers:
   if((isCharm(firstMotherPdg1)||isBottom(firstMotherPdg1))
      && (isCharm(firstMotherPdg2)||isBottom(firstMotherPdg2))) {
-
+          
     // // NB: IGNORE LABEL CHECKS FOR IGEO19
     
     // check whether they are in the same first mother range (i.e., have the same origin):
@@ -1263,6 +1299,22 @@ void calculateHF() {
       
       if(!(firstMotherLabel2>=firstMotherLabel1_min && firstMotherLabel2<=firstMotherLabel1_max)) {
     	std::cout << "Warning: firstMotherLabel1 is in firstMotherLabel2 range, but not vice versa." << std::endl;
+
+        // testing:
+        std::cout << std::endl << "------------------------------" << std::endl;
+        std::cout << "firstMotherLabel1: " << firstMotherLabel1 << "\t" << "firstMotherLabel2: " << firstMotherLabel2 << std::endl;
+        std::cout << "firstMotherLabel1_min: " << firstMotherLabel1_min << "\t" << "firstMotherLabel2_min: " << firstMotherLabel2_min << std::endl;
+        std::cout << "firstMotherLabel1_max: " << firstMotherLabel1_max << "\t" << "firstMotherLabel2_max: " << firstMotherLabel2_max << std::endl;
+        std::cout << "firstMotherPdg1: " << firstMotherPdg1 << "\t" << "firstMotherPdg2: " << firstMotherPdg2 << std::endl;
+        std::cout << "motherLabel1: " << motherLabel1 << "\t" << "motherLabel2: " << motherLabel2 << std::endl;
+        std::cout << "motherPdg1: " << motherPdg1 << "\t" << "motherPdg2: " << motherPdg2 << std::endl;
+        std::cout << "pdg1: " << pdg1 << "\t" << "pdg2: " << pdg2 << std::endl;
+        std::cout << "EventID1_unique: " << EventID1_unique << "\t" << "EventID2_unique: " << EventID2_unique << std::endl;
+        std::cout << "TrackID1: " << TrackID1 << "\t" << "TrackID2: " << TrackID2 << std::endl;
+        std::cout << std::endl << "------------------------------" << std::endl;
+        cnt_labelCheckErrors++;
+        if(cnt_labelCheckErrors > 3) gSystem->Exit(0);
+        
       }
       
       // check heavy flavor of mothers:
