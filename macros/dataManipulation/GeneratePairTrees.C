@@ -65,8 +65,8 @@ Bool_t doSwapCurrentPair = kFALSE;
 // some counting variables:
 Int_t cnt_ls = 0, cnt_us = 0, cnt_us_ls = 0, cnt_rp = 0;
 
-// testing
-Int_t cnt_labelCheckErrors = 0;
+// variables for cross-checks:
+UInt_t cnt_labelCheckErrors = 0;
 
 
 // output variables (1,2 <-> 1st leg, 2nd leg):
@@ -112,6 +112,7 @@ Int_t firstMotherLabel1, firstMotherLabel2;
 Int_t firstMotherLabel1_min, firstMotherLabel2_min;
 Int_t firstMotherLabel1_max, firstMotherLabel2_max;
 Int_t firstMothersInfo1, firstMothersInfo2;
+Int_t electronsWithHFMother;
 Float_t DCAxy1_norm, DCAxy2_norm;
 Float_t DCAz1_norm, DCAz2_norm;
 Float_t DCAx1, DCAx2, DCAy1, DCAy2, DCAz1, DCAz2;
@@ -330,6 +331,7 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("pdg2",&pdg2);
     pairTree_rp->Branch("firstMothersInfo1",&firstMothersInfo1);
     pairTree_rp->Branch("firstMothersInfo2",&firstMothersInfo2);
+    pairTree_rp->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_rp->Branch("PIDeff1",&PIDeff1);
     pairTree_rp->Branch("PIDeff2",&PIDeff2);
     pairTree_rp->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -418,6 +420,7 @@ void GeneratePairTrees() {
     pairTree_us->Branch("pdg2",&pdg2);
     pairTree_us->Branch("firstMothersInfo1",&firstMothersInfo1);
     pairTree_us->Branch("firstMothersInfo2",&firstMothersInfo2);
+    pairTree_us->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_us->Branch("PIDeff1",&PIDeff1);
     pairTree_us->Branch("PIDeff2",&PIDeff2);
     pairTree_us->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -506,6 +509,7 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("pdg2",&pdg2);
     pairTree_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
     pairTree_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    pairTree_ls->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -594,6 +598,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("pdg2",&pdg2);
     pairTree_us_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
     pairTree_us_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    pairTree_us_ls->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_us_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_us_ls->Branch("PIDeff2",&PIDeff2);
     pairTree_us_ls->Branch("DCAxy1_norm",&DCAxy1_norm);
@@ -650,32 +655,47 @@ void GeneratePairTrees() {
   Long64_t singleTree_nEvents_1percent = singleTree_nEvents/100;
   if(singleTree_nEvents_1percent==0) singleTree_nEvents_1percent = 1;
 
-
-  Long64_t ev_prev = -1;
   
   std::cout << std::endl << "Start event processing...";
+
+  Long64_t ev_prev = -1;
   
   TStopwatch *watch = new TStopwatch();
   watch->Start();
 
-
-
   for(Long64_t tr1=0; tr1<singleTree_nEvents-1; tr1++) { // first track loop, do not search partner tracks in the last event of the tree
     if((tr1%singleTree_nEvents_1percent)==0)
       std::cout << "\rProcessing entry " << tr1 << " of " << singleTree_nEvents
-		<< " (" << tr1*100/singleTree_nEvents << "%)...";
+                << " (" << tr1*100/singleTree_nEvents << "%)...";
 
     singleTree->GetEntry(tr1);
     if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->GetEntry(tr1);
-
     
     Int_t ev_temp = ST_event; // marks the current event number
 
     if(ev_temp != ev_prev) {
       ST_eventID_unique++;
       ev_prev = ev_temp;
-    }
+      electronsWithHFMother = 0;
+      
+      // determine number of electrons with HF mother in this event:
+      Int_t ev_this = ST_event;
+      for(Long64_t i=tr1; i<singleTree_nEvents; i++) {
+        singleTree->GetEntry(i);
 
+        if(ev_this != ST_event) break;
+
+        if(TMath::Abs(ST_pdg)==11 &&
+           // ((ST_generator==3 && ST_firstMothersInfo==1) ||
+           //  (ST_generator==4 && ST_firstMothersInfo==2) ||
+           //  (ST_generator==5 && ST_firstMothersInfo==2)) &&
+           (isCharm(ST_pdgMother)||isBottom(ST_pdgMother))) {
+          electronsWithHFMother++;
+        }
+      }
+      singleTree->GetEntry(tr1);
+    }
+    
     // cross-checking:
     Int_t generator_temp = ST_generator;
     
