@@ -55,7 +55,7 @@ Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 const Bool_t doContainLooseTracks = kFALSE;
 
 // Online prefilter setting: kTRUE if tree contains branches with online prefilter tags
-const Bool_t doContainOnlinePrefilter = kTRUE;
+const Bool_t doContainOnlinePrefilter = kFALSE;
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
@@ -1104,7 +1104,7 @@ void GeneratePairTrees() {
 	    << "  ls+us: " << "\t" << cnt_us_ls << std::endl << std::endl;
 
   
-  gApplication->Terminate();
+  gSystem->Exit(0);
 }
 
 

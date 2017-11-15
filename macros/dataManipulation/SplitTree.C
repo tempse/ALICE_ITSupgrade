@@ -71,6 +71,7 @@ void SplitTree() {
     gSystem->Exit(1);
   }
 
+  if(!input_dirname.EndsWith("/")) input_dirname += "/";
 
   TSystemDirectory input_dir(input_dirname, input_dirname);
   TList *input_files = input_dir.GetListOfFiles();
