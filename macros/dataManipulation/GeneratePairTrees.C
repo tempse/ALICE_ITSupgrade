@@ -146,22 +146,22 @@ bool isPairTree_us_ls = false;   // }
 
 void GeneratePairTrees() {
 
-  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/";
-  const char *file_ext = "FT2_ITSup_onlinePrefilter-eeonly_singleTree_part2_538273events.root";
+  const char *input_dirname = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/";
+  const char *file_ext = "CA_AnalysisResults_Upgrade_iGeo19_singleTree_part2_0.8nEvents.root";
   TSystemDirectory input_dir(input_dirname, input_dirname);
   TList *input_files = input_dir.GetListOfFiles();
   
   TChain *singleTree = new TChain("tracks");
   if(input_files) {
     std::cout << "Reading \"*" << file_ext << "\" files from "
-	      << input_dirname << "...";
+              << input_dirname << "...";
     TSystemFile *file;
     TString fname;
     TIter next(input_files);
     while((file = (TSystemFile*)next())) {
       fname = file->GetName();
       if(!file->IsDirectory() && fname.EndsWith(file_ext)) {
-	singleTree->Add(input_dirname + fname);
+        singleTree->Add(input_dirname + fname);
       }
     }
   }
@@ -190,11 +190,11 @@ void GeneratePairTrees() {
 
   if(doConsiderMVAinfo_convTrack && (singleTree->GetEntries() != singleTree_MVAoutputs->GetEntries())) {
     std::cout << "  ERROR: The trees in the input files have different sizes."
-	      << std::endl;
+              << std::endl;
     std::cout << "    Size of tree in input files: "
-	      << singleTree->GetEntries() << std::endl;
+              << singleTree->GetEntries() << std::endl;
     std::cout << "    Size of tree in file " << infile_MVAoutputs_name << ": "
-	      << singleTree_MVAoutputs->GetEntries() << std::endl;
+              << singleTree_MVAoutputs->GetEntries() << std::endl;
     gApplication->Terminate();
   }
 
@@ -565,7 +565,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_tight",&IsTaggedRPConv_classicalCuts_tight);
     pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts",&IsTaggedRPConv_classicalCuts);
     pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_loose1",&IsTaggedRPConv_classicalCuts_loose1);
-			   pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
+    pairTree_us_ls->Branch("IsTaggedRPConv_classicalCuts_loose2",&IsTaggedRPConv_classicalCuts_loose2);
     if(doConsiderMVAinfo_convTrack)
       pairTree_us_ls->Branch("IsTaggedConvTrack1",&IsTaggedConvTrack1);
     if(doConsiderMVAinfo_convTrack)
@@ -714,11 +714,11 @@ void GeneratePairTrees() {
     // MVA cut tagging (conversion track identification):
     if(doConsiderMVAinfo_convTrack) {
       if(MVAoutput_convTrack < MVAcut_convTrack) {
-	if(!doSwapCurrentPair) IsTaggedConvTrack1 = 1.;
-	else IsTaggedConvTrack2 = 1.;
+        if(!doSwapCurrentPair) IsTaggedConvTrack1 = 1.;
+        else IsTaggedConvTrack2 = 1.;
       }else {
-	if(!doSwapCurrentPair) IsTaggedConvTrack1 = 0.;
-	else IsTaggedConvTrack2 = 0.;
+        if(!doSwapCurrentPair) IsTaggedConvTrack1 = 0.;
+        else IsTaggedConvTrack2 = 0.;
       }
     }
 
@@ -813,212 +813,123 @@ void GeneratePairTrees() {
 
       // cross-checking:
       if(generator_temp != ST_generator) {
-              std::cout << "ERROR: different generator IDs" << std::endl;
-              gSystem->Exit(0);
+        std::cout << "ERROR: different generator IDs" << std::endl;
+        gSystem->Exit(0);
       }
 
       // MVA cut tagging (conversion track identification):
       if(doConsiderMVAinfo_convTrack) {
-	if(MVAoutput_convTrack < MVAcut_convTrack) {
-	  if(!doSwapCurrentPair) IsTaggedConvTrack2 = 1.;
-	  else IsTaggedConvTrack1 = 1.;
-	}else {
-	  if(!doSwapCurrentPair) IsTaggedConvTrack2 = 0.;
-	  else IsTaggedConvTrack1 = 0.;
-	}
+        if(MVAoutput_convTrack < MVAcut_convTrack) {
+          if(!doSwapCurrentPair) IsTaggedConvTrack2 = 1.;
+          else IsTaggedConvTrack1 = 1.;
+        }else {
+          if(!doSwapCurrentPair) IsTaggedConvTrack2 = 0.;
+          else IsTaggedConvTrack1 = 0.;
+        }
       }
 
       // already available, pairing-independent variables of 2nd leg for output tree:
       if(!doSwapCurrentPair) {
-	EventID2 = ST_event;
-	EventID2_unique = ST_eventID_unique;
-	TrackID2 = tr2;
-	MVAoutput_convTrack2 = MVAoutput_convTrack;
-	mcPx2 = ST_particle->Px();
-	mcPy2 = ST_particle->Py();
-	mcPz2 = ST_particle->Pz();
-	pdg2 = ST_pdg;
-	motherPdg2 = ST_pdgMother;
-	firstMotherPdg2 = ST_pdgFirstMother;
-	motherLabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
-	firstMotherLabel2 = ST_labelFirstMother;
-	firstMotherLabel2_min = ST_labelMinFirstMother;
-	firstMotherLabel2_max = ST_labelMaxFirstMother;
+        EventID2 = ST_event;
+        EventID2_unique = ST_eventID_unique;
+        TrackID2 = tr2;
+        MVAoutput_convTrack2 = MVAoutput_convTrack;
+        mcPx2 = ST_particle->Px();
+        mcPy2 = ST_particle->Py();
+        mcPz2 = ST_particle->Pz();
+        pdg2 = ST_pdg;
+        motherPdg2 = ST_pdgMother;
+        firstMotherPdg2 = ST_pdgFirstMother;
+        motherLabel2 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+        firstMotherLabel2 = ST_labelFirstMother;
+        firstMotherLabel2_min = ST_labelMinFirstMother;
+        firstMotherLabel2_max = ST_labelMaxFirstMother;
         firstMothersInfo2 = ST_firstMothersInfo;
-	DCAxy2_norm = ST_dcaR_norm;
-	DCAz2_norm = ST_dcaZ_norm;
-	DCAx2 = ST_dcaX;
-	DCAy2 = ST_dcaY;
-	DCAz2 = ST_dcaZ;
-	nITS2 = ST_nITS;
-	nITSshared2 = ST_nITSshared;
-	nTPC2 = ST_nTPC;
-	ITSchi22 = ST_ITSchi2;
-	TPCchi22 = ST_TPCchi2;
-	phi2 = ST_phi;
-	eta2 = ST_eta;
-	pt2 = ST_pt;
-	PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doContainLooseTracks) TrackCut2 = ST_isTrackCut;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2 = ST_taggedByPrefilter;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight = ST_taggedByPrefilter_tight;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 = ST_taggedByPrefilter_loose1;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 = ST_taggedByPrefilter_loose2;
+        DCAxy2_norm = ST_dcaR_norm;
+        DCAz2_norm = ST_dcaZ_norm;
+        DCAx2 = ST_dcaX;
+        DCAy2 = ST_dcaY;
+        DCAz2 = ST_dcaZ;
+        nITS2 = ST_nITS;
+        nITSshared2 = ST_nITSshared;
+        nTPC2 = ST_nTPC;
+        ITSchi22 = ST_ITSchi2;
+        TPCchi22 = ST_TPCchi2;
+        phi2 = ST_phi;
+        eta2 = ST_eta;
+        pt2 = ST_pt;
+        PIDeff2 = getPIDefficiency(*h_PIDeff, ST_pt);
+        if(doContainLooseTracks) TrackCut2 = ST_isTrackCut;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2 = ST_taggedByPrefilter;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight = ST_taggedByPrefilter_tight;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 = ST_taggedByPrefilter_loose1;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 = ST_taggedByPrefilter_loose2;
       }else {
-	EventID1 = ST_event;
-	EventID1_unique = ST_eventID_unique;
-	TrackID1 = tr2;
-	MVAoutput_convTrack1 = MVAoutput_convTrack;
-	mcPx1 = ST_particle->Px();
-	mcPy1 = ST_particle->Py();
-	mcPz1 = ST_particle->Pz();
-	pdg1 = ST_pdg;
-	motherPdg1 = ST_pdgMother;
-	firstMotherPdg1 = ST_pdgFirstMother;
-	motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
-	firstMotherLabel1 = ST_labelFirstMother;
-	firstMotherLabel1_min = ST_labelMinFirstMother;
-	firstMotherLabel1_max = ST_labelMaxFirstMother;
+        EventID1 = ST_event;
+        EventID1_unique = ST_eventID_unique;
+        TrackID1 = tr2;
+        MVAoutput_convTrack1 = MVAoutput_convTrack;
+        mcPx1 = ST_particle->Px();
+        mcPy1 = ST_particle->Py();
+        mcPz1 = ST_particle->Pz();
+        pdg1 = ST_pdg;
+        motherPdg1 = ST_pdgMother;
+        firstMotherPdg1 = ST_pdgFirstMother;
+        motherLabel1 = ST_particle->GetMother(0); // Note: That's not the first mother of the track.
+        firstMotherLabel1 = ST_labelFirstMother;
+        firstMotherLabel1_min = ST_labelMinFirstMother;
+        firstMotherLabel1_max = ST_labelMaxFirstMother;
         firstMothersInfo1 = ST_firstMothersInfo;
-	DCAxy1_norm = ST_dcaR_norm;
-	DCAz1_norm = ST_dcaZ_norm;
-	DCAx1 = ST_dcaX;
-	DCAy1 = ST_dcaY;
-	DCAz1 = ST_dcaZ;
-	nITS1 = ST_nITS;
-	nITSshared1 = ST_nITSshared;
-	nTPC1 = ST_nTPC;
-	ITSchi21 = ST_ITSchi2;
-	TPCchi21 = ST_TPCchi2;
-	phi1 = ST_phi;
-	eta1 = ST_eta;
-	pt1 = ST_pt;
-	PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
-	if(doContainLooseTracks) TrackCut1 = ST_isTrackCut;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1 = ST_taggedByPrefilter;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight = ST_taggedByPrefilter_tight;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 = ST_taggedByPrefilter_loose1;
-	if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 = ST_taggedByPrefilter_loose2;
+        DCAxy1_norm = ST_dcaR_norm;
+        DCAz1_norm = ST_dcaZ_norm;
+        DCAx1 = ST_dcaX;
+        DCAy1 = ST_dcaY;
+        DCAz1 = ST_dcaZ;
+        nITS1 = ST_nITS;
+        nITSshared1 = ST_nITSshared;
+        nTPC1 = ST_nTPC;
+        ITSchi21 = ST_ITSchi2;
+        TPCchi21 = ST_TPCchi2;
+        phi1 = ST_phi;
+        eta1 = ST_eta;
+        pt1 = ST_pt;
+        PIDeff1 = getPIDefficiency(*h_PIDeff, ST_pt);
+        if(doContainLooseTracks) TrackCut1 = ST_isTrackCut;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1 = ST_taggedByPrefilter;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight = ST_taggedByPrefilter_tight;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 = ST_taggedByPrefilter_loose1;
+        if(doContainOnlinePrefilter) IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 = ST_taggedByPrefilter_loose2;
       }
 
       IsRP = 0; // default value
       
       if(pdg1*pdg2 < 0) { // <-> unlike sign pair (via MC info!)
-	IsUS = 1;
+        IsUS = 1;
 	
-	ChargeSign = 0;
+        ChargeSign = 0;
 
-	calculateMomenta(); // has to be called before other methods that need momentum variables!
-	calculateMass();
-	calculatePhiv();
-	calculateOpang();
+        calculateMomenta(); // has to be called before other methods that need momentum variables!
+        calculateMass();
+        calculatePhiv();
+        calculateOpang();
         calculateDiffz();
-	calculateSumz();
-	calculateHF();
+        calculateSumz();
+        calculateHF();
 
-	if(motherPdg1==22 || motherPdg2==22) { // IsConv==1 for every pair that contains a conversion leg
-	  IsConv = 1;
-	}else {
-	  IsConv = 0;
-	}
-
-	// prefilter cuts - tagging RP conversions:
-	if(phiv>phiv_cutValue && mass<mass_cutValue) {
-	  IsTaggedRPConv_classicalCuts = 1;
-	}else {
-	  IsTaggedRPConv_classicalCuts = 0;
-	}
-	
-	// further (classical) prefilter cuts:
-        if(phiv>2.9 && mass < .0035) {
-          IsTaggedRPConv_classicalCuts_tight = 1;
+        if(motherPdg1==22 || motherPdg2==22) { // IsConv==1 for every pair that contains a conversion leg
+          IsConv = 1;
         }else {
-          IsTaggedRPConv_classicalCuts_tight = 0;
-        }
-        if(phiv>2 && mass<.04) {
-          IsTaggedRPConv_classicalCuts_loose1 = 1;
-        }else {
-          IsTaggedRPConv_classicalCuts_loose1 = 0;
-        }
-        if(phiv>TMath::Pi()*.5 && mass<.05) {
-          IsTaggedRPConv_classicalCuts_loose2 = 1;
-        }else {
-          IsTaggedRPConv_classicalCuts_loose2 = 0;
+          IsConv = 0;
         }
 
-	// online prefilter cuts:
-	if(doContainOnlinePrefilter) {
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
-
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
-
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
-
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
-	}
-	
-
-	
-	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
-	  IsRP = 1;
-	  if(isPairTree_rp) {
-	    pairTree_rp->Fill();
-	    cnt_rp++;
-	  }
-	}
-	if(isPairTree_us) {
-	  pairTree_us->Fill();
-	  cnt_us++;
-	}
-	if(isPairTree_us_ls) {
-	  pairTree_us_ls->Fill();
-	  cnt_us_ls++;
-	}
-      }else { // <-> like sign pair
-	IsUS = 0;
-	
-	if(pdg1>0) ChargeSign = 1;
-	else if(pdg1<0) ChargeSign = -1;
-
-	calculateMomenta(); // has to be called before other methods that need momentum variables!
-	calculateMass();
-	calculatePhiv();
-	calculateOpang();
-        calculateDiffz();
-	calculateSumz();
-	calculateHF();
-	
-	if(motherPdg1==22 || motherPdg2==22) {
-	  IsConv = 1;
-	}else {
-	  IsConv = 0;
-	}
-
-	
-	// prefilter cuts - tagging RP conversions:
+        // prefilter cuts - tagging RP conversions:
         if(phiv>phiv_cutValue && mass<mass_cutValue) {
-	  IsTaggedRPConv_classicalCuts = 1;
-	}else {
-	  IsTaggedRPConv_classicalCuts = 0;
-	}
-
-	// further (classical) prefilter cuts:
+          IsTaggedRPConv_classicalCuts = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts = 0;
+        }
+	
+        // further (classical) prefilter cuts:
         if(phiv>2.9 && mass < .0035) {
           IsTaggedRPConv_classicalCuts_tight = 1;
         }else {
@@ -1035,55 +946,144 @@ void GeneratePairTrees() {
           IsTaggedRPConv_classicalCuts_loose2 = 0;
         }
 
-	// online prefilter cuts:
-	if(doContainOnlinePrefilter) {
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
+        // online prefilter cuts:
+        if(doContainOnlinePrefilter) {
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
 
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
 
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
 
-	  if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
-	     IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
-	  else
-	    IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
-	}
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
+        }
+	
 
-	if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
-	  IsRP = 1;
-	  if(isPairTree_rp) {
-	    pairTree_rp->Fill();
-	    cnt_rp++;
-	  }
-	}
-	if(isPairTree_ls) {
-	  pairTree_ls->Fill();
-	  cnt_ls++;
-	}
-	if(isPairTree_us_ls) {
-	  pairTree_us_ls->Fill();
-	  cnt_us_ls++;
-	}
+	
+        if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
+          IsRP = 1;
+          if(isPairTree_rp) {
+            pairTree_rp->Fill();
+            cnt_rp++;
+          }
+        }
+        if(isPairTree_us) {
+          pairTree_us->Fill();
+          cnt_us++;
+        }
+        if(isPairTree_us_ls) {
+          pairTree_us_ls->Fill();
+          cnt_us_ls++;
+        }
+      }else { // <-> like sign pair
+        IsUS = 0;
+	
+        if(pdg1>0) ChargeSign = 1;
+        else if(pdg1<0) ChargeSign = -1;
+
+        calculateMomenta(); // has to be called before other methods that need momentum variables!
+        calculateMass();
+        calculatePhiv();
+        calculateOpang();
+        calculateDiffz();
+        calculateSumz();
+        calculateHF();
+	
+        if(motherPdg1==22 || motherPdg2==22) {
+          IsConv = 1;
+        }else {
+          IsConv = 0;
+        }
+
+	
+        // prefilter cuts - tagging RP conversions:
+        if(phiv>phiv_cutValue && mass<mass_cutValue) {
+          IsTaggedRPConv_classicalCuts = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts = 0;
+        }
+
+        // further (classical) prefilter cuts:
+        if(phiv>2.9 && mass < .0035) {
+          IsTaggedRPConv_classicalCuts_tight = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_tight = 0;
+        }
+        if(phiv>2 && mass<.04) {
+          IsTaggedRPConv_classicalCuts_loose1 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose1 = 0;
+        }
+        if(phiv>TMath::Pi()*.5 && mass<.05) {
+          IsTaggedRPConv_classicalCuts_loose2 = 1;
+        }else {
+          IsTaggedRPConv_classicalCuts_loose2 = 0;
+        }
+
+        // online prefilter cuts:
+        if(doContainOnlinePrefilter) {
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter = 0;
+
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_tight == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_tight == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_tight = 0;
+
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose1 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose1 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose1 = 0;
+
+          if(IsTaggedRPConv_classicalCuts_onlinePrefilter1_loose2 == 1 ||
+             IsTaggedRPConv_classicalCuts_onlinePrefilter2_loose2 == 1)
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 1;
+          else
+            IsTaggedRPConv_classicalCuts_onlinePrefilter_loose2 = 0;
+        }
+
+        if(motherLabel1==motherLabel2 && abs(pdg1)==11 && abs(pdg2)==11) {
+          IsRP = 1;
+          if(isPairTree_rp) {
+            pairTree_rp->Fill();
+            cnt_rp++;
+          }
+        }
+        if(isPairTree_ls) {
+          pairTree_ls->Fill();
+          cnt_ls++;
+        }
+        if(isPairTree_us_ls) {
+          pairTree_us_ls->Fill();
+          cnt_us_ls++;
+        }
       }
 
       tr2++;
     }
   }
   std::cout << "\rProcessing entry " << singleTree_nEvents << " of " << singleTree_nEvents
-	    << " (100%)... DONE." << std::endl;
+            << " (100%)... DONE." << std::endl;
   std::cout << "Time elapsed since begin of event processing: " << std::endl;
   std::cout << "\t";
   watch->Print();
@@ -1100,8 +1100,8 @@ void GeneratePairTrees() {
   std::cout << std::endl << "---------- SUMMARY: ----------" << std::endl;
   std::cout << "Filled the histograms with the following number of entries:" << std::endl;
   std::cout << "  us: " << "\t" << cnt_us << std::endl
-	    << "  ls: " << "\t" << cnt_ls << std::endl
-	    << "  ls+us: " << "\t" << cnt_us_ls << std::endl << std::endl;
+            << "  ls: " << "\t" << cnt_ls << std::endl
+            << "  ls+us: " << "\t" << cnt_us_ls << std::endl << std::endl;
 
   
   gSystem->Exit(0);
@@ -1163,9 +1163,9 @@ void calculatePhiv() {
   // adapted AliPhysics implementation:
 
   if(pdg1 < 0) {
-    temp = pv1;
-    pv1 = pv2;
-    pv2 = temp;
+  temp = pv1;
+  pv1 = pv2;
+  pv2 = temp;
   }
   
   /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
@@ -1191,7 +1191,7 @@ void calculatePhiv() {
   Double_t pz = pz1+pz2;
   Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
 
-    //unit vector of (pep+pem) 
+  //unit vector of (pep+pem) 
   Double_t pl = dppair;
   Double_t ux = px/pl;
   Double_t uy = py/pl;
@@ -1340,16 +1340,16 @@ void calculateHF() {
       // check heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
 	  
-	if(isCharm(firstMotherPdg1) && isCharm(firstMotherPdg2)) {
-	  IsCorrCharm = 1;
-	}else if(isBottom(firstMotherPdg1) && isBottom(firstMotherPdg2)) {
-	  IsCorrBottom = 1;
+        if(isCharm(firstMotherPdg1) && isCharm(firstMotherPdg2)) {
+          IsCorrCharm = 1;
+        }else if(isBottom(firstMotherPdg1) && isBottom(firstMotherPdg2)) {
+          IsCorrBottom = 1;
 	    
-	  if(isCharm(motherPdg1)||isCharm(motherPdg2)) {
-	    IsCorrCharmFromBottom = 1;
-	  }
+          if(isCharm(motherPdg1)||isCharm(motherPdg2)) {
+            IsCorrCharmFromBottom = 1;
+          }
 	    
-	}
+        }
 	
       }
       
@@ -1357,7 +1357,7 @@ void calculateHF() {
       
       // check only heavy flavor of mothers:
       if((isCharm(motherPdg1)||isBottom(motherPdg1)) && (isCharm(motherPdg2)||isBottom(motherPdg2))) {
-	IsCombHF = 1;
+        IsCombHF = 1;
       }
       
     }
