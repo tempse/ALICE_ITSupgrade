@@ -15,6 +15,7 @@ sns.set()
 import numpy as np
 import pandas as pd
 
+from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
@@ -281,22 +282,67 @@ def main():
         'PIDeff2',
         'IsRP',
         'IsConv',
-        'TrackCut1',
-        'TrackCut2'
+        'generator',
+        'firstMothersInfo1',
+        'electronsWithHFMother'
     ]
+
+    branches_singleTree = [
+        'eta',
+        'phi',
+        'pt',
+        'dcaX',
+        'dcaY',
+        'dcaZ',
+        'particle.fPx',
+        'particle.fPy',
+        'particle.fPz',
+        'nITS',
+        'nTPC',
+        'nITSshared',
+        'ITSchi2',
+        'TPCchi2',
+        'pdgMother',
+        'PIDeff',
+        'generator',
+        'firstMothersInfo',
+        'electronsWithHFMother'
+    ]
+
+    data_HFenh = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_HFenh_pairTree-us_part1_0.2nEvents.root",
+                           branches=branches_pairTree,
+                           start=0,
+                           stop=num_rows,
+                           selection="((firstMothersInfo1==1 && generator==3) || (firstMothersInfo1==2 && generator==4) || (firstMothersInfo1==2 && generator==5)) && electronsWithHFMother <= 2")
+
+    # add new column with class label
+    data_HFenh['class_HF'] = 1
     
-    data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
-                          branches=branches_pairTree,
-                          start=0,
-                          stop=num_rows,
-                          selection='mass>0.05 && TrackCut1==2 && TrackCut2==2')
+    data_GP = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_GP_pairTree-us_part1_0.2nEvents.root",
+                        branches=branches_pairTree,
+                        start=0,
+                        stop=num_rows,
+                        selection="IsRP==1 && IsConv==0")
+
+    # add new column with class label
+    data_GP['class_HF'] = 0
+
+    data_orig = shuffle(pd.concat([data_HFenh, data_GP]))
+    
+    #data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
+    #                      branches=branches_pairTree,
+    #                      start=0,
+    #                      stop=num_rows,
+    #                      selection='IsRP==1 && TrackCut1==2 && TrackCut2==2')
     
     # target vector setup
     Y = pd.DataFrame()
-    Y = (~((data_orig['IsRP']==0) & (data_orig['IsConv']==1))).astype(int)
+    Y = (data_orig['class_HF']==1).astype(int)
 
     # feature matrix setup
     X = pd.DataFrame()
+    
+    # pair tree features
     X['p'] = np.sqrt((data_orig['px1']+data_orig['px2'])*(data_orig['px1']+data_orig['px2']) +
                      (data_orig['py1']+data_orig['py2'])*(data_orig['py1']+data_orig['py2']) +
                      (data_orig['pz1']+data_orig['pz2'])*(data_orig['pz1']+data_orig['pz2']))
@@ -348,7 +394,24 @@ def main():
     X['eta2'] = data_orig['eta2']
     X['phi1'] = data_orig['phi1']
     X['phi2'] = data_orig['phi2']
-
+    
+    """
+    # single tree features
+    X['eta'] = data_orig['eta']
+    X['phi'] = data_orig['phi']
+    X['pt'] = data_orig['pt']
+    X['dcaX'] = data_orig['dcaX']
+    X['dcaY'] = data_orig['dcaY']
+    X['dcaZ'] = data_orig['dcaZ']
+    X['p'] = np.sqrt(data_orig['particle.fPx']*data_orig['particle.fPx'] + \
+                     data_orig['particle.fPy']*data_orig['particle.fPy'] + \
+                     data_orig['particle.fPz']*data_orig['particle.fPz'])
+    X['nITS'] = data_orig['nITS']
+    X['nTPC'] = data_orig['nTPC']
+    X['nITSshared'] = data_orig['nITSshared']
+    X['ITSchi2'] = data_orig['ITSchi2']
+    X['TPCchi2'] = data_orig['TPCchi2']
+    """
     
     # save feature names for later purposes
     X_featureNames = list(X)
@@ -430,15 +493,15 @@ def main():
         
             print('Creating the model...')
             model_args = {
-                "nr_of_layers": 6,
-                "first_layer_size": 100,
+                "nr_of_layers": 4,
+                "first_layer_size": 50,
                 "layers_slope_coeff": 1.0,
-                "dropout": 0.2,
+                "dropout": 0.5,
                 "normalize_batch": False,
                 "noise": 0.0,
                 "activation": "relu",
                 "kernel_initializer": "glorot_normal",
-                "bias_initializer": "glorot_normal",
+                "bias_initializer": "zeros",
                 "input_dim": X_train.shape[1]
             }
             print("Model parameters: ", model_args)
@@ -538,7 +601,7 @@ if __name__ == "__main__":
                         help='fraction of entries in the validation sample',
                         action='store',
                         dest='frac_val_sample',
-                        default=0.5,
+                        default=0.2,
                         type=float)
 
     parser.add_argument('-frac_test_sample',
@@ -559,7 +622,7 @@ if __name__ == "__main__":
                         help='specify number of entries per training batch',
                         action='store',
                         dest='batchsize',
-                        default=1000,
+                        default=512,
                         type=int)
 
     # parser.add_argument('-njobs',
