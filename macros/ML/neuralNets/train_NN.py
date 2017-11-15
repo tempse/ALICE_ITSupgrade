@@ -106,7 +106,7 @@ class callback_ROC(keras.callbacks.Callback):
         if(epoch%self.interval_evaluate_trainAUC != 0):
 
             y_pred_val = self.model.predict(self.validation_data[0])
-            roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
+            roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val, sample_weight=sample_weight_val)
             self.aucs_val.append(roc_auc_val)
             self.aucs_train.append(0)
             
@@ -117,11 +117,11 @@ class callback_ROC(keras.callbacks.Callback):
         if(epoch%self.interval_evaluate_trainAUC == 0):
             y_pred_val = self.model.predict(self.validation_data[0])
             
-            roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val)
+            roc_auc_val = roc_auc_score(self.validation_data[1], y_pred_val, sample_weight=sample_weight_val)
             self.aucs_val.append(roc_auc_val)
 
             y_pred_train = self.model.predict(X_train)
-            roc_auc_train = roc_auc_score(y_train, y_pred_train) 
+            roc_auc_train = roc_auc_score(y_train, y_pred_train, sample_weight=sample_weight_train) 
             self.aucs_train.append(roc_auc_train)
         
             print("Epoch {} took {:.1f}s".format(epoch, time.time() - start_time)),
@@ -373,7 +373,7 @@ def main():
     print('Splitting the data in training, validation and test samples...')
 
     # hacky way to make training data accessible to the keras callback
-    global X_train, y_train
+    global X_train, y_train, sample_weight_train, sample_weight_val
     
     X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=test_sample_size, random_state=42)
 
