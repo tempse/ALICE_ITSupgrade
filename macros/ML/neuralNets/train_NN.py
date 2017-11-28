@@ -76,8 +76,11 @@ def main():
     print('Selected features:', X_featureNames)
     joblib.dump(X_featureNames, output_prefix+'featureNames.pkl')
 
-    
-    sample_weight = calculate_pair_sample_weight(data_orig['PIDeff1'], data_orig['PIDeff2'])
+    if identifier == 'pairTree':
+        sample_weight = calculate_pair_sample_weight(data_orig['PIDeff1'], data_orig['PIDeff2'])
+
+    elif identifier == 'singleTree':
+        sample_weight = data_orig['PIDeff']
 
 
     print('Total number of events in data sample: %d' % X.shape[0])
