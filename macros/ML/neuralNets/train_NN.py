@@ -36,25 +36,25 @@ def main():
 
     sys.stdout = logger()
 
-    track_identifier = 'pairTree' # can be either 'pairTree' or 'singleTree'
+    track_identifier = data_params['track_identifier']
 
-    data_HFenh = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_HFenh_pairTree-us_part1_0.2nEvents.root",
-                           branches=get_branches(track_identifier),
+    data_HFenh = load_data(data_params['hf_datapath'],
+                           branches=get_branches(data_params['track_identifier']),
                            start=0,
                            stop=run_params['num_entries'],
-                           selection="((firstMothersInfo1==1 && generator==3) || (firstMothersInfo1==2 && generator==4) || (firstMothersInfo1==2 && generator==5)) && electronsWithHFMother <= 2")
+                           selection=data_params['hf_selection'])
 
     # add new column with class label
-    data_HFenh['class_HF'] = 1
+    data_HFenh[data_params['data_identifier']] = 1
     
-    data_GP = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_GP_pairTree-us_part1_0.2nEvents.root",
+    data_GP = load_data(data_params['gp_datapath'],
                         branches=get_branches(track_identifier),
                         start=0,
                         stop=run_params['num_entries'],
-                        selection="IsRP==1 && IsConv==0")
+                        selection=data_params['gp_selection'])
 
     # add new column with class label
-    data_GP['class_HF'] = 0
+    data_GP[data_params['data_identifier']] = 0
 
     data_orig = shuffle(pd.concat([data_HFenh, data_GP]))
     
@@ -66,7 +66,7 @@ def main():
     
     # target vector setup
     Y = pd.DataFrame()
-    Y = (data_orig['class_HF']==1).astype(int)
+    Y = (data_orig[data_params['data_identifier']]==1).astype(int)
 
     # feature matrix setup
     X = pd.DataFrame()
@@ -153,16 +153,16 @@ def main():
         
             print('Creating the model...')
             model_args = {
-                "nr_of_layers": int(classifier_params['nr_of_layers']),
-                "first_layer_size": int(classifier_params['first_layer_size']),
+                "nr_of_layers":         int(classifier_params['nr_of_layers']),
+                "first_layer_size":     int(classifier_params['first_layer_size']),
                 "layers_slope_coeff": float(classifier_params['layers_slope_coeff']),
-                "dropout": float(classifier_params['dropout']),
-                "normalize_batch": bool(classifier_params['normalize_batch']),
-                "noise": float(classifier_params['noise']),
-                "activation": str(classifier_params['activation']),
-                "kernel_initializer": str(classifier_params['kernel_initializer']),
-                "bias_initializer": str(classifier_params['bias_initializer']),
-                "input_dim": X_train.shape[1]
+                "dropout":            float(classifier_params['dropout']),
+                "normalize_batch":     bool(classifier_params['normalize_batch']),
+                "noise":              float(classifier_params['noise']),
+                "activation":           str(classifier_params['activation']),
+                "kernel_initializer":   str(classifier_params['kernel_initializer']),
+                "bias_initializer":     str(classifier_params['bias_initializer']),
+                "input_dim":            X_train.shape[1]
             }
             print('Model parameters: ')
             print_dict(model_args)
