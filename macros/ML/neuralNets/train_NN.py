@@ -3,8 +3,6 @@ from __future__ import division
 import sys
 from select import select
 import os
-import time
-import argparse
 
 import matplotlib
 matplotlib.use('agg')
@@ -18,21 +16,19 @@ import pandas as pd
 from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
 from sklearn.externals import joblib
 
-import keras
-from keras.models import Sequential, load_model
-from keras.layers import Dense, Dropout, GaussianNoise, BatchNormalization
-from keras.wrappers.scikit_learn import KerasClassifier
-
-from modules.get_output_paths import *
-from modules.logger import *
-from modules.load_data import *
+from modules.get_output_paths import get_output_paths
+from modules.logger import logger
+from modules.load_data import load_data
 from modules.run_params import get_input_args
 from modules.keras_models import DNNBinaryClassifier
 from modules.keras_callbacks import callback_ROC
-from modules.evaluation_plots import *
+from modules.evaluation_plots import plot_MVAoutput, plot_cut_efficiencies, \
+    plot_ROCcurve
+
+from keras.models import load_model
+    
 
 
 def calculate_pair_sample_weight(weight_1, weight_2):
