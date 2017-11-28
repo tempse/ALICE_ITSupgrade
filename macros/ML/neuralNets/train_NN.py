@@ -41,7 +41,7 @@ def main():
     data_HFenh = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_HFenh_pairTree-us_part1_0.2nEvents.root",
                            branches=get_branches(track_identifier),
                            start=0,
-                           stop=run_params['num_rows'],
+                           stop=run_params['num_entries'],
                            selection="((firstMothersInfo1==1 && generator==3) || (firstMothersInfo1==2 && generator==4) || (firstMothersInfo1==2 && generator==5)) && electronsWithHFMother <= 2")
 
     # add new column with class label
@@ -50,7 +50,7 @@ def main():
     data_GP = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_GP_pairTree-us_part1_0.2nEvents.root",
                         branches=get_branches(track_identifier),
                         start=0,
-                        stop=run_params['num_rows'],
+                        stop=run_params['num_entries'],
                         selection="IsRP==1 && IsConv==0")
 
     # add new column with class label
@@ -61,7 +61,7 @@ def main():
     #data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
     #                      branches=branches_pairTree,
     #                      start=0,
-    #                      stop=run_params['num_rows'],
+    #                      stop=run_params['num_entries'],
     #                      selection='IsRP==1 && TrackCut1==2 && TrackCut2==2')
     
     # target vector setup
@@ -164,7 +164,8 @@ def main():
                 "bias_initializer": str(classifier_params['bias_initializer']),
                 "input_dim": X_train.shape[1]
             }
-            print("Model parameters: ", model_args)
+            print('Model parameters: ')
+            print_dict(model_args)
             
             model = DNNBinaryClassifier(**model_args)
             
@@ -252,7 +253,7 @@ if __name__ == "__main__":
 
     run_params = {
         'load_pretrained_model': parser_results.load_pretrained_model,
-        'num_rows':              parser_results.num_rows,
+        'num_entries':           parser_results.num_entries,
         'num_val_sample':        parser_results.num_val_sample,
         'num_test_sample':       parser_results.num_test_sample,
         'frac_val_sample':       parser_results.frac_val_sample,

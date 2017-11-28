@@ -14,10 +14,10 @@ def get_input_args(argv=None):
                         dest='load_pretrained_model',
                         default=False)
 
-    parser.add_argument('-nrows', '-nentries',
+    parser.add_argument('-nentries', '-nrows',
                         help='specify number of rows to read from the datafile',
                         action='store',
-                        dest='num_rows',
+                        dest='num_entries',
                         default=None,
                         type=int)
 
