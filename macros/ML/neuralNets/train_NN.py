@@ -19,7 +19,7 @@ from sklearn.externals import joblib
 from modules.get_output_paths import get_output_paths
 from modules.logger import logger
 from modules.load_data import load_data, get_branches, engineer_features
-from modules.run_params import get_input_args
+from modules.control import get_input_args
 from modules.preprocessing import preprocess
 from modules.keras_models import DNNBinaryClassifier
 from modules.keras_callbacks import callback_ROC
