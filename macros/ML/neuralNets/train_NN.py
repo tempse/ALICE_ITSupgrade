@@ -39,7 +39,7 @@ def main():
     data_HFenh = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_HFenh_pairTree-us_part1_0.2nEvents.root",
                            branches=get_branches(track_identifier),
                            start=0,
-                           stop=num_rows,
+                           stop=run_params['num_rows'],
                            selection="((firstMothersInfo1==1 && generator==3) || (firstMothersInfo1==2 && generator==4) || (firstMothersInfo1==2 && generator==5)) && electronsWithHFMother <= 2")
 
     # add new column with class label
@@ -48,7 +48,7 @@ def main():
     data_GP = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_GP_pairTree-us_part1_0.2nEvents.root",
                         branches=get_branches(track_identifier),
                         start=0,
-                        stop=num_rows,
+                        stop=run_params['num_rows'],
                         selection="IsRP==1 && IsConv==0")
 
     # add new column with class label
@@ -59,7 +59,7 @@ def main():
     #data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
     #                      branches=branches_pairTree,
     #                      start=0,
-    #                      stop=num_rows,
+    #                      stop=run_params['num_rows'],
     #                      selection='IsRP==1 && TrackCut1==2 && TrackCut2==2')
     
     # target vector setup
@@ -96,9 +96,9 @@ def main():
     
     print('Splitting the data in training, validation and test samples...')
     
-    X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=test_sample_size, random_state=42)
+    X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=run_params['test_sample_size'], random_state=42)
 
-    X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=val_sample_size, random_state=43)
+    X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=run_params['val_sample_size'], random_state=43)
 
     print('Number of signal events in training sample: %d (%.2f percent)' %
           (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
@@ -128,7 +128,7 @@ def main():
     y_test = np.array(y_test)
     
 
-    if load_pretrained_model:
+    if run_params['load_pretrained_model']:
         if not os.path.exists(pretrained_model_filename):
             print('Error loading model. File %s does not exist.' % pretrained_model_filename)
             sys.exit()
@@ -168,14 +168,14 @@ def main():
             
             print('Fitting the model...')
             hist = model.fit(X_train, y_train,
-                             batch_size=batchsize,
-                             epochs=num_epochs,
+                             batch_size=run_params['batchsize'],
+                             epochs=run_params['num_epochs'],
                              callbacks=[callback_ROC(X_train,
                                                      y_train,
                                                      sample_weight_train,
                                                      output_prefix,
                                                      keras_models_prefix)],
-                             verbose=verbose_setting,
+                             verbose=run_params['verbose_setting'],
                              validation_data=(X_val, y_val, sample_weight_val))
             
             plot_metrics_history(hist)
@@ -240,27 +240,28 @@ if __name__ == "__main__":
     
     parser_results = get_input_args(user_argv)
     print('Received input arguments: ', parser_results)
-    
-    load_pretrained_model = parser_results.load_pretrained_model
-    num_rows = parser_results.num_rows
-    num_val_sample = parser_results.num_val_sample
-    num_test_sample = parser_results.num_test_sample
-    frac_val_sample = parser_results.frac_val_sample
-    frac_test_sample = parser_results.frac_test_sample
-    num_epochs = parser_results.num_epochs
-    batchsize = parser_results.batchsize
-    # num_jobs = parser_results.num_jobs
-    verbose_setting = parser_results.verbose_setting
 
-    if(num_val_sample == -1):
-        val_sample_size = frac_val_sample
-    else:
-        val_sample_size = num_val_sample
+    run_params = {
+        'load_pretrained_model': parser_results.load_pretrained_model,
+        'num_rows':              parser_results.num_rows,
+        'num_val_sample':        parser_results.num_val_sample,
+        'num_test_sample':       parser_results.num_test_sample,
+        'frac_val_sample':       parser_results.frac_val_sample,
+        'frac_test_sample':      parser_results.frac_test_sample,
+        'num_epochs':            parser_results.num_epochs,
+        'batchsize':             parser_results.batchsize,
+        'verbose_setting':       parser_results.verbose_setting,
+        }
 
-    if(num_test_sample == -1):
-        test_sample_size = frac_test_sample
+    if(run_params['num_val_sample'] == -1):
+        run_params['val_sample_size'] = run_params['frac_val_sample']
     else:
-        test_sample_size = num_test_sample
+        run_params['val_sample_size'] = run_params['num_val_sample']
+
+    if(run_params['num_test_sample'] == -1):
+        run_params['test_sample_size'] = run_params['frac_test_sample']
+    else:
+        run_params['test_sample_size'] = run_params['num_test_sample']
     
     output_prefix, keras_models_prefix = get_output_paths()
     pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
