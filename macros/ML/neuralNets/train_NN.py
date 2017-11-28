@@ -76,10 +76,10 @@ def main():
     print('Selected features:', X_featureNames)
     joblib.dump(X_featureNames, output_prefix+'featureNames.pkl')
 
-    if identifier == 'pairTree':
+    if track_identifier == 'pairTree':
         sample_weight = calculate_pair_sample_weight(data_orig['PIDeff1'], data_orig['PIDeff2'])
 
-    elif identifier == 'singleTree':
+    elif track_identifier == 'singleTree':
         sample_weight = data_orig['PIDeff']
 
 
