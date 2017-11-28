@@ -1,5 +1,6 @@
 import sys
 import argparse
+import configparser
 
 
 def get_input_args(argv=None):
@@ -75,4 +76,78 @@ def get_input_args(argv=None):
                         dest='verbose_setting',
                         default=False)
 
+    parser.add_argument('-data_params', '-data_config',
+                        help='keyword to identify a data configuration from the data config file',
+                        action='store',
+                        dest='data_params_id',
+                        default=None,
+                        type=str)
+
+    parser.add_argument('-classifier_params', '-classifier_config', '-model_params', '-model_config',
+                        help='keyword to identify a classifier configuration from the classifier config file',
+                        action='store',
+                        dest='classifier_params_id',
+                        default=None,
+                        type=str)
+
     return parser.parse_args(argv)
+
+
+def get_data_params(identifier):
+    """
+    Returns the relevant section parameters (specified by 'identifier') of the data configuration file as a dictionary.
+    """
+
+    print('\nImport data configuration: {}'.format(identifier))
+    
+    config_file_path = 'config/data_params.conf'
+
+    config = configparser.ConfigParser()
+    config.read(config_file_path)
+
+    section = identifier
+    options = config.options(section)
+
+    data_config = {}
+
+    for option in options:
+        try:
+            data_config[option] = config.get(section, option)
+            if data_config[option] == -1:
+                print('Skipping: {}'.format(option))
+
+        except:
+            print('Exception on {}.'.format(option))
+            data_config[option] = None
+
+    return data_config
+
+
+def get_classifier_params(identifier):
+    """
+    Returns the relevant section parameters (specified by 'identifier') of the classifier configuration file as a dictionary.
+    """
+
+    print('\nImport classifier configuration: {}'.format(identifier))
+    
+    config_file_path = 'config/classifier_params.conf'
+
+    config = configparser.ConfigParser()
+    config.read(config_file_path)
+
+    section = identifier
+    options = config.options(section)
+
+    data_config = {}
+
+    for option in options:
+        try:
+            data_config[option] = config.get(section, option)
+            if data_config[option] == -1:
+                print('Skipping: {}'.format(option))
+
+        except:
+            print('Exception on {}.'.format(option))
+            data_config[option] = None
+
+    return data_config

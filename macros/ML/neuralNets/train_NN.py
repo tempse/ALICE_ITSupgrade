@@ -3,6 +3,7 @@ from __future__ import division
 import sys
 from select import select
 import os
+from pprint import pprint
 
 import matplotlib
 matplotlib.use('agg')
@@ -19,13 +20,14 @@ from sklearn.externals import joblib
 from modules.get_output_paths import get_output_paths
 from modules.logger import logger
 from modules.load_data import load_data, get_branches, engineer_features
-from modules.control import get_input_args
+from modules.control import get_input_args, get_data_params, \
+    get_classifier_params
 from modules.preprocessing import preprocess
 from modules.keras_models import DNNBinaryClassifier
 from modules.keras_callbacks import callback_ROC
 from modules.evaluation_plots import plot_MVAoutput, plot_cut_efficiencies, \
     plot_ROCcurve, plot_metrics_history
-from modules.utils import calculate_pair_sample_weight
+from modules.utils import calculate_pair_sample_weight, print_dict
 
 from keras.models import load_model
 
@@ -151,15 +153,15 @@ def main():
         
             print('Creating the model...')
             model_args = {
-                "nr_of_layers": 4,
-                "first_layer_size": 50,
-                "layers_slope_coeff": 1.0,
-                "dropout": 0.5,
-                "normalize_batch": False,
-                "noise": 0.0,
-                "activation": "relu",
-                "kernel_initializer": "glorot_normal",
-                "bias_initializer": "zeros",
+                "nr_of_layers": int(classifier_params['nr_of_layers']),
+                "first_layer_size": int(classifier_params['first_layer_size']),
+                "layers_slope_coeff": float(classifier_params['layers_slope_coeff']),
+                "dropout": float(classifier_params['dropout']),
+                "normalize_batch": bool(classifier_params['normalize_batch']),
+                "noise": float(classifier_params['noise']),
+                "activation": str(classifier_params['activation']),
+                "kernel_initializer": str(classifier_params['kernel_initializer']),
+                "bias_initializer": str(classifier_params['bias_initializer']),
                 "input_dim": X_train.shape[1]
             }
             print("Model parameters: ", model_args)
@@ -233,13 +235,20 @@ if __name__ == "__main__":
     # fix random seed for reproducibility
     np.random.seed(7)
 
+    output_prefix, keras_models_prefix = get_output_paths()
+    pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
+
+    
     user_argv = None
 
     if(len(sys.argv) > 1):
         user_argv = sys.argv[1:]
     
     parser_results = get_input_args(user_argv)
-    print('Received input arguments: ', parser_results)
+
+    print('Received input arguments: ')
+    pprint(parser_results)
+    print('\n')
 
     run_params = {
         'load_pretrained_model': parser_results.load_pretrained_model,
@@ -251,6 +260,8 @@ if __name__ == "__main__":
         'num_epochs':            parser_results.num_epochs,
         'batchsize':             parser_results.batchsize,
         'verbose_setting':       parser_results.verbose_setting,
+        'data_params_id':        parser_results.data_params_id,
+        'classifier_params_id':  parser_results.classifier_params_id
         }
 
     if(run_params['num_val_sample'] == -1):
@@ -263,8 +274,12 @@ if __name__ == "__main__":
     else:
         run_params['test_sample_size'] = run_params['num_test_sample']
     
-    output_prefix, keras_models_prefix = get_output_paths()
-    pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
 
+    data_params = get_data_params(run_params['data_params_id'])
+    print_dict(data_params)
+    
+    classifier_params = get_classifier_params(run_params['classifier_params_id'])
+    print_dict(classifier_params)
+    
     main()
     
