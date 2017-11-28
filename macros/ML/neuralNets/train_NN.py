@@ -6,7 +6,6 @@ import os
 
 import matplotlib
 matplotlib.use('agg')
-import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
@@ -14,157 +13,31 @@ import numpy as np
 import pandas as pd
 
 from sklearn.utils import shuffle
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 
 from modules.get_output_paths import get_output_paths
 from modules.logger import logger
-from modules.load_data import load_data
+from modules.load_data import load_data, get_branches, engineer_features
 from modules.run_params import get_input_args
+from modules.preprocessing import preprocess
 from modules.keras_models import DNNBinaryClassifier
 from modules.keras_callbacks import callback_ROC
 from modules.evaluation_plots import plot_MVAoutput, plot_cut_efficiencies, \
-    plot_ROCcurve
+    plot_ROCcurve, plot_metrics_history
+from modules.utils import calculate_pair_sample_weight
 
 from keras.models import load_model
-    
-
-
-def calculate_pair_sample_weight(weight_1, weight_2):
-    """
-    Calculates pair weights from individual track weights.
-    """
-    
-    print('Calculate sample weights....')
-          
-    return (weight_1 * weight_2).values.astype(np.float32)
-
-
-def preprocess_data(X, output_prefix, load_fitted_attributes=False):
-    """
-    Performs preprocessing steps on the data and returns it as a numpy array.
-    """
-
-    print('Data preprocessing: Scaling to zero mean and unit variance')
-
-    if(load_fitted_attributes and output_prefix==None):
-        print('Error: Cannot load fitted attributes during data preprocessing. Variable "output_prefix" is not defined.')
-        sys.exit()
-    
-    scaler_attributes_filename = str(output_prefix) + 'StandardScaler_attributes.pkl'
-    
-    if load_fitted_attributes:
-        print('Loading previously determined scaler attributes...')
-        scaler_attributes = joblib.load(scaler_attributes_filename)
-        scaler_mean = scaler_attributes[0,:]
-        scaler_scale = scaler_attributes[1,:]
-        X -= scaler_mean
-        X /= scaler_scale
-        return X
-    
-    else:
-        scaler = StandardScaler()
-        X = scaler.fit_transform(X)
-        Xfeats_mean = scaler.mean_
-        Xfeats_scale = scaler.scale_
-        Xfeats_var = scaler.var_
-        # store the (vstacked) array of shape (3,n_feats)
-        joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
-                    scaler_attributes_filename)
-        return X
-
-
-
-def plot_metrics_history(hist):
-    """
-    Plots the learning curves for all compiled metrics.
-    """
-
-    print('Create plots for metrics history...')
-    
-    plt.figure()
-    plt.xlabel('epochs')
-    
-    for metric in hist.history:
-        plt.plot(hist.history[metric], label=metric)
-
-    plt.legend()
-    plt.savefig(output_prefix + 'metrics_history.png')
-    plt.savefig(output_prefix + 'metrics_history.pdf')
-
-
-    
-# ----------------------------------------------------------
 
 
 def main():
 
     sys.stdout = logger()
-    
-    branches_pairTree = [
-        'px1','py1','pz1',
-        'px2','py2','pz2',
-        'phiv',
-        'mass',
-        'sumz',
-        'diffz',
-        'opang',
-        'nITS1',
-        'nITS2',
-        'nITSshared1',
-        'nITSshared2',
-        'nTPC1',
-        'nTPC2',
-        'DCAx1',
-        'DCAy1',
-        'DCAz1',
-        'DCAx2',
-        'DCAy2',
-        'DCAz2',
-        'ITSchi21',
-        'ITSchi22',
-        'TPCchi21',
-        'TPCchi22',
-        'pt1',
-        'pt2',
-        'eta1',
-        'eta2',
-        'phi1',
-        'phi2',
-        'PIDeff1',
-        'PIDeff2',
-        'IsRP',
-        'IsConv',
-        'generator',
-        'firstMothersInfo1',
-        'electronsWithHFMother'
-    ]
 
-    branches_singleTree = [
-        'eta',
-        'phi',
-        'pt',
-        'dcaX',
-        'dcaY',
-        'dcaZ',
-        'particle.fPx',
-        'particle.fPy',
-        'particle.fPz',
-        'nITS',
-        'nTPC',
-        'nITSshared',
-        'ITSchi2',
-        'TPCchi2',
-        'pdgMother',
-        'PIDeff',
-        'generator',
-        'firstMothersInfo',
-        'electronsWithHFMother'
-    ]
+    track_identifier = 'pairTree' # can be either 'pairTree' or 'singleTree'
 
     data_HFenh = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_HFenh_pairTree-us_part1_0.2nEvents.root",
-                           branches=branches_pairTree,
+                           branches=get_branches(track_identifier),
                            start=0,
                            stop=num_rows,
                            selection="((firstMothersInfo1==1 && generator==3) || (firstMothersInfo1==2 && generator==4) || (firstMothersInfo1==2 && generator==5)) && electronsWithHFMother <= 2")
@@ -173,7 +46,7 @@ def main():
     data_HFenh['class_HF'] = 1
     
     data_GP = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/HFAnalysis/CA_AnalysisResults_Upgrade_GP_pairTree-us_part1_0.2nEvents.root",
-                        branches=branches_pairTree,
+                        branches=get_branches(track_identifier),
                         start=0,
                         stop=num_rows,
                         selection="IsRP==1 && IsConv==0")
@@ -195,77 +68,8 @@ def main():
 
     # feature matrix setup
     X = pd.DataFrame()
-    
-    # pair tree features
-    X['p'] = np.sqrt((data_orig['px1']+data_orig['px2'])*(data_orig['px1']+data_orig['px2']) +
-                     (data_orig['py1']+data_orig['py2'])*(data_orig['py1']+data_orig['py2']) +
-                     (data_orig['pz1']+data_orig['pz2'])*(data_orig['pz1']+data_orig['pz2']))
-    X['phiv'] = data_orig['phiv'] - 1.57
-    X['mass'] = data_orig['mass']
-    X['pz_diff'] = np.divide(data_orig['pz1'], np.sqrt(data_orig['px1']*data_orig['px1'] + data_orig['py1']*data_orig['py1'])) - np.divide(data_orig['pz2'], np.sqrt(data_orig['px2']*data_orig['px2'] + data_orig['py2']*data_orig['py2']))
-    X['sumz'] = data_orig['sumz']
-    X['diffz'] = data_orig['diffz'] - 1.57
-    X['opang'] = data_orig['opang']
-    X['nITS1'] = data_orig['nITS1']
-    X['nITS2'] = data_orig['nITS2']
-    X['nITSshared1'] = data_orig['nITSshared1']
-    X['nITSshared2'] = data_orig['nITSshared2']
-    X['nTPC1'] = data_orig['nTPC1']
-    X['nTPC2'] = data_orig['nTPC2']
 
-    ## calculate angle between pair DCA vectors
-    #temp_DCAprod = ((data_orig['DCAx1']*data_orig['DCAx2']) + (data_orig['DCAy1']*data_orig['DCAy2']) + (data_orig['DCAz1']*data_orig['DCAz2'])) / (np.sqrt(data_orig['DCAx1']*data_orig['DCAx1'] + data_orig['DCAy1']*data_orig['DCAy1'] + data_orig['DCAz1']*data_orig['DCAz1']) * np.sqrt(data_orig['DCAx2']*data_orig['DCAx2'] + data_orig['DCAy2']*data_orig['DCAy2'] + data_orig['DCAz2']*data_orig['DCAz2']))
-    #temp_DCAprod[temp_DCAprod>1.] = 1. # removes overfloats due to numerical imprecision
-    #temp_DCAprod[temp_DCAprod<-1.] = -1.
-    #X['DCAangle'] = np.arccos(temp_DCAprod)
-    #
-    #X['DCAdiff'] = (data_orig['DCAx1']-data_orig['DCAx2'] + \
-        #                     data_orig['DCAy1']-data_orig['DCAy2'] + \
-        #                     data_orig['DCAz1']-data_orig['DCAz2'])
-    #
-    #X['DCAabs'] = (data_orig['DCAx1']-data_orig['DCAx2'])*(data_orig['DCAx1']-data_orig['DCAx2']) + \
-        #              (data_orig['DCAy1']-data_orig['DCAy2'])*(data_orig['DCAy1']-data_orig['DCAy2']) + \
-        #              (data_orig['DCAz1']-data_orig['DCAz2'])*(data_orig['DCAz1']-data_orig['DCAz2'])
-    ##X['DCAfeat'] = 1/(data_orig['DCAx1']-data_orig['DCAx2']) + 1/(data_orig['DCAy1']-data_orig['DCAy2']) + 1/(data_orig['DCAz1']-data_orig['DCAz2'])
-    X['DCAx1'] = np.abs(data_orig['DCAx1'])
-    X['DCAx2'] = np.abs(data_orig['DCAx2'])
-    X['DCAy1'] = np.abs(data_orig['DCAy1'])
-    X['DCAy2'] = np.abs(data_orig['DCAy2'])
-    X['DCAz1'] = np.abs(data_orig['DCAz1'])
-    X['DCAz2'] = np.abs(data_orig['DCAz2'])
-
-    #X['DCAxy1'] = np.log(np.abs(data_orig['DCAxy1_norm']))
-    #X['DCAxy2'] = np.log(np.abs(data_orig['DCAxy2_norm']))
-    #X['DCAz1'] = np.abs(data_orig['DCAz1'])
-    #X['DCAz2'] = np.abs(data_orig['DCAz2'])
-    X['ITSchi21'] = data_orig['ITSchi21']
-    X['ITSchi22'] = data_orig['ITSchi22']
-    X['TPCchi21'] = data_orig['TPCchi21']
-    X['TPCchi22'] = data_orig['TPCchi22']
-    X['pt1'] = data_orig['pt1']
-    X['pt2'] = data_orig['pt2']
-    X['eta1'] = data_orig['eta1']
-    X['eta2'] = data_orig['eta2']
-    X['phi1'] = data_orig['phi1']
-    X['phi2'] = data_orig['phi2']
-    
-    """
-    # single tree features
-    X['eta'] = data_orig['eta']
-    X['phi'] = data_orig['phi']
-    X['pt'] = data_orig['pt']
-    X['dcaX'] = data_orig['dcaX']
-    X['dcaY'] = data_orig['dcaY']
-    X['dcaZ'] = data_orig['dcaZ']
-    X['p'] = np.sqrt(data_orig['particle.fPx']*data_orig['particle.fPx'] + \
-                     data_orig['particle.fPy']*data_orig['particle.fPy'] + \
-                     data_orig['particle.fPz']*data_orig['particle.fPz'])
-    X['nITS'] = data_orig['nITS']
-    X['nTPC'] = data_orig['nTPC']
-    X['nITSshared'] = data_orig['nITSshared']
-    X['ITSchi2'] = data_orig['ITSchi2']
-    X['TPCchi2'] = data_orig['TPCchi2']
-    """
+    X = engineer_features(data_orig, track_identifier)
     
     # save feature names for later purposes
     X_featureNames = list(X)
@@ -308,9 +112,9 @@ def main():
 
 
     # Data preprocessing
-    X_train = preprocess_data(X_train, output_prefix)
-    X_val = preprocess_data(X_val, output_prefix, load_fitted_attributes=True)
-    X_test = preprocess_data(X_test, output_prefix, load_fitted_attributes=True)
+    X_train = preprocess(X_train, output_prefix)
+    X_val = preprocess(X_val, output_prefix, load_fitted_attributes=True)
+    X_test = preprocess(X_test, output_prefix, load_fitted_attributes=True)
 
     # Convert pandas to numpy arrays
     X_train = np.array(X_train)

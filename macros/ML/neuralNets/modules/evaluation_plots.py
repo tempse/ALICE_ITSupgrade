@@ -280,3 +280,22 @@ def plot_confusion_matrix(cm, classes,
         outfile_name = output_prefix + 'confusion_matrix__' + label
         plt.savefig(outfile_name + '.png')
         plt.savefig(outfile_name + '.pdf')
+
+def plot_metrics_history(hist):
+    """
+    Plots the learning curves for all compiled metrics.
+    """
+
+    print('Create plots for metrics history...')
+
+    output_prefix = get_output_paths()[0]
+    
+    plt.figure()
+    plt.xlabel('epochs')
+    
+    for metric in hist.history:
+        plt.plot(hist.history[metric], label=metric)
+
+    plt.legend()
+    plt.savefig(output_prefix + 'metrics_history.png')
+    plt.savefig(output_prefix + 'metrics_history.pdf')
