@@ -29,6 +29,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from modules.get_output_paths import *
 from modules.logger import *
 from modules.load_data import *
+from modules.run_params import get_input_args
 from modules.evaluation_plots import *
 
 
@@ -242,9 +243,6 @@ def plot_metrics_history(hist):
 
 
 def main():
-    
-    # fix random seed for reproducibility
-    np.random.seed(7)
 
     sys.stdout = logger()
     
@@ -567,78 +565,16 @@ def main():
 
     
 if __name__ == "__main__":
+    
+    # fix random seed for reproducibility
+    np.random.seed(7)
 
-    parser = argparse.ArgumentParser(description='Basic framework for training of machine learning algorithms')
+    user_argv = None
 
-    parser.add_argument('-p', '-pretrained',
-                        help='load pretrained model instead of performing the training',
-                        action="store_true",
-                        dest='load_pretrained_model',
-                        default=False)
-
-    parser.add_argument('-nrows', '-nentries',
-                        help='specify number of rows to read from the datafile',
-                        action='store',
-                        dest='num_rows',
-                        default=None,
-                        type=int)
-
-    parser.add_argument('-num_val_sample',
-                        help='specify number of entries in the validation sample',
-                        action='store',
-                        dest='num_val_sample',
-                        default=-1,
-                        type=int)
-
-    parser.add_argument('-num_test_sample',
-                        help='specify number of entries in the test sample',
-                        action='store',
-                        dest='num_test_sample',
-                        default=-1,
-                        type=int)
-
-    parser.add_argument('-frac_val_sample',
-                        help='fraction of entries in the validation sample',
-                        action='store',
-                        dest='frac_val_sample',
-                        default=0.2,
-                        type=float)
-
-    parser.add_argument('-frac_test_sample',
-                        help='fraction of entries in the test sample',
-                        action='store',
-                        dest='frac_test_sample',
-                        default=1/3.,
-                        type=float)
-
-    parser.add_argument('-nepochs',
-                        help='specify number of epochs for the training',
-                        action='store',
-                        dest='num_epochs',
-                        default=101,
-                        type=int)
-
-    parser.add_argument('-batchsize',
-                        help='specify number of entries per training batch',
-                        action='store',
-                        dest='batchsize',
-                        default=512,
-                        type=int)
-
-    # parser.add_argument('-njobs',
-    #                     help='specify number of parallel processes (default: -1)',
-    #                     action='store',
-    #                     dest='num_jobs',
-    #                     default=-1,
-    #                     type=int)
-
-    parser.add_argument('-verbose',
-                        help='make the program more chatty',
-                        action='store_true',
-                        dest='verbose_setting',
-                        default=False)
-
-    parser_results = parser.parse_args()
+    if(len(sys.argv) > 1):
+        user_argv = sys.argv[1:]
+    
+    parser_results = get_input_args(user_argv)
     print('Received input arguments: ', parser_results)
     
     load_pretrained_model = parser_results.load_pretrained_model
