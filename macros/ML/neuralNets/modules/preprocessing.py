@@ -5,35 +5,59 @@ import numpy as np
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
-def preprocess(X, output_prefix, load_fitted_attributes=False):
+from modules.load_data import get_preprocessing_instructions
+from modules.get_output_paths import get_output_paths
+
+
+def preprocess(X, entry_structure, load_fitted_attributes=False):
     """
-    Performs preprocessing steps on the data and returns it as a numpy array.
+    Performs preprocessing steps on the data. Handles pandas dataframes.
+
+    Supported values for the variable 'entry_structure' are: 'pairTree', 'singleTree'
     """
 
     print('Data preprocessing: Scaling to zero mean and unit variance')
 
-    if(load_fitted_attributes and output_prefix==None):
-        print('Error: Cannot load fitted attributes during data preprocessing. Variable "output_prefix" is not defined.')
-        sys.exit()
+    output_prefix = get_output_paths()[0]
     
-    scaler_attributes_filename = str(output_prefix) + 'StandardScaler_attributes.pkl'
+    # get lists of column names for different kinds of preprocessing
+    column_names = get_preprocessing_instructions(entry_structure)
+
     
-    if load_fitted_attributes:
-        print('Loading previously determined scaler attributes...')
-        scaler_attributes = joblib.load(scaler_attributes_filename)
-        scaler_mean = scaler_attributes[0,:]
-        scaler_scale = scaler_attributes[1,:]
-        X -= scaler_mean
-        X /= scaler_scale
-        return X
+    if not load_fitted_attributes:
+
+        print('  Fitting new scaling attributes...')
+        
+        scaling_attributes = {}
     
+        for column in column_names['standardScale']:
+            mean = X[column].mean()
+            std = X[column].std()
+            X[column] -= mean
+            X[column] /= std
+
+            scaling_attributes[column] = {'mean': mean, 'std': std}
+
+        for column in column_names['scale']:
+            std = X[column].std()
+            X[column] /= std
+
+            scaling_attributes[column] = {'std': std}
+
+        np.save(output_prefix + 'scaling_attributes.npy', scaling_attributes)
+
     else:
-        scaler = StandardScaler()
-        X = scaler.fit_transform(X)
-        Xfeats_mean = scaler.mean_
-        Xfeats_scale = scaler.scale_
-        Xfeats_var = scaler.var_
-        # store the (vstacked) array of shape (3,n_feats)
-        joblib.dump(np.array([Xfeats_mean, Xfeats_scale, Xfeats_var], dtype=np.float32),
-                    scaler_attributes_filename)
-        return X
+
+        print('  Loading scaling attributes...')
+        
+        scaling_attributes = np.load(output_prefix + 'scaling_attributes.npy').item()
+
+        for column in column_names['standardScale']:
+            X[column] -= scaling_attributes[column]['mean']
+            X[column] /= scaling_attributes[column]['std']
+
+        for column in column_names['scale']:
+            X[column] /= scaling_attributes[column]['std']
+            
+
+    return X

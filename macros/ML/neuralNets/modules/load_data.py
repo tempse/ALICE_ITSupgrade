@@ -112,6 +112,94 @@ def get_branches(identifier):
     return branches
 
 
+def get_preprocessing_instructions(identifier):
+    """
+    Returns a dictionary with lists of column names containing info about how they should be preprocessed.
+
+    Supported values for the identifier variable: 'pairTree', 'singleTree'
+    """
+
+    column_names = {}
+
+    if identifier == 'pairTree':
+
+        columns_to_standardScale = [
+            #'px1', 'py1', 'pz1', 'px2', 'py2', 'pz2',
+            #'sumz',
+            #'diffz',
+            #'DCAx1', 'DCAy1', 'DCAz1', 'DCAx2', 'DCAy2', 'DCAz2',
+            #'eta1', 'eta2'
+            'p',
+            'pz_diff',
+            'sumz',
+            'diffz',
+            'DCAx1', 'DCAy1', 'DCAz1', 'DCAx2', 'DCAy2', 'DCAz2',
+            'eta1', 'eta2'
+        
+        ]
+        
+        columns_to_scale = [
+            'phiv',
+            'mass',
+            'opang',
+            'nTPC1', 'nTPC2',
+            'ITSchi21', 'ITSchi22',
+            'TPCchi21', 'TPCchi22',
+            'pt1', 'pt2',
+            'phi1', 'phi2'
+        ]
+        
+        columns_to_skip = [
+            'nITS1', 'nITS2',
+            'nITSshared1', 'nITSshared2',
+            'PIDeff1', 'PIDeff2',
+            'IsRP', 'IsConv',
+            'generator', 'firstMotherInfo1', 'electronsWithHFMother'
+        ]
+
+        column_names['standardScale'] = columns_to_standardScale
+        column_names['scale'] = columns_to_scale
+        column_names['skip'] = columns_to_skip
+
+        
+    elif identifier == 'singleTree':
+
+        columns_to_standardScale = [
+            'eta',
+            'DCAx', 'DCAy', 'DCAz',
+            'p',
+            
+        ]
+
+        columns_to_scale = [
+            'phi',
+            'pt',
+            'nTPC',
+            'ITSchi2',
+            'TPCchi2',
+        ]
+
+        columns_to_skip = [
+            'nITS',
+            'nITSshared',
+            'pdgMother',
+            'PIDeff',
+            'generator', 'firstMotherInfo', 'electronsWithHFMother'
+        ]
+
+        column_names['standardScale'] = columns_to_standardScale
+        column_names['scale'] = columns_to_scale
+        column_names['skip'] = columns_to_skip
+
+        
+    else:
+        print('Error: Could not get preprocessing instructions. ' \
+              'Unknown identifier: {}'.format(identifier))
+        sys.exit(1)
+
+    return column_names
+            
+    
 def engineer_features(data, identifier):
     """
     Engineers features from a passed dataframe, according to the passed keyword argument.

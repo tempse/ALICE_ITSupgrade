@@ -37,8 +37,6 @@ def main():
 
     sys.stdout = logger()
 
-    track_identifier = data_params['track_identifier']
-
     data_HFenh = load_data(data_params['hf_datapath'],
                            branches=get_branches(data_params['track_identifier']),
                            start=0,
@@ -49,7 +47,7 @@ def main():
     data_HFenh[data_params['data_identifier']] = 1
     
     data_GP = load_data(data_params['gp_datapath'],
-                        branches=get_branches(track_identifier),
+                        branches=get_branches(data_params['track_identifier']),
                         start=0,
                         stop=run_params['num_entries'],
                         selection=data_params['gp_selection'])
@@ -72,17 +70,17 @@ def main():
     # feature matrix setup
     X = pd.DataFrame()
 
-    X = engineer_features(data_orig, track_identifier)
+    X = engineer_features(data_orig, data_params['track_identifier'])
     
     # save feature names for later purposes
     X_featureNames = list(X)
     print('Selected features:', X_featureNames)
     joblib.dump(X_featureNames, output_prefix+'featureNames.pkl')
 
-    if track_identifier == 'pairTree':
+    if data_params['track_identifier'] == 'pairTree':
         sample_weight = calculate_pair_sample_weight(data_orig['PIDeff1'], data_orig['PIDeff2'])
 
-    elif track_identifier == 'singleTree':
+    elif data_params['track_identifier'] == 'singleTree':
         sample_weight = data_orig['PIDeff']
 
 
@@ -106,9 +104,9 @@ def main():
 
 
     # Data preprocessing
-    X_train = preprocess(X_train, output_prefix)
-    X_val = preprocess(X_val, output_prefix, load_fitted_attributes=True)
-    X_test = preprocess(X_test, output_prefix, load_fitted_attributes=True)
+    X_train = preprocess(X_train, data_params['track_identifier'])
+    X_val = preprocess(X_val, data_params['track_identifier'], load_fitted_attributes=True)
+    X_test = preprocess(X_test, data_params['track_identifier'], load_fitted_attributes=True)
 
     # Convert pandas to numpy arrays
     X_train = np.array(X_train)
