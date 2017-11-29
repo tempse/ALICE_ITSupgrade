@@ -21,3 +21,18 @@ def print_dict(dict):
     for item in dict:
         print('  {:20}: {}'.format(item, dict[item]))
 
+
+def print_class_counts(y, name, **kwargs):
+    """
+    Prints the number of entries of a passed vector and the size of its contained classes.
+
+    Usage example: "print_class_counts(y_train, 'training', background=0, signal=1)"
+    """
+    
+    print('\nNumber of {} samples: {}'.format(name, y.shape[0]))
+
+    for key, item in kwargs.iteritems():
+        print('  Number of {}: {} ({:.2f} percent)'.format(
+            key,
+            y[y==item].shape[0],
+            y[y==item].shape[0]*100/y.shape[0]))

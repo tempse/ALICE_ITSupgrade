@@ -27,7 +27,8 @@ from modules.keras_models import DNNBinaryClassifier
 from modules.keras_callbacks import callback_ROC
 from modules.evaluation_plots import plot_MVAoutput, plot_cut_efficiencies, \
     plot_ROCcurve, plot_metrics_history
-from modules.utils import calculate_pair_sample_weight, print_dict
+from modules.utils import calculate_pair_sample_weight, print_dict, \
+    print_class_counts
 
 from keras.models import load_model
 
@@ -85,35 +86,23 @@ def main():
         sample_weight = data_orig['PIDeff']
 
 
-    print('Total number of events in data sample: %d' % X.shape[0])
-    print('Number of signal events in data sample: %d (%.2f percent)' %
-          (Y[Y==1].shape[0], Y[Y==1].shape[0]*100/Y.shape[0]))
-    print('Number of backgr events in data sample: %d (%.2f percent)' %
-          (Y[Y==0].shape[0], Y[Y==0].shape[0]*100/Y.shape[0]))
+    print_class_counts(Y, 'total', background=0, signal=1)
 
     del data_orig
 
     
     # Data Split in Training, Validation and Test Samples
     
-    print('Splitting the data in training, validation and test samples...')
+    print('\nSplitting the data in training, validation and test samples...')
     
     X_train, X_test, y_train, y_test, sample_weight_train, sample_weight_test = train_test_split(X, Y, sample_weight, test_size=run_params['test_sample_size'], random_state=42)
 
     X_train, X_val, y_train, y_val, sample_weight_train, sample_weight_val = train_test_split(X_train, y_train, sample_weight_train, test_size=run_params['val_sample_size'], random_state=43)
 
-    print('Number of signal events in training sample: %d (%.2f percent)' %
-          (y_train[y_train==1].shape[0], y_train[y_train==1].shape[0]*100/y_train.shape[0]))
-    print('Number of backgr events in training sample: %d (%.2f percent)' %
-          (y_train[y_train==0].shape[0], y_train[y_train==0].shape[0]*100/y_train.shape[0]))
-    print('Number of signal events in validation sample: %d (%.2f percent)' %
-          (y_val[y_val==1].shape[0], y_val[y_val==1].shape[0]*100/y_val.shape[0]))
-    print('Number of backgr events in validation sample: %d (%.2f percent)' %
-          (y_val[y_val==0].shape[0], y_val[y_val==0].shape[0]*100/y_val.shape[0]))
-    print('Number of signal events in test sample: %d (%.2f percent)' %
-          (y_test[y_test==1].shape[0], y_test[y_test==1].shape[0]*100/y_test.shape[0]))
-    print('Number of backgr events in test sample: %d (%.2f percent)' %
-          (y_test[y_test==0].shape[0], y_test[y_test==0].shape[0]*100/y_test.shape[0]))
+
+    print_class_counts(y_train, 'training', background=0, signal=1)
+    print_class_counts(y_val, 'validation', background=0, signal=1)
+    print_class_counts(y_test, 'test', background=0, signal=1)
 
 
     # Data preprocessing
