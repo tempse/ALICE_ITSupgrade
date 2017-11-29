@@ -31,7 +31,26 @@ def print_class_counts(y, name, **kwargs):
     
     print('\nNumber of {} samples: {}'.format(name, y.shape[0]))
 
-    for key, item in kwargs.iteritems():
+    class_list = []
+
+    try:
+        class_list = kwargs.iteritems()
+    except AttributeError:
+        # iteritems() does not work in Python 3
+        pass
+
+    try:
+        class_list = list(kwargs.items())
+    except:
+        print('Error in function print_class_counts: ' \
+              'Could not iterate over the passed items. ' \
+              '(Maybe a Python version conflict?)')
+        print('\n Skip printing class counts.')
+        
+        return
+        
+        
+    for key, item in class_list:
         print('  Number of {}: {} ({:.2f} percent)'.format(
             key,
             y[y==item].shape[0],
