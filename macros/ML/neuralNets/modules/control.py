@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import configparser
@@ -91,6 +92,62 @@ def get_input_args(argv=None):
                         type=str)
 
     return parser.parse_args(argv)
+
+
+def get_run_params(parser_results):
+    """
+    Receives parser arguments as input and returns a dictionary of run parameters.
+    """
+
+    run_params = {
+        'load_pretrained_model': parser_results.load_pretrained_model,
+        'num_entries':           parser_results.num_entries,
+        'num_val_sample':        parser_results.num_val_sample,
+        'num_test_sample':       parser_results.num_test_sample,
+        'frac_val_sample':       parser_results.frac_val_sample,
+        'frac_test_sample':      parser_results.frac_test_sample,
+        'num_epochs':            parser_results.num_epochs,
+        'batchsize':             parser_results.batchsize,
+        'verbose_setting':       parser_results.verbose_setting
+        }
+
+    if parser_results.data_params_id:
+        run_params['data_params_id'] = parser_results.data_params_id
+    else:
+        try:
+            run_params['data_params_id'] = os.environ['DATA_PARAMS']
+            print('Using data parameters: {}'.format(run_params['data_params_id']))
+        except KeyError:
+            print('Error: variable "data_params" not specified. ' \
+                  'Define it either via the "-data_params" flag or ' \
+                  'set the environment variable DATA_PARAMS and run ' \
+                  'the program again.')
+            sys.exit(1)
+
+    if parser_results.classifier_params_id:
+        run_params['classifier_params_id'] = parser_results.classifier_params_id
+    else:
+        try:
+            run_params['classifier_params_id'] = os.environ['MODEL_PARAMS']
+            print('Using model parameters: {}'.format(run_params['classifier_params_id']))
+        except KeyError:
+            print('Error: variable "model_params" not specified. ' \
+                  'Define it either via the "-model_params" flag or ' \
+                  'set the environment variable MODEL_PARAMS and run ' \
+                  'the program again.')
+            sys.exit(1)
+
+    if(run_params['num_val_sample'] == -1):
+        run_params['val_sample_size'] = run_params['frac_val_sample']
+    else:
+        run_params['val_sample_size'] = run_params['num_val_sample']
+
+    if(run_params['num_test_sample'] == -1):
+        run_params['test_sample_size'] = run_params['frac_test_sample']
+    else:
+        run_params['test_sample_size'] = run_params['num_test_sample']
+
+    return run_params
 
 
 def get_data_params(identifier):

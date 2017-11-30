@@ -20,7 +20,7 @@ from sklearn.externals import joblib
 from modules.get_output_paths import get_output_paths
 from modules.logger import logger
 from modules.load_data import load_data, get_branches, engineer_features
-from modules.control import get_input_args, get_data_params, \
+from modules.control import get_run_params, get_input_args, get_data_params, \
     get_classifier_params
 from modules.preprocessing import preprocess
 from modules.keras_models import DNNBinaryClassifier
@@ -157,7 +157,7 @@ def main():
             model = DNNBinaryClassifier(**model_args)
             
             print('Fitting the model...')
-            hist = model.fit(X_train, y_train,
+            hist = model.fit(X_train, y_train, sample_weight=sample_weight_train,
                              batch_size=run_params['batchsize'],
                              epochs=run_params['num_epochs'],
                              callbacks=[callback_ROC(X_train,
@@ -225,7 +225,6 @@ if __name__ == "__main__":
 
     output_prefix, keras_models_prefix = get_output_paths()
     pretrained_model_filename = output_prefix + keras_models_prefix + 'weights_final.hdf5'
-
     
     user_argv = None
 
@@ -238,31 +237,8 @@ if __name__ == "__main__":
     pprint(parser_results)
     print('\n')
 
-    run_params = {
-        'load_pretrained_model': parser_results.load_pretrained_model,
-        'num_entries':           parser_results.num_entries,
-        'num_val_sample':        parser_results.num_val_sample,
-        'num_test_sample':       parser_results.num_test_sample,
-        'frac_val_sample':       parser_results.frac_val_sample,
-        'frac_test_sample':      parser_results.frac_test_sample,
-        'num_epochs':            parser_results.num_epochs,
-        'batchsize':             parser_results.batchsize,
-        'verbose_setting':       parser_results.verbose_setting,
-        'data_params_id':        parser_results.data_params_id,
-        'classifier_params_id':  parser_results.classifier_params_id
-        }
-
-    if(run_params['num_val_sample'] == -1):
-        run_params['val_sample_size'] = run_params['frac_val_sample']
-    else:
-        run_params['val_sample_size'] = run_params['num_val_sample']
-
-    if(run_params['num_test_sample'] == -1):
-        run_params['test_sample_size'] = run_params['frac_test_sample']
-    else:
-        run_params['test_sample_size'] = run_params['num_test_sample']
+    run_params = get_run_params(parser_results)
     
-
     data_params = get_data_params(run_params['data_params_id'])
     print_dict(data_params)
     
