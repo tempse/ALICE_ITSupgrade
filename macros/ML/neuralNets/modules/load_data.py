@@ -15,7 +15,7 @@ def load_data(filename, branches=None, start=None, stop=None, selection=None):
         print('Error when loading the data. File %s is not a regular file.' % filename)
         sys.exit()
 
-    print('Reading file %s...' % filename)
+    print('\nReading file %s...' % filename)
 
     data = pd.DataFrame(root_numpy.root2array(filename,
                                               branches=branches,

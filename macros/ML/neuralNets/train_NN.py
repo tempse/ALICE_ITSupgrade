@@ -138,7 +138,7 @@ def main():
         else:
             print('No input received. Continue running the program...')
         
-            print('Creating the model...')
+            print('\nCreating the model...')
             model_args = {
                 "nr_of_layers":         int(classifier_params['nr_of_layers']),
                 "first_layer_size":     int(classifier_params['first_layer_size']),
@@ -151,12 +151,11 @@ def main():
                 "bias_initializer":     str(classifier_params['bias_initializer']),
                 "input_dim":            X_train.shape[1]
             }
-            print('Model parameters: ')
-            print_dict(model_args)
+            print_dict(model_args, 'Model parameters:')
             
             model = DNNBinaryClassifier(**model_args)
             
-            print('Fitting the model...')
+            print('\nFitting the model...\n')
             hist = model.fit(X_train, y_train, sample_weight=sample_weight_train,
                              batch_size=run_params['batchsize'],
                              epochs=run_params['num_epochs'],
@@ -169,9 +168,9 @@ def main():
                              validation_data=(X_val, y_val, sample_weight_val))
             
             plot_metrics_history(hist)
-            print('Finished training.')
+            print('\nFinished training.')
             
-            print('Loading model with the highest VAL AUC...')
+            print('\nLoading model with the highest VAL AUC...')
             model = load_model(output_prefix + keras_models_prefix + 'weights_final.hdf5')
 
 
@@ -180,7 +179,7 @@ def main():
 
     num_process = X_train.shape[0] if X_train.shape[0]<=X_val.shape[0] else X_val.shape[0]
 
-    print('Evaluating the model on the training sample...')
+    print('\nEvaluating the model on the training sample...')
     y_train_score = model.predict_proba(X_train[0:num_process,:])
     print('\n')
 
@@ -197,7 +196,7 @@ def main():
     
     # model evaluation (validation sample)
 
-    print('Evaluating the model on the validation sample...')
+    print('\nEvaluating the model on the validation sample...')
     y_val_score = model.predict_proba(X_val)
     print('\n')
 
@@ -208,7 +207,7 @@ def main():
     
     # model evaluation (test sample)
 
-    print('Evaluating the model on the test sample...')
+    print('\nEvaluating the model on the test sample...')
     y_test_score = model.predict_proba(X_test)
     print('\n')
 
@@ -233,11 +232,8 @@ if __name__ == "__main__":
     
     parser_results = get_input_args(user_argv)
 
-    print('Received input arguments: ')
-    pprint(parser_results)
-    print('\n')
-
     run_params = get_run_params(parser_results)
+    print_dict(run_params, 'Continue with the following run parameters:')
     
     data_params = get_data_params(run_params['data_params_id'])
     print_dict(data_params)

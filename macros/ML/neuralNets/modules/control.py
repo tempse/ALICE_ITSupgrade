@@ -113,10 +113,14 @@ def get_run_params(parser_results):
 
     if parser_results.data_params_id:
         run_params['data_params_id'] = parser_results.data_params_id
+        
     else:
         try:
             run_params['data_params_id'] = os.environ['DATA_PARAMS']
-            print('Using data parameters: {}'.format(run_params['data_params_id']))
+            print('  Using data parameters: {} ' \
+                  '(imported from environment variables)'.format(
+                      run_params['data_params_id']))
+            
         except KeyError:
             print('Error: variable "data_params" not specified. ' \
                   'Define it either via the "-data_params" flag or ' \
@@ -126,10 +130,14 @@ def get_run_params(parser_results):
 
     if parser_results.classifier_params_id:
         run_params['classifier_params_id'] = parser_results.classifier_params_id
+        
     else:
         try:
             run_params['classifier_params_id'] = os.environ['MODEL_PARAMS']
-            print('Using model parameters: {}'.format(run_params['classifier_params_id']))
+            print('  Using model parameters: {} ' \
+                  '(imported from environment variables)'.format(
+                      run_params['classifier_params_id']))
+            
         except KeyError:
             print('Error: variable "model_params" not specified. ' \
                   'Define it either via the "-model_params" flag or ' \

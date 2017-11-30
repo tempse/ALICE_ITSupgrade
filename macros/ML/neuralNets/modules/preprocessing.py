@@ -16,7 +16,7 @@ def preprocess(X, entry_structure, load_fitted_attributes=False):
     Supported values for the variable 'entry_structure' are: 'pairTree', 'singleTree'
     """
 
-    print('Data preprocessing: Scaling to zero mean and unit variance')
+    print('\nData preprocessing: Scaling to zero mean and unit variance')
 
     output_prefix = get_output_paths()[0]
     

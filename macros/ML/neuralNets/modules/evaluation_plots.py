@@ -286,7 +286,7 @@ def plot_metrics_history(hist):
     Plots the learning curves for all compiled metrics.
     """
 
-    print('Create plots for metrics history...')
+    print('\nCreate plots for metrics history...')
 
     output_prefix = get_output_paths()[0]
     
