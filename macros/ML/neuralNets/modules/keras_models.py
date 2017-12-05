@@ -1,12 +1,13 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, GaussianNoise, BatchNormalization
+from keras.layers import Dense, Dropout, AlphaDropout GaussianNoise, BatchNormalization
 
 
 def DNNBinaryClassifier(nr_of_layers = 2,
                         first_layer_size = 100,
                         layers_slope_coeff = 1.0,
                         dropout = .5,
-                        normalize_batch=False,
+                        use_alpha_dropout = False,
+                        normalize_batch = False,
                         noise = 1.,
                         activation = 'relu',
                         kernel_initializer = 'glorot_normal',
@@ -29,8 +30,12 @@ def DNNBinaryClassifier(nr_of_layers = 2,
     for index_of_layer in range(nr_of_layers - 1):
         if normalize_batch==True:
             model.add(BatchNormalization())
+
+        if use_alpha_dropout:
+            model.add(AlphaDropout(dropout))
+        else:
+            model.add(Dropout(dropout))
             
-        model.add(Dropout(dropout))
         #if index_of_layer%2==0: model.add(GaussianNoise(noise))
         model.add(Dense(current_layer_size,
                         activation = activation,

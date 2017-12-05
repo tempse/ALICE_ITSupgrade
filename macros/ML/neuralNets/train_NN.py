@@ -144,12 +144,13 @@ def main():
                 "first_layer_size":     int(classifier_params['first_layer_size']),
                 "layers_slope_coeff": float(classifier_params['layers_slope_coeff']),
                 "dropout":            float(classifier_params['dropout']),
-                "normalize_batch":     bool(classifier_params['normalize_batch']),
+                "normalize_batch":     bool(classifier_params['normalize_batch']=='True'),
                 "noise":              float(classifier_params['noise']),
                 "activation":           str(classifier_params['activation']),
                 "kernel_initializer":   str(classifier_params['kernel_initializer']),
                 "bias_initializer":     str(classifier_params['bias_initializer']),
                 "input_dim":            X_train.shape[1]
+                "use_alpha_dropout":   bool(classifier_params['use_alpha_dropout']=='True')
             }
             print_dict(model_args, 'Model parameters:')
             
