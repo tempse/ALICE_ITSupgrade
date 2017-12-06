@@ -28,7 +28,7 @@ def DNNBinaryClassifier(nr_of_layers = 2,
         current_layer_size = int(first_layer_size)
     
     for index_of_layer in range(nr_of_layers - 1):
-        if normalize_batch==True:
+        if normalize_batch:
             model.add(BatchNormalization())
 
         if use_alpha_dropout:
@@ -44,7 +44,7 @@ def DNNBinaryClassifier(nr_of_layers = 2,
         if layers_slope_coeff != 1:
             current_layer_size = int(current_layer_size * layers_slope_coeff) + 1
 
-    if normalize_batch==True:
+    if normalize_batch:
         model.add(BatchNormalization())
         
     model.add(Dense(1,

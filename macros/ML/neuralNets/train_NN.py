@@ -106,15 +106,15 @@ def main():
     # Data preprocessing
     X_train = preprocess(X_train, data_params['track_identifier'])
     X_val = preprocess(X_val, data_params['track_identifier'], load_fitted_attributes=True)
-    X_test = preprocess(X_test, data_params['track_identifier'], load_fitted_attributes=True)
+    # X_test = preprocess(X_test, data_params['track_identifier'], load_fitted_attributes=True)
 
     # Convert pandas to numpy arrays
     X_train = np.array(X_train)
     X_val = np.array(X_val)
-    X_test = np.array(X_test)
+    # X_test = np.array(X_test)
     y_train = np.array(y_train)
     y_val = np.array(y_val)
-    y_test = np.array(y_test)
+    # y_test = np.array(y_test)
     
 
     if run_params['load_pretrained_model']:
@@ -157,14 +157,14 @@ def main():
             model = DNNBinaryClassifier(**model_args)
             
             print('\nFitting the model...\n')
-            hist = model.fit(X_train, y_train, sample_weight=sample_weight_train,
+            hist = model.fit(X_train, y_train, #sample_weight=sample_weight_train,
                              batch_size=run_params['batchsize'],
                              epochs=run_params['num_epochs'],
                              callbacks=[callback_ROC(X_train,
                                                      y_train,
-                                                     sample_weight_train,
-                                                     output_prefix,
-                                                     keras_models_prefix)],
+                                                     sample_weight_train=sample_weight_train,
+                                                     output_prefix=output_prefix,
+                                                     keras_models_prefix=keras_models_prefix)],
                              verbose=run_params['verbose_setting'],
                              validation_data=(X_val, y_val, sample_weight_val))
             
@@ -193,7 +193,8 @@ def main():
                   label='train', workingpoint=MVAcut_opt)
 
     del y_train_score, num_trueSignal, num_trueBackgr
-    
+    del X_train, y_train
+
     
     # model evaluation (validation sample)
 
@@ -204,17 +205,24 @@ def main():
     plot_ROCcurve(y_val, y_val_score, sample_weight_val, label='val')
 
     del y_val_score
-
+    del X_val, y_val
+    
     
     # model evaluation (test sample)
 
     print('\nEvaluating the model on the test sample...')
+
+    X_test = preprocess(X_test, data_params['track_identifier'], load_fitted_attributes=True)
+    X_test = np.array(X_test)
+    y_test = np.array(y_test)
+    
     y_test_score = model.predict_proba(X_test)
     print('\n')
 
     plot_ROCcurve(y_test, y_test_score, sample_weight_test, label='test')
 
     del y_test_score
+    del X_test, y_test
 
 
     

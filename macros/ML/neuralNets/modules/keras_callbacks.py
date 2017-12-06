@@ -16,14 +16,30 @@ class callback_ROC(keras.callbacks.Callback):
     Custom callback class for Keras which calculates and plots ROC AUCs after each training epoch.
     """
     
-    def __init__(self, X_train, y_train, sample_weight_train, output_prefix, keras_models_prefix):
+    def __init__(self, X_train, y_train, sample_weight_train=None, output_prefix=None, keras_models_prefix=None):
         self.best = 0
         self.wait = 0
         self.X_train = X_train
         self.y_train = y_train
-        self.sample_weight_train = sample_weight_train
-        self.output_prefix = output_prefix
-        self.keras_models_prefix = keras_models_prefix
+
+        if sample_weight_train is not None:
+            self.sample_weight_train = sample_weight_train
+        else:
+            self.sample_weight_train = np.ones((y_train.shape[0],))
+
+        if output_prefix is not None:
+            self.output_prefix = output_prefix
+        else:
+            print('Error: variable output_prefix was not passed ' \
+                  'to the Keras callback.')
+            sys.exit(1)
+
+        if keras_models_prefix is not None:
+            self.keras_models_prefix = keras_models_prefix
+        else:
+            print('Error: variable keras_models_prefix was not passed ' \
+                  'to the Keras callback.')
+            sys.exit(1)
 
     def on_train_begin(self, logs={}):
         self.aucs_val = []
