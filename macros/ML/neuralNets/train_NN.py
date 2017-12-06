@@ -149,7 +149,7 @@ def main():
                 "activation":           str(classifier_params['activation']),
                 "kernel_initializer":   str(classifier_params['kernel_initializer']),
                 "bias_initializer":     str(classifier_params['bias_initializer']),
-                "input_dim":            X_train.shape[1]
+                "input_dim":            X_train.shape[1],
                 "use_alpha_dropout":   bool(classifier_params['use_alpha_dropout']=='True')
             }
             print_dict(model_args, 'Model parameters:')

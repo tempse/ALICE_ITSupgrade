@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, AlphaDropout GaussianNoise, BatchNormalization
+from keras.layers import Dense, Dropout, AlphaDropout, GaussianNoise, BatchNormalization
 
 
 def DNNBinaryClassifier(nr_of_layers = 2,
