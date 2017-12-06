@@ -31,16 +31,26 @@ def preprocess(X, entry_structure, load_fitted_attributes=False):
         scaling_attributes = {}
     
         for column in column_names['standardScale']:
-            mean = X[column].mean()
-            std = X[column].std()
-            X[column] -= mean
-            X[column] /= std
+            try:
+                mean = X[column].mean()
+                std = X[column].std()
+                X[column] -= mean
+                X[column] /= std
+            except KeyError:
+                print('  Warning: Trying to preprocess feature {}, ' \
+                      'but cannot find it in the data...'.format(column))
+                pass
 
             scaling_attributes[column] = {'mean': mean, 'std': std}
 
         for column in column_names['scale']:
-            std = X[column].std()
-            X[column] /= std
+            try:
+                std = X[column].std()
+                X[column] /= std
+            except KeyError:
+                print('  Warning: Trying to preprocess feature {}, ' \
+                      'but cannot find it in the data...'.format(column))
+                pass
 
             scaling_attributes[column] = {'std': std}
 
@@ -53,11 +63,21 @@ def preprocess(X, entry_structure, load_fitted_attributes=False):
         scaling_attributes = np.load(output_prefix + 'scaling_attributes.npy').item()
 
         for column in column_names['standardScale']:
-            X[column] -= scaling_attributes[column]['mean']
-            X[column] /= scaling_attributes[column]['std']
+            try:
+                X[column] -= scaling_attributes[column]['mean']
+                X[column] /= scaling_attributes[column]['std']
+            except KeyError:
+                print('  Warning: Trying to preprocess feature {}, ' \
+                      'but cannot find it in the data...'.format(column))
+                pass
 
         for column in column_names['scale']:
-            X[column] /= scaling_attributes[column]['std']
-            
+            try:
+                X[column] /= scaling_attributes[column]['std']
+            except KeyError:
+                print('  Warning: Trying to preprocess feature {}, ' \
+                      'but cannot find it in the data...'.format(column))
+                pass
+                
 
     return X
