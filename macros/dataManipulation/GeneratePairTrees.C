@@ -55,7 +55,11 @@ Float_t mass_cutValue = .01; // RP convs. at mass<mass_cutValue
 const Bool_t doContainLooseTracks = kFALSE;
 
 // Online prefilter setting: kTRUE if tree contains branches with online prefilter tags
-const Bool_t doContainOnlinePrefilter = kFALSE;
+const Bool_t doContainOnlinePrefilter = kTRUE;
+
+// Mothers history setting: kTRUE if variables like 'generator' or 'firstMothersInfo' are present
+// in the single-track tree
+const Bool_t doContainMothersHistory = kFALSE;
 
 const Bool_t doRandPairSwap = kFALSE; // do random pair swapping?
 
@@ -243,7 +247,7 @@ void GeneratePairTrees() {
   
   
   singleTree->SetBranchAddress("event",&ST_event);
-  singleTree->SetBranchAddress("generator",&ST_generator);
+  if(doContainMothersHistory) singleTree->SetBranchAddress("generator",&ST_generator);
   singleTree->SetBranchAddress("IP",&ST_IP);
   singleTree->SetBranchAddress("global",&ST_global);
   singleTree->SetBranchAddress("eta",&ST_eta);
@@ -259,7 +263,7 @@ void GeneratePairTrees() {
   singleTree->SetBranchAddress("labelFirstMother",&ST_labelFirstMother);
   singleTree->SetBranchAddress("labelMinFirstMother",&ST_labelMinFirstMother);
   singleTree->SetBranchAddress("labelMaxFirstMother",&ST_labelMaxFirstMother);
-  singleTree->SetBranchAddress("firstMothersInfo",&ST_firstMothersInfo);
+  if(doContainMothersHistory) singleTree->SetBranchAddress("firstMothersInfo",&ST_firstMothersInfo);
   singleTree->SetBranchAddress("mcEta",&ST_mcEta);
   singleTree->SetBranchAddress("mcPhi",&ST_mcPhi);
   singleTree->SetBranchAddress("mcPt",&ST_mcPt);
@@ -286,7 +290,7 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("EventID2",&EventID2);
     pairTree_rp->Branch("EventID1_unique",&EventID1_unique);
     pairTree_rp->Branch("EventID2_unique",&EventID2_unique);
-    pairTree_rp->Branch("generator",&generator);
+    if(doContainMothersHistory) pairTree_rp->Branch("generator",&generator);
     pairTree_rp->Branch("IsRP",&IsRP);
     pairTree_rp->Branch("IsUS",&IsUS);
     pairTree_rp->Branch("IsConv",&IsConv);
@@ -329,8 +333,10 @@ void GeneratePairTrees() {
     pairTree_rp->Branch("motherPdg2",&motherPdg2);
     pairTree_rp->Branch("pdg1",&pdg1);
     pairTree_rp->Branch("pdg2",&pdg2);
-    pairTree_rp->Branch("firstMothersInfo1",&firstMothersInfo1);
-    pairTree_rp->Branch("firstMothersInfo2",&firstMothersInfo2);
+    if(doContainMothersHistory) {
+      pairTree_rp->Branch("firstMothersInfo1",&firstMothersInfo1);
+      pairTree_rp->Branch("firstMothersInfo2",&firstMothersInfo2);
+    }
     pairTree_rp->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_rp->Branch("PIDeff1",&PIDeff1);
     pairTree_rp->Branch("PIDeff2",&PIDeff2);
@@ -375,7 +381,7 @@ void GeneratePairTrees() {
     pairTree_us->Branch("EventID2",&EventID2);
     pairTree_us->Branch("EventID1_unique",&EventID1_unique);
     pairTree_us->Branch("EventID2_unique",&EventID2_unique);
-    pairTree_us->Branch("generator",&generator);
+    if(doContainMothersHistory) pairTree_us->Branch("generator",&generator);
     pairTree_us->Branch("IsRP",&IsRP);
     pairTree_us->Branch("IsUS",&IsUS);
     pairTree_us->Branch("IsConv",&IsConv);
@@ -418,8 +424,10 @@ void GeneratePairTrees() {
     pairTree_us->Branch("motherPdg2",&motherPdg2);
     pairTree_us->Branch("pdg1",&pdg1);
     pairTree_us->Branch("pdg2",&pdg2);
-    pairTree_us->Branch("firstMothersInfo1",&firstMothersInfo1);
-    pairTree_us->Branch("firstMothersInfo2",&firstMothersInfo2);
+    if(doContainMothersHistory) {
+      pairTree_us->Branch("firstMothersInfo1",&firstMothersInfo1);
+      pairTree_us->Branch("firstMothersInfo2",&firstMothersInfo2);
+    }
     pairTree_us->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_us->Branch("PIDeff1",&PIDeff1);
     pairTree_us->Branch("PIDeff2",&PIDeff2);
@@ -464,7 +472,7 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("EventID2",&EventID2);
     pairTree_ls->Branch("EventID1_unique",&EventID1_unique);
     pairTree_ls->Branch("EventID2_unique",&EventID2_unique);
-    pairTree_ls->Branch("generator",&generator);
+    if(doContainMothersHistory) pairTree_ls->Branch("generator",&generator);
     pairTree_ls->Branch("IsRP",&IsRP);
     pairTree_ls->Branch("IsUS",&IsUS);
     pairTree_ls->Branch("IsConv",&IsConv);
@@ -507,8 +515,10 @@ void GeneratePairTrees() {
     pairTree_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_ls->Branch("pdg1",&pdg1);
     pairTree_ls->Branch("pdg2",&pdg2);
-    pairTree_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
-    pairTree_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    if(doContainMothersHistory) {
+      pairTree_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
+      pairTree_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    }
     pairTree_ls->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_ls->Branch("PIDeff2",&PIDeff2);
@@ -553,7 +563,7 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("EventID2",&EventID2);
     pairTree_us_ls->Branch("EventID1_unique",&EventID1_unique);
     pairTree_us_ls->Branch("EventID2_unique",&EventID2_unique);
-    pairTree_us_ls->Branch("generator",&generator);
+    if(doContainMothersHistory) pairTree_us_ls->Branch("generator",&generator);
     pairTree_us_ls->Branch("IsRP",&IsRP);
     pairTree_us_ls->Branch("IsUS",&IsUS);
     pairTree_us_ls->Branch("IsConv",&IsConv);
@@ -596,8 +606,10 @@ void GeneratePairTrees() {
     pairTree_us_ls->Branch("motherPdg2",&motherPdg2);
     pairTree_us_ls->Branch("pdg1",&pdg1);
     pairTree_us_ls->Branch("pdg2",&pdg2);
-    pairTree_us_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
-    pairTree_us_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    if(doContainMothersHistory) {
+      pairTree_us_ls->Branch("firstMothersInfo1",&firstMothersInfo1);
+      pairTree_us_ls->Branch("firstMothersInfo2",&firstMothersInfo2);
+    }
     pairTree_us_ls->Branch("electronsWithHFMother",&electronsWithHFMother);
     pairTree_us_ls->Branch("PIDeff1",&PIDeff1);
     pairTree_us_ls->Branch("PIDeff2",&PIDeff2);
@@ -697,7 +709,8 @@ void GeneratePairTrees() {
     }
     
     // cross-checking:
-    Int_t generator_temp = ST_generator;
+    Int_t generator_temp;
+    if(doContainMothersHistory) generator_temp = ST_generator;
     
     // pdg cut:
     if(TMath::Abs(ST_pdg) != 11) continue; // keep electrons/positrons only
@@ -727,7 +740,7 @@ void GeneratePairTrees() {
     if(!doSwapCurrentPair) {
       EventID1 = ST_event;
       EventID1_unique = ST_eventID_unique;
-      generator = ST_generator;
+      if(doContainMothersHistory) generator = ST_generator;
       TrackID1 = tr1;
       MVAoutput_convTrack1 = MVAoutput_convTrack;
       mcPx1 = ST_particle->Px();
@@ -740,7 +753,7 @@ void GeneratePairTrees() {
       firstMotherLabel1 = ST_labelFirstMother;
       firstMotherLabel1_min = ST_labelMinFirstMother;
       firstMotherLabel1_max = ST_labelMaxFirstMother;
-      firstMothersInfo1 = ST_firstMothersInfo;
+      if(doContainMothersHistory) firstMothersInfo1 = ST_firstMothersInfo;
       DCAxy1_norm = ST_dcaR_norm;
       DCAz1_norm = ST_dcaZ_norm;
       DCAx1 = ST_dcaX;
@@ -763,7 +776,7 @@ void GeneratePairTrees() {
     }else {
       EventID2 = ST_event;
       EventID2_unique = ST_eventID_unique;
-      generator = ST_generator;
+      if(doContainMothersHistory) generator = ST_generator;
       TrackID2 = tr1;
       MVAoutput_convTrack2 = MVAoutput_convTrack;
       mcPx2 = ST_particle->Px();
@@ -776,7 +789,7 @@ void GeneratePairTrees() {
       firstMotherLabel2 = ST_labelFirstMother;
       firstMotherLabel2_min = ST_labelMinFirstMother;
       firstMotherLabel2_max = ST_labelMaxFirstMother;
-      firstMothersInfo2 = ST_firstMothersInfo;
+      if(doContainMothersHistory) firstMothersInfo2 = ST_firstMothersInfo;
       DCAxy2_norm = ST_dcaR_norm;
       DCAz2_norm = ST_dcaZ_norm;
       DCAx2 = ST_dcaX;
@@ -812,7 +825,7 @@ void GeneratePairTrees() {
       if(abs(ST_pdg) != 11) { tr2++; continue; }
 
       // cross-checking:
-      if(generator_temp != ST_generator) {
+      if(doContainMothersHistory && (generator_temp != ST_generator)) {
         std::cout << "ERROR: different generator IDs" << std::endl;
         gSystem->Exit(0);
       }
@@ -844,7 +857,7 @@ void GeneratePairTrees() {
         firstMotherLabel2 = ST_labelFirstMother;
         firstMotherLabel2_min = ST_labelMinFirstMother;
         firstMotherLabel2_max = ST_labelMaxFirstMother;
-        firstMothersInfo2 = ST_firstMothersInfo;
+        if(doContainMothersHistory) firstMothersInfo2 = ST_firstMothersInfo;
         DCAxy2_norm = ST_dcaR_norm;
         DCAz2_norm = ST_dcaZ_norm;
         DCAx2 = ST_dcaX;
@@ -879,7 +892,7 @@ void GeneratePairTrees() {
         firstMotherLabel1 = ST_labelFirstMother;
         firstMotherLabel1_min = ST_labelMinFirstMother;
         firstMotherLabel1_max = ST_labelMaxFirstMother;
-        firstMothersInfo1 = ST_firstMothersInfo;
+        if(doContainMothersHistory) firstMothersInfo1 = ST_firstMothersInfo;
         DCAxy1_norm = ST_dcaR_norm;
         DCAz1_norm = ST_dcaZ_norm;
         DCAx1 = ST_dcaX;
