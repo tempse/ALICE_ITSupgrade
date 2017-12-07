@@ -53,7 +53,7 @@ def main():
     # add new column with class label
     data_GP[data_params['data_identifier']] = 0
 
-    data_orig = shuffle(pd.concat([data_HFenh, data_GP]))
+    data_orig = shuffle(pd.concat([data_HFenh, data_GP], ignore_index=True))
     
     #data_orig = load_data("/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part1_424650tightCutEvents.root",
     #                      branches=branches_pairTree,
