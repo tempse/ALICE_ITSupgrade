@@ -166,7 +166,7 @@ def get_preprocessing_instructions(identifier):
 
         columns_to_standardScale = [
             'eta',
-            'DCAx', 'DCAy', 'DCAz',
+            'dcaX', 'dcaY', 'dcaZ',
             'p',
             
         ]
