@@ -35,8 +35,6 @@ from keras.models import load_model
 
 def main():
 
-    sys.stdout = logger()
-
     data_HFenh = load_data(data_params['hf_datapath'],
                            branches=get_branches(data_params['track_identifier']),
                            start=0,
@@ -227,6 +225,8 @@ def main():
 
     
 if __name__ == "__main__":
+
+    sys.stdout = logger()
     
     # fix random seed for reproducibility
     np.random.seed(7)
