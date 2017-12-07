@@ -31,9 +31,9 @@ def DNNBinaryClassifier(nr_of_layers = 2,
         if normalize_batch:
             model.add(BatchNormalization())
 
-        if use_alpha_dropout:
+        if use_alpha_dropout and dropout > 0.0:
             model.add(AlphaDropout(dropout))
-        else:
+        elif dropout > 0.0:
             model.add(Dropout(dropout))
             
         #if index_of_layer%2==0: model.add(GaussianNoise(noise))
