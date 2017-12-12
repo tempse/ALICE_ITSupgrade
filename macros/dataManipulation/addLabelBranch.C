@@ -38,5 +38,6 @@ void addLabelBranch(TString updatefile_filename,
   updatefile_tree->Write(0, TObject::kOverwrite);
 
   delete updatefile;
-  
+
+  gSystem->Exit(0);
 }
