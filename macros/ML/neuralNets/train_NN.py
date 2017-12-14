@@ -42,7 +42,7 @@ def main():
                            selection=data_params['hf_selection'])
 
     # add new column with class label
-    data_HFenh[data_params['data_identifier']] = 1
+    data_HFenh[data_params['data_identifier']] = 0
     
     data_GP = load_data(data_params['gp_datapath'],
                         branches=get_branches(data_params['track_identifier']),
@@ -51,7 +51,7 @@ def main():
                         selection=data_params['gp_selection'])
 
     # add new column with class label
-    data_GP[data_params['data_identifier']] = 0
+    data_GP[data_params['data_identifier']] = 1
 
     data_orig = shuffle(pd.concat([data_HFenh, data_GP], ignore_index=True))
     data_orig = data_orig.reindex(range(data_orig.shape[0]))
@@ -69,12 +69,9 @@ def main():
     # feature matrix setup
     X = pd.DataFrame()
 
-    X = engineer_features(data_orig, data_params['track_identifier'])
+    X, X_featureNames = engineer_features(data_orig, data_params['track_identifier'])
     
-    # save feature names for later purposes
-    X_featureNames = list(X)
-    print('Selected features:', X_featureNames)
-    joblib.dump(X_featureNames, output_prefix+'featureNames.pkl')
+    print('Selected features:', X_featureNames.tolist())
 
     if data_params['track_identifier'] == 'pairTree':
         sample_weight = calculate_pair_sample_weight(data_orig['PIDeff1'], data_orig['PIDeff2'])

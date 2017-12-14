@@ -263,7 +263,6 @@ def engineer_features(data, identifier):
         X['eta2'] = data['eta2']
         X['phi1'] = data['phi1']
         X['phi2'] = data['phi2']
-
         
     elif identifier == 'singleTree':
 
@@ -288,4 +287,4 @@ def engineer_features(data, identifier):
               'Unknown identifier: {}'.format(identifier))
         sys.exit(1)
 
-    return X
+    return X, X.columns
