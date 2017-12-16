@@ -49,7 +49,7 @@ def main():
                                     stop=stop)
     
 
-        Xapp = engineer_features(dataSample_orig, track_identifier)
+        Xapp, __ = engineer_features(dataSample_orig, track_identifier)
         
         # data preprocessing
         Xapp = preprocess(Xapp, track_identifier, load_fitted_attributes=True)
