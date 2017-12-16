@@ -16,21 +16,21 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
 void createROCdata_MVAplusPrefilter(TString MCdatafilename,
-				    TString treename_MCdatafile,
-				    TString MVAoutput_prefilter_filename,
-				    TString treename_MVAoutput_prefilter_file,
-				    TString branchname_MVAoutput_prefilter_file,
-				    TString MVAoutput_noPrefilter_filename,
-				    TString treename_MVAoutput_noPrefilter_file,
-				    TString branchname_MVAoutput_noPrefilter_file,
-				    TString signalRegion = "+",
-				    Int_t   num_steps = 10, // number of steps in the MVA cut scan
-				    Int_t   stride_combi = 1, // stride when combining two classifiers
+                                    TString treename_MCdatafile,
+                                    TString MVAoutput_prefilter_filename,
+                                    TString treename_MVAoutput_prefilter_file,
+                                    TString branchname_MVAoutput_prefilter_file,
+                                    TString MVAoutput_noPrefilter_filename,
+                                    TString treename_MVAoutput_noPrefilter_file,
+                                    TString branchname_MVAoutput_noPrefilter_file,
+                                    TString signalRegion = "+",
+                                    Int_t   num_steps = 10, // number of steps in the MVA cut scan
+                                    Int_t   stride_combi = 1, // stride when combining two classifiers
                                     Float_t massCut = 0.05, // do not count events with mass < massCut
-				    Float_t MVAoutputRange_min = 0.,
-				    Float_t MVAoutputRange_max = 1.,
-				    TString outfilename = "temp_output/ROCdata_MVAplusPrefilter",
-				    TString PIDeffs_filename = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root") {
+                                    Float_t MVAoutputRange_min = 0.,
+                                    Float_t MVAoutputRange_max = 1.,
+                                    TString outfilename = "temp_output/ROCdata_MVAplusPrefilter",
+                                    TString PIDeffs_filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputData/ITSU_PIDefficiency_lowB.root") {
 
   Float_t MVAout_prefilter, MVAout_noPrefilter;
   Int_t isAccepted;
@@ -134,7 +134,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
   
   
-  const Long64_t nentries = 50000000; //tree_MCdatafile->GetEntries();
+  const Long64_t nentries = 500000; //tree_MCdatafile->GetEntries();
   std::cout << "Number of entries: " << nentries << std::endl;
 
   

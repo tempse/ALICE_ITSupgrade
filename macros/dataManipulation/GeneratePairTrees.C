@@ -178,7 +178,7 @@ void GeneratePairTrees() {
     singleTree_MVAoutputs->AddFile(infile_MVAoutputs_name);
   }
 
-  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -655,7 +655,7 @@ void GeneratePairTrees() {
   
 
   Float_t MVAoutput_convTrack;
-  if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->SetBranchAddress("BDT", &MVAoutput_convTrack);
+  if(doConsiderMVAinfo_convTrack) singleTree_MVAoutputs->SetBranchAddress("NN", &MVAoutput_convTrack);
   
 
   Int_t firstTrack; // first track number in given event
@@ -1346,7 +1346,7 @@ void calculateHF() {
         std::cout << "TrackID1: " << TrackID1 << "\t" << "TrackID2: " << TrackID2 << std::endl;
         std::cout << std::endl << "------------------------------" << std::endl;
         cnt_labelCheckErrors++;
-        if(cnt_labelCheckErrors > 3) gSystem->Exit(0);
+        if(cnt_labelCheckErrors > 3) gSystem->Exit(1);
         
       }
       

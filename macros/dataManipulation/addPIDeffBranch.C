@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <TROOT.h>
+#include <TSystem.h>
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -10,7 +11,7 @@
 
 void addPIDeffBranch(TString filename = "",
 		     TString treename = "",
-		     TString filename_PIDeff = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root",
+		     TString filename_PIDeff = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root",
 		     TString histname_PIDeff = "efficiencyLHC17d12_TPCandTOF3sigma") {
 
   
@@ -72,5 +73,7 @@ void addPIDeffBranch(TString filename = "",
   
   file_update->cd();
   tree->Write("", TObject::kOverwrite);
+
+  gSystem->Exit(0);
   
 }
