@@ -60,7 +60,7 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   }
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_add) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_add
-	      << " already exists in file " << updatefile->GetName() << std::endl;
+              << " already exists in file " << updatefile->GetName() << std::endl;
     gApplication->Terminate();
   }
   std::cout << " DONE." << std::endl;
@@ -82,8 +82,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   
   TString branchname_add_vartype = branchname_add + "/I";
   TBranch *newBranch = tree_updatefile->Branch(branchname_add,
-					       &isAccepted,
-					       branchname_add_vartype);
+                                               &isAccepted,
+                                               branchname_add_vartype);
 
   
   const Long64_t nentries = tree_updatefile->GetEntries();
@@ -150,7 +150,7 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
     if((j%5000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
 
     if( input_tag_all[j] != input_tag_min &&
-	input_tag_all[j] != input_tag_max ) {
+        input_tag_all[j] != input_tag_max ) {
       tags_prefilter[j] = -999;
       continue;
     }
@@ -159,8 +159,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
     if(containsTrackCutInfo) {
       if(considerLooseCuts==0 &&
          (TrackCut1_all[j]!=2 || TrackCut2_all[j]!=2)) {
-      tags_prefilter[j] = -99;
-      continue;
+        tags_prefilter[j] = -99;
+        continue;
       }else if(considerLooseCuts==1 &&
                (TrackCut1_all[j]==0 || TrackCut2_all[j]==0)) {
         tags_prefilter[j] = -99;
@@ -194,7 +194,7 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
       if(containsTrackCutInfo) {
         if(considerLooseCuts==0 &&
            (TrackCut1_all[i]!=2 || TrackCut2_all[i]!=2)) {
-        continue;
+          continue;
         }else if(considerLooseCuts==1 &&
                  (TrackCut1_all[i]==0 || TrackCut2_all[i]==0)) {
           continue;
@@ -203,10 +203,10 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
       
       // 'forward propagation' of tag information:
       if(doForwardProp &&
-	 input_tag_all[j] == 1 &&
-	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[i] = 1;
+         input_tag_all[j] == 1 &&
+         (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+          TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+        tags_prefilter[i] = 1;
       }
 
       Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeff);
@@ -215,10 +215,10 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
       
       // 'backward propagation' of tag information:
       if(doBackwardProp &&
-	 input_tag_all[i] == 1 &&
-	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[j] = 1;
+         input_tag_all[i] == 1 &&
+         (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+          TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+        tags_prefilter[j] = 1;
       }
     }
 

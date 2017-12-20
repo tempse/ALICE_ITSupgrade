@@ -58,20 +58,20 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     tree_updatefile->SetBranchAddress("TrackCut2", &TrackCut2);
   }else {
     std::cout << "  Info: No branch holding track cut information found. "
-	      << "All tracks will be processed." << std::endl;
+              << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_updatefile) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_updatefile
-        << " already exists in file " << updatefile->GetName() << std::endl;
+              << " already exists in file " << updatefile->GetName() << std::endl;
     gApplication->Terminate();
   }
   std::cout << " DONE." << std::endl;
   
   TString branchname_updatefile_vartype = branchname_updatefile + "/I";
   TBranch *newBranch = tree_updatefile->Branch(branchname_updatefile,
-					       &isAccepted,
-					       branchname_updatefile_vartype);
+                                               &isAccepted,
+                                               branchname_updatefile_vartype);
 
 
   if(!containsTrackCutInfo && considerLooseCuts>0) {
@@ -95,12 +95,12 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 
   if(tree_updatefile->GetEntries() != tree_branchfile->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-	      << "    Size of tree " << treename_updatefile << " in "
-	      << updatefilename << ": " << tree_updatefile->GetEntries()
-	      << std::endl
-	      << "    Size of tree " << treename_branchfile << " in "
-	      << branchfilename << ": " << tree_branchfile->GetEntries()
-	      << std::endl << std::endl;
+              << "    Size of tree " << treename_updatefile << " in "
+              << updatefilename << ": " << tree_updatefile->GetEntries()
+              << std::endl
+              << "    Size of tree " << treename_branchfile << " in "
+              << branchfilename << ": " << tree_branchfile->GetEntries()
+              << std::endl << std::endl;
     gApplication->Terminate();
   }
 
@@ -233,11 +233,11 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
 
       // 'forward propagation' of tag information:
       if(doForwardProp &&
-	 ((signalRegion == "+" && MVAoutput_all[j] > MVAcut) ||
-	  (signalRegion == "-" && MVAoutput_all[j] < MVAcut)) &&
-	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[i] = 1;
+         ((signalRegion == "+" && MVAoutput_all[j] > MVAcut) ||
+          (signalRegion == "-" && MVAoutput_all[j] < MVAcut)) &&
+         (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+          TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+        tags_prefilter[i] = 1;
       }
 
       Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeff);
@@ -246,11 +246,11 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
       
       // 'backward propagation' of tag information:
       if(doBackwardProp &&
-	 ((signalRegion == "+" && MVAoutput_all[i] > MVAcut) ||
-	  (signalRegion == "-" && MVAoutput_all[i] < MVAcut)) &&
-	 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	tags_prefilter[j] = 1;
+         ((signalRegion == "+" && MVAoutput_all[i] > MVAcut) ||
+          (signalRegion == "-" && MVAoutput_all[i] < MVAcut)) &&
+         (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+          TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+        tags_prefilter[j] = 1;
       }
     }
 
