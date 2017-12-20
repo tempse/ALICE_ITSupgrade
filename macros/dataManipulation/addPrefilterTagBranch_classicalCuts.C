@@ -14,10 +14,11 @@
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 void addPrefilterTagBranch_classicalCuts(TString updatefilename,
-					 TString treename_updatefile,
-					 TString branchname_read,
-					 TString branchname_add,
-					 TString PIDefficiencies_fileName = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputData/ITSU_PIDefficiency_lowB.root") {
+                                         TString treename_updatefile,
+                                         TString branchname_read,
+                                         TString branchname_add,
+                                         UInt_t  considerLooseCuts = 0, // 0...no loose cuts, 1...with loose cuts, 2...all tracks
+                                         TString PIDefficiencies_fileName = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root") {
   
   Int_t input_tag;
   Int_t isAccepted;
@@ -40,18 +41,44 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   Int_t EventID;
   Int_t TrackID1, TrackID2;
   Float_t pt1, pt2;
+  Bool_t containsTrackCutInfo = kTRUE;
+  Int_t TrackCut1, TrackCut2;
   tree_updatefile->SetBranchAddress("EventID1", &EventID);
   tree_updatefile->SetBranchAddress("TrackID1", &TrackID1);
   tree_updatefile->SetBranchAddress("TrackID2", &TrackID2);
   tree_updatefile->SetBranchAddress("pt1", &pt1);
   tree_updatefile->SetBranchAddress("pt2", &pt2);
   tree_updatefile->SetBranchAddress(branchname_read, &input_tag);
+  if(tree_updatefile->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
+     tree_updatefile->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
+    tree_updatefile->SetBranchAddress("TrackCut1", &TrackCut1);
+    tree_updatefile->SetBranchAddress("TrackCut2", &TrackCut2);
+  }else {
+    std::cout << "  Info: No branch holding track cut information found. "
+              << "All tracks will be processed." << std::endl;
+    containsTrackCutInfo = kFALSE;
+  }
   if(tree_updatefile->GetListOfBranches()->FindObject(branchname_add) != NULL) {
     std::cout << "  ERROR: A branch named " << branchname_add
 	      << " already exists in file " << updatefile->GetName() << std::endl;
     gApplication->Terminate();
   }
   std::cout << " DONE." << std::endl;
+
+
+  if(!containsTrackCutInfo && considerLooseCuts>0) {
+    std::cout << "  ERROR: Loose track cuts have been chosen to be considered, but do not exist "
+              << "in the file. Exiting without changing the files..." << std::endl;
+    updatefile->Close();
+    gSystem->Exit(1);
+  }
+  
+  if(containsTrackCutInfo && considerLooseCuts>=3) {
+    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    updatefile->Close();
+    gSystem->Exit(1);
+  }
+
   
   TString branchname_add_vartype = branchname_add + "/I";
   TBranch *newBranch = tree_updatefile->Branch(branchname_add,
@@ -64,6 +91,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   Int_t *EventID_all = NULL;
   Int_t *TrackID1_all = NULL;
   Int_t *TrackID2_all = NULL;
+  Int_t *TrackCut1_all = NULL;
+  Int_t *TrackCut2_all = NULL;
   Float_t *pt1_all = NULL;
   Float_t *pt2_all = NULL;
   Int_t *input_tag_all = NULL;
@@ -72,6 +101,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   EventID_all = new Int_t[nentries];
   TrackID1_all = new Int_t[nentries];
   TrackID2_all = new Int_t[nentries];
+  if(containsTrackCutInfo) TrackCut1_all = new Int_t[nentries];
+  if(containsTrackCutInfo) TrackCut2_all = new Int_t[nentries];
   pt1_all = new Float_t[nentries];
   pt2_all = new Float_t[nentries];
   input_tag_all = new Int_t[nentries];
@@ -81,6 +112,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
     EventID_all[i] = 0;
     TrackID1_all[i] = 0;
     TrackID2_all[i] = 0;
+    if(containsTrackCutInfo) TrackCut1_all[i] = 0;
+    if(containsTrackCutInfo) TrackCut2_all[i] = 0;
     pt1_all[i] = 0.;
     pt2_all[i] = 0.;
     input_tag_all[i] = 0;
@@ -97,6 +130,8 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
     EventID_all[i] = EventID;
     TrackID1_all[i] = TrackID1;
     TrackID2_all[i] = TrackID2;
+    if(containsTrackCutInfo) TrackCut1_all[i] = TrackCut1;
+    if(containsTrackCutInfo) TrackCut2_all[i] = TrackCut2;
     pt1_all[i] = pt1;
     pt2_all[i] = pt2;
     input_tag_all[i] = input_tag;
@@ -120,6 +155,22 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
       continue;
     }
 
+    // loose track cut selection (see also second occurrence below!):
+    if(containsTrackCutInfo) {
+      if(considerLooseCuts==0 &&
+         (TrackCut1_all[j]!=2 || TrackCut2_all[j]!=2)) {
+      tags_prefilter[j] = -99;
+      continue;
+      }else if(considerLooseCuts==1 &&
+               (TrackCut1_all[j]==0 || TrackCut2_all[j]==0)) {
+        tags_prefilter[j] = -99;
+        continue;
+      }
+      // else: Only case left is considerLooseCuts==2, since
+      // considerLooseCuts>=3 gets already rejected in the beginning of the code.
+      // In this case, all tracks are processed, therefore no skipping.
+    }
+
     if(input_tag_all[j] == 1) tags_prefilter[j] = 1;
 
     Int_t EventID_current = EventID_all[j];
@@ -134,6 +185,22 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
 
       if(EventID_all[i] != EventID_current) break;
 
+      if( input_tag_all[i] != input_tag_min &&
+          input_tag_all[i] != input_tag_max ) {
+        continue;
+      }
+
+      // loose track cut selection (see also occurrence above!):
+      if(containsTrackCutInfo) {
+        if(considerLooseCuts==0 &&
+           (TrackCut1_all[i]!=2 || TrackCut2_all[i]!=2)) {
+        continue;
+        }else if(considerLooseCuts==1 &&
+                 (TrackCut1_all[i]==0 || TrackCut2_all[i]==0)) {
+          continue;
+        }
+      }
+      
       // 'forward propagation' of tag information:
       if(doForwardProp &&
 	 input_tag_all[j] == 1 &&
@@ -179,12 +246,16 @@ void addPrefilterTagBranch_classicalCuts(TString updatefilename,
   delete [] EventID_all;
   delete [] TrackID1_all;
   delete [] TrackID2_all;
+  if(containsTrackCutInfo) delete [] TrackCut1_all;
+  if(containsTrackCutInfo) delete [] TrackCut2_all;
   delete [] input_tag_all;
   delete [] tags_prefilter;
 
   EventID_all = NULL;
   TrackID1_all = NULL;
   TrackID2_all = NULL;
+  if(containsTrackCutInfo) TrackCut1_all = NULL;
+  if(containsTrackCutInfo) TrackCut2_all = NULL;
   input_tag_all = NULL;
   tags_prefilter = NULL;
   

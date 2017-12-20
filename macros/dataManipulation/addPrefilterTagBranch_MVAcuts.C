@@ -3,6 +3,7 @@
 
 #include <TROOT.h>
 #include <TMath.h>
+#include <TSystem.h>
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -13,14 +14,15 @@
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 void addPrefilterTagBranch_MVAcuts(TString branchfilename,
-				   TString treename_branchfile,
-				   TString branchname_branchfile,
-				   TString updatefilename,
-				   TString treename_updatefile,
-				   TString branchname_updatefile,
-				   Float_t MVAcut,
-				   TString signalRegion = "-",
-				   TString PIDefficiencies_fileName = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputData/ITSU_PIDefficiency_lowB.root") {
+                                   TString treename_branchfile,
+                                   TString branchname_branchfile,
+                                   TString updatefilename,
+                                   TString treename_updatefile,
+                                   TString branchname_updatefile,
+                                   Float_t MVAcut,
+                                   TString signalRegion = "-",
+                                   UInt_t  considerLooseCuts = 0, // 0...no loose cuts, 1...with loose cuts, 2...all tracks
+                                   TString PIDefficiencies_fileName = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root") {
 
   Float_t MVAoutput;
   Int_t isAccepted;
@@ -70,6 +72,20 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
   TBranch *newBranch = tree_updatefile->Branch(branchname_updatefile,
 					       &isAccepted,
 					       branchname_updatefile_vartype);
+
+
+  if(!containsTrackCutInfo && considerLooseCuts>0) {
+    std::cout << "  ERROR: Loose track cuts have been chosen to be considered, but do not exist "
+              << "in the file. Exiting without changing the files..." << std::endl;
+    updatefile->Close();
+    gSystem->Exit(1);
+  }
+
+  if(containsTrackCutInfo && considerLooseCuts>=3) {
+    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    updatefile->Close();
+    gSystem->Exit(1);
+  }
   
   
   TFile *branchfile = new TFile(branchfilename, "READ");
@@ -145,7 +161,7 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     pt2_all[i] = pt2;
     MVAoutput_all[i] = MVAoutput;
   }
-  std::cout << "(" << nentries << " / " << nentries << ")" << std::endl;
+  std::cout << "\r  (" << nentries << " / " << nentries << ")" << std::endl;
 
 
   TRandom *rand = new TRandom();
@@ -159,7 +175,7 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     if((j%1000)==0) std::cout << "\r  (" << j << " / " << nentries << ")";
     
     if( MVAoutput_all[j] < MVAoutputRange_min ||
-	MVAoutput_all[j] > MVAoutputRange_max ) {
+        MVAoutput_all[j] > MVAoutputRange_max ) {
       tags_prefilter[j] = -999;
       continue;
     }
@@ -168,6 +184,22 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
       tags_prefilter[j] = 1;
     }else if(signalRegion == "-" && MVAoutput_all[j] < MVAcut) {
       tags_prefilter[j] = 1;
+    }
+
+    // loose track cut selection (see also second occurrence below!):
+    if(containsTrackCutInfo) {
+      if(considerLooseCuts==0 &&
+         (TrackCut1_all[j]!=2 || TrackCut2_all[j]!=2)) {
+        tags_prefilter[j] = -99;
+        continue;
+      }else if(considerLooseCuts==1 &&
+               (TrackCut1_all[j]==0 || TrackCut2_all[j]==0)) {
+        tags_prefilter[j] = -99;
+        continue;
+      }
+      // else: Only case left is considerLooseCuts==2, since
+      // considerLooseCuts>=3 gets already rejected in the beginning of the code.
+      // In this case, all tracks are processed, therefore no skipping.
     }
 
     Int_t EventID_current = EventID_all[j];
@@ -182,6 +214,22 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
     for(Int_t i=j+1; i<nentries; i++) {
 
       if(EventID_all[i] != EventID_current) break;
+
+      if( MVAoutput_all[i] < MVAoutputRange_min ||
+          MVAoutput_all[i] > MVAoutputRange_max ) {
+        continue;
+      }
+
+      // loose track cut selection (see also occurrence above!):
+      if(containsTrackCutInfo) {
+        if(considerLooseCuts==0 &&
+           (TrackCut1_all[i]!=2 || TrackCut2_all[i]!=2)) {
+          continue;
+        }else if(considerLooseCuts==1 &&
+                 (TrackCut1_all[i]==0 || TrackCut2_all[i]==0)) {
+          continue;
+        }
+      }
 
       // 'forward propagation' of tag information:
       if(doForwardProp &&
