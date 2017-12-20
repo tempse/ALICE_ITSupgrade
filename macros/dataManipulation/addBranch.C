@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <TSystem.h>
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -12,8 +13,8 @@ void addBranch(TString updatefile_filename,
 	       TString branchfile_branchname,
 	       TString newBranch_name) {
   
-  Float_t new_v;
-  TString newBranch_vartype = "F";
+  Int_t new_v;
+  TString newBranch_vartype = "I";
 
 
   
@@ -74,10 +75,15 @@ void addBranch(TString updatefile_filename,
   Long64_t nentries = updatefile_tree->GetEntries();
   
   for(Long64_t i=0; i<nentries; i++) {
+    if((i%5000)==0) std::cout << "\r" << i << " / " << nentries;
+    
     branchfile_tree->GetEntry(i);
     newBranch->Fill();
   }
+  std::cout << "\r" << nentries << " / " << nentries << std::endl;
 
   updatefile->cd();
   updatefile_tree->Write("", TObject::kOverwrite);
+
+  gSystem->Exit(0);
 }
