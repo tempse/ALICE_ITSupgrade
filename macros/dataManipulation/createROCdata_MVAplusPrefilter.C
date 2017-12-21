@@ -60,7 +60,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     tree_MCdatafile->SetBranchAddress("TrackCut2", &TrackCut2);
   }else {
     std::cout << "  Warning: No branch holding track cut information found. "
-	      << "All tracks will be processed." << std::endl;
+              << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
   std::cout << " DONE." << std::endl;
@@ -84,17 +84,17 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   TFile *MVAoutput_prefilter_file = new TFile(MVAoutput_prefilter_filename, "READ");
   TTree *tree_MVAoutput_prefilter_file = (TTree*)MVAoutput_prefilter_file->Get(treename_MVAoutput_prefilter_file);
   tree_MVAoutput_prefilter_file->SetBranchAddress(branchname_MVAoutput_prefilter_file,
-						  &MVAout_prefilter);
+                                                  &MVAout_prefilter);
   
 
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_prefilter_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-	      << "    Size of tree " << treename_MCdatafile << " in "
-	      << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
-	      << std::endl
-	      << "    Size of tree " << treename_MVAoutput_prefilter_file << " in "
-	      << MVAoutput_prefilter_filename << ": " << tree_MVAoutput_prefilter_file->GetEntries()
-	      << std::endl << std::endl;
+              << "    Size of tree " << treename_MCdatafile << " in "
+              << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
+              << std::endl
+              << "    Size of tree " << treename_MVAoutput_prefilter_file << " in "
+              << MVAoutput_prefilter_filename << ": " << tree_MVAoutput_prefilter_file->GetEntries()
+              << std::endl << std::endl;
     gSystem->Exit(1);
   }
 
@@ -102,17 +102,17 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   TFile *MVAoutput_noPrefilter_file = new TFile(MVAoutput_noPrefilter_filename, "READ");
   TTree *tree_MVAoutput_noPrefilter_file = (TTree*)MVAoutput_noPrefilter_file->Get(treename_MVAoutput_noPrefilter_file);
   tree_MVAoutput_noPrefilter_file->SetBranchAddress(branchname_MVAoutput_noPrefilter_file,
-						    &MVAout_noPrefilter);
+                                                    &MVAout_noPrefilter);
 
   
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_noPrefilter_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-	      << "    Size of tree " << tree_MCdatafile->GetEntries() << " in "
-	      << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
-	      << std::endl
-	      << "    Size of tree " << tree_MVAoutput_noPrefilter_file << " in "
-	      << MVAoutput_noPrefilter_filename << ": " << tree_MVAoutput_noPrefilter_file->GetEntries()
-	      << std::endl << std::endl;
+              << "    Size of tree " << tree_MCdatafile->GetEntries() << " in "
+              << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
+              << std::endl
+              << "    Size of tree " << tree_MVAoutput_noPrefilter_file << " in "
+              << MVAoutput_noPrefilter_filename << ": " << tree_MVAoutput_noPrefilter_file->GetEntries()
+              << std::endl << std::endl;
     gSystem->Exit(1);
   }
 
@@ -246,7 +246,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
 
     std::cout << std::endl << "---------- Step " << scan << " of " << num_steps
-	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
+              << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
 
     std::cout << "Reading the data...";
 
@@ -263,19 +263,19 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     TRandom *rand = new TRandom();
     
     std::cout << "Tagging pairs and applying the prefilter..."
-	      << std::endl;
+              << std::endl;
     
     std::cout << "Step 1/2:" << std::endl;
     
     for(Long64_t j=0; j<nentries; j++) {
       if((j%1000)==0) {
-	std::cout << "\r  (" << j << " / " << nentries << ")";
+        std::cout << "\r  (" << j << " / " << nentries << ")";
       }
       
       if( (MVAout_prefilter_all[j] < MVAoutputRange_min ||
-	   MVAout_prefilter_all[j] > MVAoutputRange_max) ) {
+           MVAout_prefilter_all[j] > MVAoutputRange_max) ) {
         tags_prefilter[j] = -999;
-	continue;
+        continue;
       }
 
       // loose track cut selection (see also second occurrence below!):
@@ -295,9 +295,9 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       }
 
       if(signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) {
-	tags_prefilter[j] = 1;
+        tags_prefilter[j] = 1;
       }else if(signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut) {
-	tags_prefilter[j] = 1;
+        tags_prefilter[j] = 1;
       }
 
       Int_t EventID_current = EventID_all[j];
@@ -329,27 +329,27 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
           }
         }
     
-	// 'forward propagation' of tag information:
-	if(doForwardProp &&
-	   ((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
-	    (signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut)) &&
-	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_prefilter[i] = 1;
-	}
+        // 'forward propagation' of tag information:
+        if(doForwardProp &&
+           ((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
+            (signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut)) &&
+           (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+            TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+          tags_prefilter[i] = 1;
+        }
 
-	Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+        Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
-	Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
+        Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
 	
-	// 'backward propagation' of tag information:
-	if(doBackwardProp &&
-	   ((signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut) ||
-	    (signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut)) &&
-	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_prefilter[j] = 1;
-	}
+        // 'backward propagation' of tag information:
+        if(doBackwardProp &&
+           ((signalRegion == "+" && MVAout_prefilter_all[i] > MVAcut) ||
+            (signalRegion == "-" && MVAout_prefilter_all[i] < MVAcut)) &&
+           (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+            TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+          tags_prefilter[j] = 1;
+        }
       }
       
     }
@@ -452,14 +452,14 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     
     std::cout << " DONE" << std::endl;
     std::cout << "  (TPR (prefilter) = " << tpr_prefilter << ",\tFPR (prefilter) = " << fpr_prefilter
-	      << ")" << std::endl;
+              << ")" << std::endl;
     std::cout << "  (TPR (no prefilter) = " << tpr_noPrefilter << ",\tFPR (no prefilter) = " << fpr_noPrefilter
-	      << ")" << std::endl;
+              << ")" << std::endl;
     outtree->Fill();
 
 
     std::cout << std::endl << "Time elapsed: " << watch_step->RealTime()
-	      << " seconds." << std::endl;
+              << " seconds." << std::endl;
 
     delete [] tags_prefilter;
     delete [] tags_noPrefilter;
@@ -530,17 +530,17 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   TBranch *branch_pairweight_combi = 0;
   
   tree_infile_ROCdata->SetBranchAddress("pairs_IsTaggedAccepted_prefilter",
-					&pairs_IsTaggedAccepted_prefilter_combi,
-					&branch_IsTaggedAccepted_prefilter_combi);
+                                        &pairs_IsTaggedAccepted_prefilter_combi,
+                                        &branch_IsTaggedAccepted_prefilter_combi);
   tree_infile_ROCdata->SetBranchAddress("pairs_IsTaggedAccepted_noPrefilter",
-					&pairs_IsTaggedAccepted_noPrefilter_combi,
-					&branch_IsTaggedAccepted_noPrefilter_combi);
+                                        &pairs_IsTaggedAccepted_noPrefilter_combi,
+                                        &branch_IsTaggedAccepted_noPrefilter_combi);
   tree_infile_ROCdata->SetBranchAddress("pairs_IsTrueConv",
-					&pairs_IsTrueConv_combi,
-					&branch_IsTrueConv_combi);
+                                        &pairs_IsTrueConv_combi,
+                                        &branch_IsTrueConv_combi);
   tree_infile_ROCdata->SetBranchAddress("pairs_pairweight",
-					&pairs_pairweight_combi,
-					&branch_pairweight_combi);
+                                        &pairs_pairweight_combi,
+                                        &branch_pairweight_combi);
 
 
   
@@ -582,25 +582,25 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
           continue;
         }
 
-	if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
-	    pairs_IsTrueConv_combi->at(k)==0 ) {
-	  tp_combi += pairs_pairweight_combi->at(k);
-	}
+        if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
+            pairs_IsTrueConv_combi->at(k)==0 ) {
+          tp_combi += pairs_pairweight_combi->at(k);
+        }
 	
-	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
-	    pairs_IsTrueConv_combi->at(k)==0 ) {
-	  fn_combi += pairs_pairweight_combi->at(k);
-	}
+        if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+            pairs_IsTrueConv_combi->at(k)==0 ) {
+          fn_combi += pairs_pairweight_combi->at(k);
+        }
 	
-	if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
-	    pairs_IsTrueConv_combi->at(k)==1 ) {
-	  fp_combi += pairs_pairweight_combi->at(k);
-	}
+        if( (pairs_prefilter_compare->at(k)==0 && pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==0) &&
+            pairs_IsTrueConv_combi->at(k)==1 ) {
+          fp_combi += pairs_pairweight_combi->at(k);
+        }
 	
-	if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
-	    pairs_IsTrueConv_combi->at(k)==1 ) {
-	  tn_combi += pairs_pairweight_combi->at(k);
-	}
+        if( (pairs_prefilter_compare->at(k)==1 || pairs_IsTaggedAccepted_noPrefilter_combi->at(k)==1) &&
+            pairs_IsTrueConv_combi->at(k)==1 ) {
+          tn_combi += pairs_pairweight_combi->at(k);
+        }
 
       }
 
@@ -625,8 +625,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
   
   std::cout << std::endl << "All done." << std::endl
-	    << "Overall time elapsed: " << watch_overall->RealTime() << " seconds."
-	    << std::endl << std::endl;
+            << "Overall time elapsed: " << watch_overall->RealTime() << " seconds."
+            << std::endl << std::endl;
   
   gSystem->Exit(0);
   
