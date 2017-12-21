@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 
+#include <TSystem.h>
 #include <TROOT.h>
 #include <TApplication.h>
 #include <TFile.h>
@@ -26,15 +27,15 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
                                     TString signalRegion = "+",
                                     Int_t   num_steps = 10, // number of steps in the MVA cut scan
                                     Int_t   stride_combi = 1, // stride when combining two classifiers
+                                    UInt_t  considerLooseCuts = 0, // 0...no loose cuts, 1...with loose cuts, 2...all tracks
                                     Float_t massCut = 0.05, // do not count events with mass < massCut
                                     Float_t MVAoutputRange_min = 0.,
                                     Float_t MVAoutputRange_max = 1.,
                                     TString outfilename = "temp_output/ROCdata_MVAplusPrefilter",
-                                    TString PIDeffs_filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputData/ITSU_PIDefficiency_lowB.root") {
+                                    TString PIDeffs_filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root") {
 
   Float_t MVAout_prefilter, MVAout_noPrefilter;
   Int_t isAccepted;
-  
   
   std::cout << "Opening files...";
   TFile *MCdatafile = new TFile(MCdatafilename, "READ");
@@ -65,6 +66,21 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   std::cout << " DONE." << std::endl;
 
 
+  if(!containsTrackCutInfo && considerLooseCuts>0) {
+    std::cout << "  ERROR: Loose track cuts have been chosen to be considered, but do not exist "
+              << "in the file. Exiting without changing the files..." << std::endl;
+    MCdatafile->Close();
+    gSystem->Exit(1);
+  }
+
+  if(containsTrackCutInfo && considerLooseCuts>=3) {
+    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    MCdatafile->Close();
+    gSystem->Exit(1);
+  }
+
+  
+
   TFile *MVAoutput_prefilter_file = new TFile(MVAoutput_prefilter_filename, "READ");
   TTree *tree_MVAoutput_prefilter_file = (TTree*)MVAoutput_prefilter_file->Get(treename_MVAoutput_prefilter_file);
   tree_MVAoutput_prefilter_file->SetBranchAddress(branchname_MVAoutput_prefilter_file,
@@ -79,7 +95,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	      << "    Size of tree " << treename_MVAoutput_prefilter_file << " in "
 	      << MVAoutput_prefilter_filename << ": " << tree_MVAoutput_prefilter_file->GetEntries()
 	      << std::endl << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
 
 
@@ -97,7 +113,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	      << "    Size of tree " << tree_MVAoutput_noPrefilter_file << " in "
 	      << MVAoutput_noPrefilter_filename << ": " << tree_MVAoutput_noPrefilter_file->GetEntries()
 	      << std::endl << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
 
 
@@ -134,7 +150,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
   
   
-  const Long64_t nentries = 500000; //tree_MCdatafile->GetEntries();
+  const Long64_t nentries = 50000000; //tree_MCdatafile->GetEntries();
   std::cout << "Number of entries: " << nentries << std::endl;
 
   
@@ -159,8 +175,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   pt1_all = new Float_t[nentries];
   pt2_all = new Float_t[nentries];
   mass_all = new Float_t[nentries];
-  trackCut1_all = new Int_t[nentries];
-  trackCut2_all = new Int_t[nentries];
+  if(containsTrackCutInfo) trackCut1_all = new Int_t[nentries];
+  if(containsTrackCutInfo) trackCut2_all = new Int_t[nentries];
   MVAout_prefilter_all = new Float_t[nentries];
   MVAout_noPrefilter_all = new Float_t[nentries];
 
@@ -173,8 +189,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     pt1_all[i] = 0.;
     pt2_all[i] = 0.;
     mass_all[i] = 0.;
-    trackCut1_all[i] = -1;
-    trackCut2_all[i] = -1;
+    if(containsTrackCutInfo) trackCut1_all[i] = -1;
+    if(containsTrackCutInfo) trackCut2_all[i] = -1;
     MVAout_prefilter_all[i] = 0.;
     MVAout_noPrefilter_all[i] = 0.;
   }
@@ -192,8 +208,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
     pt1_all[i] = pt1;
     pt2_all[i] = pt2;
     mass_all[i] = mass;
-    trackCut1_all[i] = TrackCut1;
-    trackCut2_all[i] = TrackCut2;
+    if(containsTrackCutInfo) trackCut1_all[i] = TrackCut1;
+    if(containsTrackCutInfo) trackCut2_all[i] = TrackCut2;
   }
   std::cout << " DONE" << std::endl;
 
@@ -262,6 +278,22 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 	continue;
       }
 
+      // loose track cut selection (see also second occurrence below!):
+      if(containsTrackCutInfo) {
+        if(considerLooseCuts==0 &&
+           (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
+          tags_prefilter[j] = -99;
+          continue;
+        }else if(considerLooseCuts==1 &&
+                 (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+          tags_prefilter[j] = -99;
+          continue;
+        }
+        // else: Only case left is considerLooseCuts==2, since
+        // considerLooseCuts>=3 gets already rejected in the beginning of the code.
+        // In this case, all tracks are processed, therefore no skipping.
+      }
+
       if(signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) {
 	tags_prefilter[j] = 1;
       }else if(signalRegion == "-" && MVAout_prefilter_all[j] < MVAcut) {
@@ -279,8 +311,24 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       
       for(Int_t i=j+1; i<nentries; i++) {
 	  
-	if(EventID_all[i] != EventID_current) break;
+        if(EventID_all[i] != EventID_current) break;
 
+        if( MVAout_prefilter_all[i] < MVAoutputRange_min ||
+            MVAout_prefilter_all[i] > MVAoutputRange_max ) {
+          continue;
+        }
+
+        // loose track cut selection (see also occurrence above!):
+        if(containsTrackCutInfo) {
+          if(considerLooseCuts==0 &&
+             (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+            continue;
+          }else if(considerLooseCuts==1 &&
+                   (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+            continue;
+          }
+        }
+    
 	// 'forward propagation' of tag information:
 	if(doForwardProp &&
 	   ((signalRegion == "+" && MVAout_prefilter_all[j] > MVAcut) ||
@@ -318,6 +366,22 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
         continue;
       }
 
+      // loose track cut selection:
+      if(containsTrackCutInfo) {
+        if(considerLooseCuts==0 &&
+           (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
+          tags_prefilter[j] = -99;
+          continue;
+        }else if(considerLooseCuts==1 &&
+                 (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+          tags_prefilter[j] = -99;
+          continue;
+        }
+        // else: Only case left is considerLooseCuts==2, since
+        // considerLooseCuts>=3 gets already rejected in the beginning of the code.
+        // In this case, all tracks are processed, therefore no skipping.
+      }
+
       if(signalRegion == "+" && MVAout_noPrefilter_all[j] > MVAcut) {
         tags_noPrefilter[j] = 1;
       }else if(signalRegion == "-" && MVAout_noPrefilter_all[j] < MVAcut) {
@@ -337,11 +401,12 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
       
       if( (tags_prefilter[i]!=0 && tags_prefilter[i]!=1) ||
           mass_all[i]<massCut ||
-          (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
-	pairs_IsTaggedAccepted_prefilter.push_back(-999);
-	pairs_IsTrueConv.push_back(IsConv_all[i]);
-	pairs_pairweight.push_back(pairweight);
-	continue;
+          (containsTrackCutInfo && considerLooseCuts==0 && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ||
+          (containsTrackCutInfo && considerLooseCuts==1 && (trackCut1_all[i]==0 || trackCut2_all[i]==0))) {
+        pairs_IsTaggedAccepted_prefilter.push_back(-999);
+        pairs_IsTrueConv.push_back(IsConv_all[i]);
+        pairs_pairweight.push_back(pairweight);
+        continue;
       }
 
       if(tags_prefilter[i]==1 && IsConv_all[i]==1) tn_prefilter += pairweight;
@@ -359,7 +424,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
 
       if( (tags_noPrefilter[i]!=0 && tags_noPrefilter[i]!=1) ||
           mass_all[i]<massCut ||
-          (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
+          (containsTrackCutInfo && considerLooseCuts==0 && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ||
+          (containsTrackCutInfo && considerLooseCuts==1 && (trackCut1_all[i]==0 || trackCut2_all[i]==0))) {
         pairs_IsTaggedAccepted_noPrefilter.push_back(-999);
         continue;
       }
@@ -409,6 +475,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   delete [] IsRP_all;
   delete [] pt1_all;
   delete [] pt2_all;
+  if(containsTrackCutInfo) delete [] trackCut1_all;
+  if(containsTrackCutInfo) delete [] trackCut2_all;
   delete [] mass_all;
   delete [] MVAout_prefilter_all;
   delete [] MVAout_noPrefilter_all;
@@ -420,6 +488,8 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   IsRP_all = NULL;
   pt1_all = NULL;
   pt2_all = NULL;
+  if(containsTrackCutInfo) trackCut1_all = NULL;
+  if(containsTrackCutInfo) trackCut2_all = NULL;
   mass_all = NULL;
   MVAout_prefilter_all = NULL;
   MVAout_noPrefilter_all = NULL;
