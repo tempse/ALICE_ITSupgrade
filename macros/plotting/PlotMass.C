@@ -2,7 +2,7 @@
 #include <cstdlib>
 
 #include <TROOT.h>
-#include <TApplication.h>
+#include <TSystem.h>
 #include <TStyle.h>
 #include <TString.h>
 #include <TFile.h>
@@ -32,11 +32,11 @@ Float_t SoverBError(Float_t S, Float_t B) {
 void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
   // File containing the input pairtree (test) data:
-  TString fileName_testData = "~/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_1-9-split.root";
+  TString fileName_testData = "/home/sebastian/analysis/data/HFstudy/workingData/CA_AnalysisResults_Upgrade_GP_pairTree-us_part2_0.8nEvents.root";
   TString treeName_TestTree = "pairTree_us";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "~/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/CombConvRejMVA_DNN_0.05mass/output/predictions_DNN.root";
+  TString fileName_MVAoutput = "/home/sebastian/analysis/data/HFstudy/workingData/MVA__HF_1__DNN_1__results/output/predictions_NN_GP.root"; // "/home/sebastian/analysis/data/HFstudy/workingData/MVA__HF_1__DNN_1__results/output/predictions_NN_GP.root";
   TString treeName_MVAoutputTree = "pairTree_MVAoutput";
   
   TString h_text = "";//Single-track conv. rejection via MVA cuts";
@@ -49,11 +49,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   Bool_t useTags = kFALSE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
   Float_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
-  Float_t MVAcut = 0.21;
+  Float_t MVAcut = 0.58;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "DNN";
+  TString variableName1 = "NN";
   TString variableName2 = "MVAoutput_convTrack2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
@@ -91,7 +91,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     std::cout << "   ERROR: Variable 'wantedPrefilterTagValue1' is required to have values "
 	      << " 0 or 1, but has value " << wantedPrefilterTagValue1 << " instead."
 	      << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
   
   if(isMLP & isBDT) {
@@ -109,7 +109,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
   Float_t mass;
   Float_t pt1, pt2;
-  Int_t IsRP, IsConv, IsHF, motherPdg1, motherPdg2;
+  Int_t IsRP, IsConv, IsCorrHF, IsCombHF, motherPdg1, motherPdg2;
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
   TestTree->SetBranchAddress("mass", &mass);
@@ -119,7 +119,8 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   TestTree->SetBranchAddress("motherPdg2",&motherPdg2);
   TestTree->SetBranchAddress("IsRP", &IsRP);
   TestTree->SetBranchAddress("IsConv", &IsConv);
-  TestTree->SetBranchAddress("IsCorrHF", &IsHF);
+  TestTree->SetBranchAddress("IsCorrHF", &IsCorrHF);
+  TestTree->SetBranchAddress("IsCombHF", &IsCombHF);
   if(TestTree->GetListOfBranches()->FindObject("TrackCut1") != NULL &&
      TestTree->GetListOfBranches()->FindObject("TrackCut2") != NULL) {
     TestTree->SetBranchAddress("TrackCut1", &TrackCut1);
@@ -149,7 +150,6 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   // input MVA output information from file:
   TFile *f_MVAoutput = new TFile(fileName_MVAoutput,"READ");
   TTree *MVAoutputTree = (TTree*)f_MVAoutput->Get(treeName_MVAoutputTree);
-  Float_t MVAoutput;
 
   if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
     std::cout << "   ERROR: The trees of the input files have different sizes."
@@ -158,7 +158,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 	      << TestTree->GetEntries() << std::endl;
     std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
 	      << MVAoutputTree->GetEntries() << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
 
   if(MVAoutputTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
@@ -166,7 +166,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   }else {
     std::cout << "  ERROR: The branch " << variableName1
 	      << " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
   if(useTwoVars) {
     if(MVAoutputTree->GetListOfBranches()->FindObject(variableName2) != NULL) {
@@ -174,12 +174,13 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }else {
       std::cout << "  ERROR: The branch " << variableName2
 		<< " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
+      gSystem->Exit(1);
     }
   }
 
 
   // File containing the pt-dependent PID efficiencies:
-  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -300,15 +301,24 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     if(containsTrackCutInfo && (TrackCut1 != 2 || TrackCut2 != 2)) continue;
 
     // linear mapping of the MVA output values to the range [0,1]:
-    MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
+    variable1 = (variable1-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
+    if(useTwoVars) variable2 = (variable2-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
+    // MVAoutput = (MVAoutput-MVAoutputRange_min)/(MVAoutputRange_max-MVAoutputRange_min);
 
-    if(MVAoutput < MVAoutputRange_min || MVAoutput > MVAoutputRange_max) continue;
+    if(!useTwoVars && (variable1<MVAoutputRange_min || variable1>MVAoutputRange_max)) continue;
+    if(useTwoVars && (variable1<MVAoutputRange_min || variable1>MVAoutputRange_max ||
+                      variable2<MVAoutputRange_min || variable2>MVAoutputRange_max)) continue;
+    // if(MVAoutput < MVAoutputRange_min || MVAoutput > MVAoutputRange_max) continue;
 
     Float_t sample_weight = 1.;
     if(doConsiderPIDefficiencies) {
       sample_weight = getPairPIDefficiency(pt1, pt2, *h_PIDeff);
     }
     h_sample_weight->Fill(sample_weight);
+
+
+    // Int_t IsHF = (IsCorrHF==1 || IsCombHF==1) ? 1 : 0;
+    Int_t IsHF = IsCorrHF;
     
 
     // Process all entries:
@@ -597,8 +607,8 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   std::cout << "Time elapsed since begin of processing: " << std::endl;
   std::cout << "\t";
   watch->Print();
-  std::cout << std::endl;
   watch->Stop();
+  std::cout << std::endl;
 
 
 
@@ -613,7 +623,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
      !TEfficiency::CheckConsistency(*h_HF_afterCut, *h_HF) ||
      !TEfficiency::CheckConsistency(*h_RPConv_afterCut, *h_RPConv)) {
     std::cout << "  ERROR: Histograms are inconsistent for TEfficiency object initialization." << std::endl;
-    gApplication->Terminate();
+    gSystem->Exit(1);
   }
 
   TEfficiency *pEff_SB = new TEfficiency(*h_SB_afterCut, *h_SB);
@@ -633,35 +643,49 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   
   
   for(unsigned int i=1; i<=nBins; i++) {
-    h_SB_eff->SetBinContent(i, pEff_SB->GetEfficiency(i));
-    h_S_eff->SetBinContent(i, pEff_S->GetEfficiency(i));
-    h_CombiWithConvLeg_eff->SetBinContent(i, pEff_CombiWithConvLeg->GetEfficiency(i));
-    h_CombiWithoutConvLeg_eff->SetBinContent(i, pEff_CombiWithoutConvLeg->GetEfficiency(i));
-    h_HF_eff->SetBinContent(i, pEff_HF->GetEfficiency(i));
-    h_RPConv_eff->SetBinContent(i, pEff_RPConv->GetEfficiency(i));
+    h_SB_eff->SetBinContent(i, pEff_SB->GetEfficiency(pEff_SB->GetGlobalBin(i)));
+    h_S_eff->SetBinContent(i, pEff_S->GetEfficiency(pEff_S->GetGlobalBin(i)));
+    h_CombiWithConvLeg_eff->SetBinContent(i, pEff_CombiWithConvLeg->GetEfficiency(pEff_CombiWithConvLeg->GetGlobalBin(i)));
+    h_CombiWithoutConvLeg_eff->SetBinContent(i, pEff_CombiWithoutConvLeg->GetEfficiency(pEff_CombiWithoutConvLeg->GetGlobalBin(i)));
+    h_HF_eff->SetBinContent(i, pEff_HF->GetEfficiency(pEff_HF->GetGlobalBin(i)));
+    h_RPConv_eff->SetBinContent(i, pEff_RPConv->GetEfficiency(pEff_RPConv->GetGlobalBin(i)));
 
+    Float_t err_max;
+    
     if(!TMath::IsNaN(pEff_SB->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_SB->GetEfficiencyErrorUp(i))) {
-      h_SB_eff->SetBinError(i, TMath::Max(pEff_SB->GetEfficiencyErrorLow(i), pEff_SB->GetEfficiencyErrorUp(i)));
+      err_max = TMath::Max(pEff_SB->GetEfficiencyErrorLow(i), pEff_SB->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_SB_eff->SetBinError(i, err_max);
+      else h_RPConv_eff->SetBinError(i, 0.);
     }else h_SB_eff->SetBinError(i, 0.);
 
     if(!TMath::IsNaN(pEff_S->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_S->GetEfficiencyErrorUp(i))) {
-      h_S_eff->SetBinError(i, TMath::Max(pEff_S->GetEfficiencyErrorLow(i), pEff_S->GetEfficiencyErrorUp(i)));
+      err_max = TMath::Max(pEff_S->GetEfficiencyErrorLow(i), pEff_S->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_S_eff->SetBinError(i, err_max);
+      else h_S_eff->SetBinError(i, 0.);
     }else h_S_eff->SetBinError(i, 0.);
 
     if(!TMath::IsNaN(pEff_CombiWithConvLeg->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombiWithConvLeg->GetEfficiencyErrorUp(i))) {
-      h_CombiWithConvLeg_eff->SetBinError(i, TMath::Max(pEff_CombiWithConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithConvLeg->GetEfficiencyErrorUp(i)));
+      TMath::Max(pEff_CombiWithConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithConvLeg->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_CombiWithConvLeg_eff->SetBinError(i, err_max);
+      else h_CombiWithConvLeg_eff->SetBinError(i, 0.);
     }else h_CombiWithConvLeg_eff->SetBinError(i, 0.);
 
     if(!TMath::IsNaN(pEff_CombiWithoutConvLeg->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombiWithoutConvLeg->GetEfficiencyErrorUp(i))) {
-      h_CombiWithoutConvLeg_eff->SetBinError(i, TMath::Max(pEff_CombiWithoutConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithoutConvLeg->GetEfficiencyErrorUp(i)));
+      err_max = TMath::Max(pEff_CombiWithoutConvLeg->GetEfficiencyErrorLow(i), pEff_CombiWithoutConvLeg->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_CombiWithoutConvLeg_eff->SetBinError(i, err_max);
+      else h_CombiWithoutConvLeg_eff->SetBinError(i, 0.);
     }else h_CombiWithoutConvLeg_eff->SetBinError(i, 0.);
 
     if(!TMath::IsNaN(pEff_HF->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_HF->GetEfficiencyErrorUp(i))) {
-      h_HF_eff->SetBinError(i, TMath::Max(pEff_HF->GetEfficiencyErrorLow(i), pEff_HF->GetEfficiencyErrorUp(i)));
+      err_max = TMath::Max(pEff_HF->GetEfficiencyErrorLow(i), pEff_HF->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_HF_eff->SetBinError(i, err_max);
+      else h_HF_eff->SetBinError(i, 0.);
     }else h_HF_eff->SetBinError(i, 0.);
 
     if(!TMath::IsNaN(pEff_RPConv->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_RPConv->GetEfficiencyErrorUp(i))) {
-      h_RPConv_eff->SetBinError(i, TMath::Max(pEff_RPConv->GetEfficiencyErrorLow(i), pEff_RPConv->GetEfficiencyErrorUp(i)));
+      err_max = TMath::Max(pEff_RPConv->GetEfficiencyErrorLow(i), pEff_RPConv->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_RPConv_eff->SetBinError(i, err_max);
+      else h_RPConv_eff->SetBinError(i, 0.);
     }else h_RPConv_eff->SetBinError(i, 0.);
   }
   
@@ -749,7 +773,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   TString drawOptions_mass = "hist e x0";
   TString drawOptions_mass_same = drawOptions_mass + " same";
 
-  TString drawOptions_mass_afterCut = "e1 x0 same";
+  TString drawOptions_mass_afterCut = "hist p e1 x0 same";
 
   TCanvas *c = new TCanvas("c","",1024,768);
   c->SetLogy();
@@ -797,13 +821,14 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   l.SetTextSize(.025);
   l.DrawLatex(.1,1.5e7,h_text);
 
-  TLatex *l_ALICE = new TLatex(.19,.82,"ALICE work in progress");
+  TLatex *l_ALICE = new TLatex(.19,.845,"ALICE work in progress");
   l_ALICE->SetTextSize(.035);
   l_ALICE->SetTextFont(42);
   l_ALICE->SetNDC();
-  l_ALICE->Draw();
+  // l_ALICE->Draw();
 
-  TLatex *l_info = new TLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  // TLatex *l_eff_info = new TLatex(.2,.22,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  TLatex *l_info = new TLatex(.19,.805,"PYTHIA, p-p #sqrt{#it{s}} = 13 TeV");
   l_info->SetTextSize(.03);
   l_info->SetTextFont(42);
   l_info->SetNDC();
@@ -814,9 +839,8 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   c->SaveAs(output_prefix + "mass.png");
 
 
-  TString drawOptions_eff = "hist p x0 e1";
+  TString drawOptions_eff = "hist p x0 e";
   TString drawOptions_eff_same = drawOptions_eff + " same";
-
 
   TLegend *leg_eff = new TLegend(.55,.2,.88,.43);
   leg_eff->AddEntry(h_SB_eff,"S+B","p");
@@ -842,13 +866,14 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   leg_eff->Draw();
   l.DrawLatex(.1,1.125,h_text);
 
-  TLatex *l_eff_ALICE = new TLatex(.2,.26,"ALICE work in progress");
+  TLatex *l_eff_ALICE = new TLatex(.2,.25,"ALICE work in progress");
   l_eff_ALICE->SetTextSize(.035);
   l_eff_ALICE->SetTextFont(42);
   l_eff_ALICE->SetNDC();
-  l_eff_ALICE->Draw();
+  // l_eff_ALICE->Draw();
 
-  TLatex *l_eff_info = new TLatex(.2,.22,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  // TLatex *l_eff_info = new TLatex(.2,.22,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  TLatex *l_eff_info = new TLatex(.2,.21,"PYTHIA, p-p #sqrt{#it{s}} = 13 TeV");
   l_eff_info->SetTextSize(.03);
   l_eff_info->SetTextFont(42);
   l_eff_info->SetNDC();
@@ -1657,7 +1682,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   outfile->Close();
 
   
-  gApplication->Terminate();
+  gSystem->Exit(1);
 }
 
 
