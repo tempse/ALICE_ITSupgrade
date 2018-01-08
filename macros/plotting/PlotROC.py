@@ -283,3 +283,8 @@ plt.tight_layout()
 
 plt.savefig('temp_output/ROCcurves.png')
 plt.savefig('temp_output/ROCcurves.pdf')
+
+plt.xlim([.90,1.01])
+plt.ylim([.90,1.01])
+plt.savefig('temp_output/ROCcurves_zoomed.png')
+plt.savefig('temp_output/ROCcurves_zoomed.pdf')
