@@ -4,6 +4,7 @@
 
 #include <TROOT.h>
 #include <TMath.h>
+#include <TSystem.h>
 #include <TApplication.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -19,31 +20,32 @@ Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
 void createSignificanceData(TString MCdatafilename,
-			    TString treename_MCdatafile,
+                            TString treename_MCdatafile,
 			    
-			    TString MVAoutput_RPConvRejMVA_filename,
-			    TString treename_MVAoutput_RPConvRejMVA_file,
-			    TString branchname_MVAoutput_RPConvRejMVA_file,
+                            TString MVAoutput_RPConvRejMVA_filename,
+                            TString treename_MVAoutput_RPConvRejMVA_file,
+                            TString branchname_MVAoutput_RPConvRejMVA_file,
 			    
-			    TString MVAoutput_CombConvRejMVA_filename,
-			    TString treename_MVAoutput_CombConvRejMVA_file,
-			    TString branchname_MVAoutput_CombConvRej_file,
+                            TString MVAoutput_CombConvRejMVA_filename,
+                            TString treename_MVAoutput_CombConvRejMVA_file,
+                            TString branchname_MVAoutput_CombConvRej_file,
 			    
-			    TString MVAoutput_singleConvTrackRejMVA_filename,
-			    TString treename_MVAoutput_singleConvTrackRejMVA_file,
-			    TString branchname_MVAoutput_singleConvTrackRejMVA_file_1,
-			    TString branchname_MVAoutput_singleConvTrackRejMVA_file_2,
+                            TString MVAoutput_singleConvTrackRejMVA_filename,
+                            TString treename_MVAoutput_singleConvTrackRejMVA_file,
+                            TString branchname_MVAoutput_singleConvTrackRejMVA_file_1,
+                            TString branchname_MVAoutput_singleConvTrackRejMVA_file_2,
 			    
-			    Int_t   num_steps = 10, // number of steps in the MVA cut scan
-			    Float_t massCut = 0.05, // do not count events with mass < massCut
-			    Float_t MVAoutputRange_min = 0.,
-			    Float_t MVAoutputRange_max = 1.,
-			    TString outfilename = "temp_output/significance_data",
-			    TString PIDeffs_filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputData/ITSU_PIDefficiency_lowB.root") {
+                            Int_t   num_steps = 10, // number of steps in the MVA cut scan
+                            UInt_t  considerLooseCuts = 0, // 0...no loose cuts, 1...with loose cuts, 2...all tracks
+                            Float_t massCut = 0.05, // do not count events with mass < massCut
+                            Float_t MVAoutputRange_min = 0.,
+                            Float_t MVAoutputRange_max = 1.,
+                            TString outfilename = "temp_output/significance_data",
+                            TString PIDeffs_filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root") {
 
-
+  
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 50000000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = 5000000; // process this number of entries (if "-1", all entries are selected)
 
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
@@ -77,6 +79,19 @@ void createSignificanceData(TString MCdatafilename,
     containsTrackCutInfo = kFALSE;
   }
 
+  if(!containsTrackCutInfo && considerLooseCuts>0) {
+    std::cout << "  ERROR: Loose track cuts have been chosen to be considered, but do not exist "
+              << "in the file. Exiting without changing the files..." << std::endl;
+    MCdatafile->Close();
+    gSystem->Exit(1);
+  }
+
+  if(containsTrackCutInfo && considerLooseCuts>=3) {
+    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    MCdatafile->Close();
+    gSystem->Exit(1);
+  }
+  
 
   TFile *MVAoutput_RPConvRejMVA_file = new TFile(MVAoutput_RPConvRejMVA_filename, "READ");
   TTree *tree_MVAoutput_RPConvRejMVA_file = (TTree*)MVAoutput_RPConvRejMVA_file->Get(treename_MVAoutput_RPConvRejMVA_file);
@@ -286,6 +301,22 @@ void createSignificanceData(TString MCdatafilename,
 	continue;
       }
 
+      // loose track cut selection (see also second occurrence below!):
+      if(containsTrackCutInfo) {
+        if(considerLooseCuts==0 &&
+           (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
+          tags_RPConvRejMVA[j] = -99;
+          continue;
+        }else if(considerLooseCuts==1 &&
+                 (trackCut1_all==0 || trackCut2_all[j]==0)) {
+          tags_RPConvRejMVA[j] = -99;
+          continue;
+        }
+        // else: Only case left is considerLooseCuts==2, since
+        // considerLooseCuts>=3 gets already rejected in the beginning of the code.
+        // In this case, all tracks are processed, therefore no skipping.
+      }
+
       if(MVAout_RPConvRejMVA_all[j] < MVAcut) {
 	tags_RPConvRejMVA[j] = 1;
       }
@@ -302,6 +333,22 @@ void createSignificanceData(TString MCdatafilename,
       for(Long64_t i=j+1; i<nentries; i++) {
 	
 	if(EventID_all[i] != EventID_current) break;
+
+    if(MVAout_RPConvRejMVA_all[i] < MVAoutputRange_min ||
+       MVAout_RPConvRejMVA_all[i] > MVAoutputRange_max) {
+      continue;
+    }
+
+    // loose track cut selection (see also occurrence above!):
+    if(containsTrackCutInfo) {
+      if(considerLooseCuts==0 &&
+         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+        continue;
+      }else if(considerLooseCuts==1 &&
+               (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+        continue;
+      }
+    }
 
 	// 'forward propagation' of tag information:
 	if(doForwardProp &&
@@ -340,9 +387,16 @@ void createSignificanceData(TString MCdatafilename,
 	continue;
       }
 
-      if(containsTrackCutInfo && (trackCut1_all[j] != 2 || trackCut2_all[j] != 2)) {
-	tags_CombConvRejMVA[j] = -999;
-	continue;
+      if(containsTrackCutInfo && considerLooseCuts==0 &&
+         (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
+        tags_CombConvRejMVA[j] = -99;
+        continue;
+      }
+
+      if(containsTrackCutInfo && considerLooseCuts==1 &&
+         (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+        tags_CombConvRejMVA[j] = -99;
+        continue;
       }
 
       if(MVAout_CombConvRejMVA_all[j] < MVAcut) {
@@ -367,9 +421,16 @@ void createSignificanceData(TString MCdatafilename,
 	continue;
       }
 
-      if(containsTrackCutInfo && (trackCut1_all[j] != 2 || trackCut2_all[j] != 2)) {
-	tags_singleConvTrackRejMVA[j] = -999;
-	continue;
+      if(containsTrackCutInfo && considerLooseCuts==0 &&
+         (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
+        tags_singleConvTrackRejMVA[j] = -99;
+        continue;
+      }
+
+      if(containsTrackCutInfo && considerLooseCuts==1 &&
+         (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+        tags_singleConvTrackRejMVA[j] = -99;
+        continue;
       }
 
       if((MVAout_singleConvTrackRejMVA_1_all[j] < MVAcut ||
@@ -392,10 +453,19 @@ void createSignificanceData(TString MCdatafilename,
 
       for(Long64_t i=0; i<nentries; i++) {
 
-	if( mass_all[i] < massCut ||
-	    (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
+	if( mass_all[i] < massCut ) {
 	  continue;
 	}
+
+    if(containsTrackCutInfo && considerLooseCuts==0 &&
+       (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+      continue;
+    }
+
+    if(containsTrackCutInfo && considerLooseCuts==1 &&
+       (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+      continue;
+    }
 	
 	Float_t pairweight_temp = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
@@ -444,9 +514,18 @@ void createSignificanceData(TString MCdatafilename,
     Float_t num_totalConvs = 0, num_totalNonConvs = 0;
     for(Long64_t i=0; i<nentries; i++) {
 
-      if( mass_all[i]<massCut ||
-	  (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
-	continue;
+      if( mass_all[i] < massCut ) {
+        continue;
+      }
+      
+      if(containsTrackCutInfo && considerLooseCuts==0 &&
+         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+        continue;
+      }
+      
+      if(containsTrackCutInfo && considerLooseCuts==1 &&
+         (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+        continue;
       }
       
       if(IsConv_all[i]==1) num_totalConvs += getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
@@ -459,9 +538,18 @@ void createSignificanceData(TString MCdatafilename,
 
     for(Long64_t i=0; i<nentries; i++) {
 
-      if( mass_all[i]<massCut ||
-	  (containsTrackCutInfo && (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) ) {
-	continue;
+      if( mass_all[i] < massCut ) {
+        continue;
+      }
+
+      if(containsTrackCutInfo && considerLooseCuts==0 &&
+         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+        continue;
+      }
+
+      if(containsTrackCutInfo && considerLooseCuts==1 &&
+         (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+        continue;
       }
       
       Float_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
@@ -559,8 +647,8 @@ void createSignificanceData(TString MCdatafilename,
   delete [] pt1_all;
   delete [] pt2_all;
   delete [] mass_all;
-  delete [] trackCut1_all;
-  delete [] trackCut2_all;
+  if(containsTrackCutInfo) delete [] trackCut1_all;
+  if(containsTrackCutInfo) delete [] trackCut2_all;
   delete [] MVAout_RPConvRejMVA_all;
   delete [] MVAout_CombConvRejMVA_all;
   delete [] MVAout_singleConvTrackRejMVA_1_all;
@@ -574,8 +662,8 @@ void createSignificanceData(TString MCdatafilename,
   pt1_all = NULL;
   pt2_all = NULL;
   mass_all = NULL;
-  trackCut1_all = NULL;
-  trackCut2_all = NULL;
+  if(containsTrackCutInfo) trackCut1_all = NULL;
+  if(containsTrackCutInfo) trackCut2_all = NULL;
   MVAout_RPConvRejMVA_all = NULL;
   MVAout_CombConvRejMVA_all = NULL;
   MVAout_singleConvTrackRejMVA_1_all = NULL;
