@@ -75,7 +75,7 @@ void createSignificanceData(TString MCdatafilename,
     tree_MCdatafile->SetBranchAddress("TrackCut2", &TrackCut2);
   }else {
     std::cout << "  Warning: No branch holding track cut information found. "
-	      << "All tracks will be processed." << std::endl;
+              << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
 
@@ -96,17 +96,17 @@ void createSignificanceData(TString MCdatafilename,
   TFile *MVAoutput_RPConvRejMVA_file = new TFile(MVAoutput_RPConvRejMVA_filename, "READ");
   TTree *tree_MVAoutput_RPConvRejMVA_file = (TTree*)MVAoutput_RPConvRejMVA_file->Get(treename_MVAoutput_RPConvRejMVA_file);
   tree_MVAoutput_RPConvRejMVA_file->SetBranchAddress(branchname_MVAoutput_RPConvRejMVA_file,
-						     &MVAout_RPConvRejMVA);
+                                                     &MVAout_RPConvRejMVA);
   
 
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_RPConvRejMVA_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-	      << "    Size of tree " << treename_MCdatafile << " in "
-	      << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
-	      << std::endl
-	      << "    Size of tree " << treename_MVAoutput_RPConvRejMVA_file << " in "
-	      << MVAoutput_RPConvRejMVA_filename << ": " << tree_MVAoutput_RPConvRejMVA_file->GetEntries()
-	      << std::endl << std::endl;
+              << "    Size of tree " << treename_MCdatafile << " in "
+              << MCdatafilename << ": " << tree_MCdatafile->GetEntries()
+              << std::endl
+              << "    Size of tree " << treename_MVAoutput_RPConvRejMVA_file << " in "
+              << MVAoutput_RPConvRejMVA_filename << ": " << tree_MVAoutput_RPConvRejMVA_file->GetEntries()
+              << std::endl << std::endl;
     gApplication->Terminate();
   }
 
@@ -115,14 +115,14 @@ void createSignificanceData(TString MCdatafilename,
   TFile *MVAoutput_CombConvRejMVA_file = new TFile(MVAoutput_CombConvRejMVA_filename, "READ");
   TTree *tree_MVAoutput_CombConvRejMVA_file = (TTree*)MVAoutput_CombConvRejMVA_file->Get(treename_MVAoutput_CombConvRejMVA_file);
   tree_MVAoutput_CombConvRejMVA_file->SetBranchAddress(branchname_MVAoutput_CombConvRej_file,
-						       &MVAout_CombConvRejMVA);
+                                                       &MVAout_CombConvRejMVA);
 
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_CombConvRejMVA_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-	      << "    Size of tree " << tree_MCdatafile->GetEntries()
-	      << std::endl
-	      << "    Size of tree " << tree_MVAoutput_CombConvRejMVA_file->GetEntries()
-	      << std::endl << std::endl;
+              << "    Size of tree " << tree_MCdatafile->GetEntries()
+              << std::endl
+              << "    Size of tree " << tree_MVAoutput_CombConvRejMVA_file->GetEntries()
+              << std::endl << std::endl;
     gApplication->Terminate();
   }
 
@@ -131,17 +131,17 @@ void createSignificanceData(TString MCdatafilename,
   TFile *MVAoutput_singleConvTrackRejMVA_file = new TFile(MVAoutput_singleConvTrackRejMVA_filename, "READ");
   TTree *tree_MVAoutput_singleConvTrackRejMVA_file = (TTree*)MVAoutput_singleConvTrackRejMVA_file->Get(treename_MVAoutput_singleConvTrackRejMVA_file);
   tree_MVAoutput_singleConvTrackRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleConvTrackRejMVA_file_1,
-   							      &MVAout_singleConvTrackRejMVA_1);
+                                                              &MVAout_singleConvTrackRejMVA_1);
   tree_MVAoutput_singleConvTrackRejMVA_file->SetBranchAddress(branchname_MVAoutput_singleConvTrackRejMVA_file_2,
-							      &MVAout_singleConvTrackRejMVA_2);
+                                                              &MVAout_singleConvTrackRejMVA_2);
   
 
   if(tree_MCdatafile->GetEntries() != tree_MVAoutput_singleConvTrackRejMVA_file->GetEntries()) {
     std::cout << "  ERROR: Trees have different sizes." << std::endl
-  	      << "    Size of tree " << tree_MCdatafile->GetEntries()
-  	      << std::endl
-  	      << "    Size of tree " << tree_MVAoutput_singleConvTrackRejMVA_file->GetEntries()
-  	      << std::endl << std::endl;
+              << "    Size of tree " << tree_MCdatafile->GetEntries()
+              << std::endl
+              << "    Size of tree " << tree_MVAoutput_singleConvTrackRejMVA_file->GetEntries()
+              << std::endl << std::endl;
     gApplication->Terminate();
   }
 
@@ -278,7 +278,7 @@ void createSignificanceData(TString MCdatafilename,
     MVAcut = scan/(num_steps*1.0)*(MVAoutputRange_max-MVAoutputRange_min) + MVAoutputRange_min;
 
     std::cout << std::endl << "---------- Step " << scan << " of " << num_steps
-	      << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
+              << " (MVA cut: " << MVAcut << "): ----------" << std::endl;
 
     std::cout << "Reading the data...";
 
@@ -286,19 +286,19 @@ void createSignificanceData(TString MCdatafilename,
     TRandom *rand = new TRandom();
     
     std::cout << "Tagging pairs and applying the prefilter..."
-	      << std::endl;
+              << std::endl;
     
     std::cout << "Step 1/3:" << std::endl;
 
     for(Long64_t j=0; j<nentries; j++) {
       if((j%5000)==0) {
-	std::cout << "\r  (" << j << " / " << nentries << ")";
+        std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
       if( (MVAout_RPConvRejMVA_all[j] < MVAoutputRange_min ||
-	   MVAout_RPConvRejMVA_all[j] > MVAoutputRange_max) ) {
-	tags_RPConvRejMVA[j] = -999;
-	continue;
+           MVAout_RPConvRejMVA_all[j] > MVAoutputRange_max) ) {
+        tags_RPConvRejMVA[j] = -999;
+        continue;
       }
 
       // loose track cut selection (see also second occurrence below!):
@@ -318,7 +318,7 @@ void createSignificanceData(TString MCdatafilename,
       }
 
       if(MVAout_RPConvRejMVA_all[j] < MVAcut) {
-	tags_RPConvRejMVA[j] = 1;
+        tags_RPConvRejMVA[j] = 1;
       }
       
       Int_t EventID_current = EventID_all[j];
@@ -332,43 +332,43 @@ void createSignificanceData(TString MCdatafilename,
       
       for(Long64_t i=j+1; i<nentries; i++) {
 	
-	if(EventID_all[i] != EventID_current) break;
+        if(EventID_all[i] != EventID_current) break;
 
-    if(MVAout_RPConvRejMVA_all[i] < MVAoutputRange_min ||
-       MVAout_RPConvRejMVA_all[i] > MVAoutputRange_max) {
-      continue;
-    }
+        if(MVAout_RPConvRejMVA_all[i] < MVAoutputRange_min ||
+           MVAout_RPConvRejMVA_all[i] > MVAoutputRange_max) {
+          continue;
+        }
 
-    // loose track cut selection (see also occurrence above!):
-    if(containsTrackCutInfo) {
-      if(considerLooseCuts==0 &&
-         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
-        continue;
-      }else if(considerLooseCuts==1 &&
-               (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
-        continue;
-      }
-    }
+        // loose track cut selection (see also occurrence above!):
+        if(containsTrackCutInfo) {
+          if(considerLooseCuts==0 &&
+             (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+            continue;
+          }else if(considerLooseCuts==1 &&
+                   (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+            continue;
+          }
+        }
 
-	// 'forward propagation' of tag information:
-	if(doForwardProp &&
-	   MVAout_RPConvRejMVA_all[j] < MVAcut &&
-	   (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-	    TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_RPConvRejMVA[i] = 1;
-	}
+        // 'forward propagation' of tag information:
+        if(doForwardProp &&
+           MVAout_RPConvRejMVA_all[j] < MVAcut &&
+           (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+            TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+          tags_RPConvRejMVA[i] = 1;
+        }
 
-	Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+        Float_t pairWeight_i = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
-	Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
+        Bool_t doBackwardProp = (rand->Uniform() < pairWeight_i) ? kTRUE : kFALSE;
 
-	// 'backward propagation' of tag information:
+        // 'backward propagation' of tag information:
         if(doBackwardProp &&
-	   MVAout_RPConvRejMVA_all[i] < MVAcut &&
-		 (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
-		  TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
-	  tags_RPConvRejMVA[j] = 1;
-	}
+           MVAout_RPConvRejMVA_all[i] < MVAcut &&
+           (TrackID1_current == TrackID1_all[i] || TrackID2_current == TrackID2_all[i] ||
+            TrackID1_current == TrackID2_all[i] || TrackID2_current == TrackID1_all[i])) {
+          tags_RPConvRejMVA[j] = 1;
+        }
       }
     }
     std::cout << std::endl;
@@ -378,13 +378,13 @@ void createSignificanceData(TString MCdatafilename,
 
     for(Long64_t j=0; j<nentries; j++) {
       if((j%5000)==0) {
-	std::cout << "\r  (" << j << " / " << nentries << ")";
+        std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
       if( (MVAout_CombConvRejMVA_all[j] < MVAoutputRange_min ||
-	   MVAout_CombConvRejMVA_all[j] > MVAoutputRange_max) ) {
-	tags_CombConvRejMVA[j] = -999;
-	continue;
+           MVAout_CombConvRejMVA_all[j] > MVAoutputRange_max) ) {
+        tags_CombConvRejMVA[j] = -999;
+        continue;
       }
 
       if(containsTrackCutInfo && considerLooseCuts==0 &&
@@ -400,7 +400,7 @@ void createSignificanceData(TString MCdatafilename,
       }
 
       if(MVAout_CombConvRejMVA_all[j] < MVAcut) {
-	tags_CombConvRejMVA[j] = 1;
+        tags_CombConvRejMVA[j] = 1;
       }
     }
     std::cout << std::endl;
@@ -410,15 +410,15 @@ void createSignificanceData(TString MCdatafilename,
 
     for(Long64_t j=0; j<nentries; j++) {
       if((j%5000)==0) {
-	std::cout << "\r  (" << j << " / " << nentries << ")";
+        std::cout << "\r  (" << j << " / " << nentries << ")";
       }
 
       if( (MVAout_singleConvTrackRejMVA_1_all[j] < MVAoutputRange_min ||
-	   MVAout_singleConvTrackRejMVA_2_all[j] < MVAoutputRange_min ||
-	   MVAout_singleConvTrackRejMVA_1_all[j] > MVAoutputRange_max ||
-	   MVAout_singleConvTrackRejMVA_2_all[j] > MVAoutputRange_max) ) {
-	tags_singleConvTrackRejMVA[j] = -999;
-	continue;
+           MVAout_singleConvTrackRejMVA_2_all[j] < MVAoutputRange_min ||
+           MVAout_singleConvTrackRejMVA_1_all[j] > MVAoutputRange_max ||
+           MVAout_singleConvTrackRejMVA_2_all[j] > MVAoutputRange_max) ) {
+        tags_singleConvTrackRejMVA[j] = -999;
+        continue;
       }
 
       if(containsTrackCutInfo && considerLooseCuts==0 &&
@@ -434,8 +434,8 @@ void createSignificanceData(TString MCdatafilename,
       }
 
       if((MVAout_singleConvTrackRejMVA_1_all[j] < MVAcut ||
-	  MVAout_singleConvTrackRejMVA_2_all[j] < MVAcut)) {
-	tags_singleConvTrackRejMVA[j] = 1;
+          MVAout_singleConvTrackRejMVA_2_all[j] < MVAcut)) {
+        tags_singleConvTrackRejMVA[j] = 1;
       }
     }
 
@@ -453,60 +453,60 @@ void createSignificanceData(TString MCdatafilename,
 
       for(Long64_t i=0; i<nentries; i++) {
 
-	if( mass_all[i] < massCut ) {
-	  continue;
-	}
+        if( mass_all[i] < massCut ) {
+          continue;
+        }
 
-    if(containsTrackCutInfo && considerLooseCuts==0 &&
-       (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
-      continue;
-    }
+        if(containsTrackCutInfo && considerLooseCuts==0 &&
+           (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+          continue;
+        }
 
-    if(containsTrackCutInfo && considerLooseCuts==1 &&
-       (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
-      continue;
-    }
+        if(containsTrackCutInfo && considerLooseCuts==1 &&
+           (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+          continue;
+        }
 	
-	Float_t pairweight_temp = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+        Float_t pairweight_temp = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
-	if(IsConv_all[i]==0) {
-	  num_S_ideal_temp += pairweight_temp;
-	}else {
-	  num_B_ideal_temp += pairweight_temp;
-	}
+        if(IsConv_all[i]==0) {
+          num_S_ideal_temp += pairweight_temp;
+        }else {
+          num_B_ideal_temp += pairweight_temp;
+        }
 
-	if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_RPConvRejMVA_temp += pairweight_temp;
-	if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_RPConvRejMVA_temp += pairweight_temp;
+        if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_RPConvRejMVA_temp += pairweight_temp;
+        if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_RPConvRejMVA_temp += pairweight_temp;
 
-	if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_CombConvRejMVA_temp += pairweight_temp;
-	if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_CombConvRejMVA_temp += pairweight_temp;
+        if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_CombConvRejMVA_temp += pairweight_temp;
+        if(tags_CombConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_CombConvRejMVA_temp += pairweight_temp;
 
-	if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==0) num_S_singleConvTrackRejMVA_temp += pairweight_temp;
-	if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==1) num_B_singleConvTrackRejMVA_temp += pairweight_temp;
+        if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==0) num_S_singleConvTrackRejMVA_temp += pairweight_temp;
+        if(tags_singleConvTrackRejMVA[i]==0 && IsConv_all[i]==1) num_B_singleConvTrackRejMVA_temp += pairweight_temp;
       }
 
 
       if(num_S_ideal_temp!=0) {
-	significance_ideal = num_S_ideal_temp/TMath::Sqrt(num_S_ideal_temp);
+        significance_ideal = num_S_ideal_temp/TMath::Sqrt(num_S_ideal_temp);
       }else significance_ideal = 0.;
 
       if(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp>0) {
-	significance_RPConvRejMVA_all = num_S_RPConvRejMVA_temp/TMath::Sqrt(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp);
+        significance_RPConvRejMVA_all = num_S_RPConvRejMVA_temp/TMath::Sqrt(num_S_RPConvRejMVA_temp+num_B_RPConvRejMVA_temp);
       }else significance_RPConvRejMVA_all = 0.;
 
       if(num_S_CombConvRejMVA_temp+num_B_CombConvRejMVA_temp>0) {
-	significance_CombConvRejMVA_all = num_S_CombConvRejMVA_temp/TMath::Sqrt(num_S_CombConvRejMVA_temp+num_B_CombConvRejMVA_temp);
+        significance_CombConvRejMVA_all = num_S_CombConvRejMVA_temp/TMath::Sqrt(num_S_CombConvRejMVA_temp+num_B_CombConvRejMVA_temp);
       }else significance_CombConvRejMVA_all = 0.;
 
       if(num_S_singleConvTrackRejMVA_temp+num_B_singleConvTrackRejMVA_temp>0) {
-	significance_singleConvTrackRejMVA_all = num_S_singleConvTrackRejMVA_temp/TMath::Sqrt(num_S_singleConvTrackRejMVA_temp+num_B_singleConvTrackRejMVA_temp);
+        significance_singleConvTrackRejMVA_all = num_S_singleConvTrackRejMVA_temp/TMath::Sqrt(num_S_singleConvTrackRejMVA_temp+num_B_singleConvTrackRejMVA_temp);
       }else significance_singleConvTrackRejMVA_all = 0.;
 
       //testing
       std::cout << " Ideal significance: " << significance_ideal << std::endl
-		<< " Significance (no backgr. rej., RPConvRejMVA): " << significance_RPConvRejMVA_all << std::endl
-		<< " Significance (no backgr. rej., CombConvRejMVA): " << significance_CombConvRejMVA_all << std::endl
-		<< " Significance (no backgr. rej., singleConvTrackRejMVA): " << significance_singleConvTrackRejMVA_all << std::endl;
+                << " Significance (no backgr. rej., RPConvRejMVA): " << significance_RPConvRejMVA_all << std::endl
+                << " Significance (no backgr. rej., CombConvRejMVA): " << significance_CombConvRejMVA_all << std::endl
+                << " Significance (no backgr. rej., singleConvTrackRejMVA): " << significance_singleConvTrackRejMVA_all << std::endl;
 
     }
       
@@ -602,17 +602,17 @@ void createSignificanceData(TString MCdatafilename,
 
     std::cout << " DONE" << std::endl;
     std::cout << "  S_eff_RPConvRejMVA = " << Seff_RPConvRejMVA << ",\tB_eff_RPConvRejMVA = " << Beff_RPConvRejMVA
-	      << ",\tsignificance_RPConvRejMVA = " << significance_RPConvRejMVA << std::endl;
+              << ",\tsignificance_RPConvRejMVA = " << significance_RPConvRejMVA << std::endl;
     std::cout << "  S_eff_CombConvRejMVA = " << Seff_CombConvRejMVA << ",\tB_eff_CombConvRejMVA = " << Beff_CombConvRejMVA
-	      << ",\tsignificance_CombConvRejMVA = " << significance_CombConvRejMVA << std::endl;
+              << ",\tsignificance_CombConvRejMVA = " << significance_CombConvRejMVA << std::endl;
     std::cout << "  S_eff_singleConvTrackRejMVA = " << Seff_singleConvTrackRejMVA << ",\tB_eff_singleConvTrackRejMVA = " << Beff_singleConvTrackRejMVA
-	      << ",\tsignificance_singleConvTrackRej = " << significance_singleConvTrackRejMVA << std::endl;
+              << ",\tsignificance_singleConvTrackRej = " << significance_singleConvTrackRejMVA << std::endl;
     std::cout << "  significance_gain_RPConvRejMVA = " << significance_gain_RPConvRejMVA << std::endl;
     std::cout << "  significance_gain_CombConvRejMVA = " << significance_gain_CombConvRejMVA << std::endl;
     std::cout << "  significance_gain_singleConvTrackRejMVA = " << significance_gain_singleConvTrackRejMVA << std::endl;
 
     std::cout << std::endl << "Time elapsed: " << watch_step->RealTime()
-	      << " seconds." << std::endl;
+              << " seconds." << std::endl;
 
 
     delete [] tags_RPConvRejMVA;
