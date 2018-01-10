@@ -45,7 +45,7 @@ void createSignificanceData(TString MCdatafilename,
 
   
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 5000000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = 50000; // process this number of entries (if "-1", all entries are selected)
 
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
@@ -542,15 +542,8 @@ void createSignificanceData(TString MCdatafilename,
         continue;
       }
 
-      if(containsTrackCutInfo && considerLooseCuts==0 &&
-         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
+      if(containsTrackCutInfo && !(trackCut1_all[i]==2 && trackCut2_all[i]==2))
         continue;
-      }
-
-      if(containsTrackCutInfo && considerLooseCuts==1 &&
-         (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
-        continue;
-      }
       
       Float_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
 
