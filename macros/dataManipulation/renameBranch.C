@@ -26,8 +26,14 @@ void renameBranch(TString filename,
   TTree *t = (TTree*)updatefile->Get(treename);
 
   if(!t->GetListOfBranches()->FindObject(leafname_old)) {
-    std::cout << "  ERROR: No branch named " << leafname_old << "in file "
+    std::cout << "  ERROR: No branch named " << leafname_old << " in file "
               << filename << std::endl;
+    gSystem->Exit(1);
+  }
+
+  if(t->GetListOfBranches()->FindObject(leafname_new)) {
+    std::cout << "  ERROR: A branch named " << leafname_new
+              << " already exists in file " << filename << std::endl;
     gSystem->Exit(1);
   }
 
