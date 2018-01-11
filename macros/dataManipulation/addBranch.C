@@ -7,14 +7,14 @@
 
 
 void addBranch(TString updatefile_filename,
-	       TString updatefile_treename,
-	       TString branchfile_filename,
-	       TString branchfile_treename,
-	       TString branchfile_branchname,
-	       TString newBranch_name) {
+               TString updatefile_treename,
+               TString branchfile_filename,
+               TString branchfile_treename,
+               TString branchfile_branchname,
+               TString newBranch_name) {
   
-  Int_t new_v;
-  TString newBranch_vartype = "I";
+  Float_t new_v;
+  TString newBranch_vartype = "F";
 
 
   

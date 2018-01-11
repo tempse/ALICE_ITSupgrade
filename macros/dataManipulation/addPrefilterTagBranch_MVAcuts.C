@@ -180,12 +180,6 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
       continue;
     }
 
-    if(signalRegion == "+" && MVAoutput_all[j] > MVAcut) {
-      tags_prefilter[j] = 1;
-    }else if(signalRegion == "-" && MVAoutput_all[j] < MVAcut) {
-      tags_prefilter[j] = 1;
-    }
-
     // loose track cut selection (see also second occurrence below!):
     if(containsTrackCutInfo) {
       if(considerLooseCuts==0 &&
@@ -200,6 +194,12 @@ void addPrefilterTagBranch_MVAcuts(TString branchfilename,
       // else: Only case left is considerLooseCuts==2, since
       // considerLooseCuts>=3 gets already rejected in the beginning of the code.
       // In this case, all tracks are processed, therefore no skipping.
+    }
+
+    if(signalRegion == "+" && MVAoutput_all[j] > MVAcut) {
+      tags_prefilter[j] = 1;
+    }else if(signalRegion == "-" && MVAoutput_all[j] < MVAcut) {
+      tags_prefilter[j] = 1;
     }
 
     Int_t EventID_current = EventID_all[j];

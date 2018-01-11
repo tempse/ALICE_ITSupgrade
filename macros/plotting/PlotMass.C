@@ -36,25 +36,25 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   TString treeName_TestTree = "pairTree_us";
 
   // File containing the corresponding MVA output values:
-  TString fileName_MVAoutput = "/home/sebastian/analysis/data/HFstudy/workingData/MVA__HF_1__DNN_1__results/output/predictions_NN_GP.root"; // "/home/sebastian/analysis/data/HFstudy/workingData/MVA__HF_1__DNN_1__results/output/predictions_NN_GP.root";
-  TString treeName_MVAoutputTree = "pairTree_MVAoutput";
+  TString fileName_MVAoutput = "/home/sebastian/analysis/data/HFstudy/workingData/CA_AnalysisResults_Upgrade_GP_pairTree-us_part2_0.8nEvents.root";
+  TString treeName_MVAoutputTree = "pairTree_us";
   
   TString h_text = "";//Single-track conv. rejection via MVA cuts";
 
   // two variables are combined, e.g., via
   // (tag1 >= wantedPrefilterTagValue1 && tag2 >= wantedPrefilterTagValue2)
   // if the following variable is set to kTRUE:
-  Bool_t useTwoVars = kFALSE;
+  Bool_t useTwoVars = kTRUE;
 
   Bool_t useTags = kFALSE; // kTRUE...use tag variables, kFALSE...use MVA cut defined below
   Float_t variable1, variable2; // choose variable type accordingly (tags: Int_t, MVAcut: Float_t)!
   
-  Float_t MVAcut = 0.58;
+  Float_t MVAcut = 0.23;
   
   TString signalRegion = "+"; // "+"/"-"... accept values greater/smaller than MVAcut
   
-  TString variableName1 = "NN";
-  TString variableName2 = "MVAoutput_convTrack2";
+  TString variableName1 = "MVAoutput__HF_2__DNN_11__track1";
+  TString variableName2 = "MVAoutput__HF_2__DNN_11__track2";
 
   // After prefiltering, use events with this tag value only (if useTags==kTRUE):
   const Int_t wantedPrefilterTagValue1 = 0;
@@ -89,8 +89,8 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   
   if( !(wantedPrefilterTagValue1==0 || wantedPrefilterTagValue1==1) ) {
     std::cout << "   ERROR: Variable 'wantedPrefilterTagValue1' is required to have values "
-	      << " 0 or 1, but has value " << wantedPrefilterTagValue1 << " instead."
-	      << std::endl;
+              << " 0 or 1, but has value " << wantedPrefilterTagValue1 << " instead."
+              << std::endl;
     gSystem->Exit(1);
   }
   
@@ -127,7 +127,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     TestTree->SetBranchAddress("TrackCut2", &TrackCut2);
   }else {
     std::cout << "  Info: No branch holding track cut information found. "
-	      << "All tracks will be processed." << std::endl;
+              << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
   // if(TestTree->GetListOfBranches()->FindObject(variableName1) != NULL) {
@@ -153,11 +153,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
   if(TestTree->GetEntries() != MVAoutputTree->GetEntries()) {
     std::cout << "   ERROR: The trees of the input files have different sizes."
-	      << std::endl;
+              << std::endl;
     std::cout << "   Size of tree in file " << fileName_testData << ": "
-	      << TestTree->GetEntries() << std::endl;
+              << TestTree->GetEntries() << std::endl;
     std::cout << "   Size of tree in file " << fileName_MVAoutput << ": "
-	      << MVAoutputTree->GetEntries() << std::endl;
+              << MVAoutputTree->GetEntries() << std::endl;
     gSystem->Exit(1);
   }
 
@@ -165,7 +165,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     MVAoutputTree->SetBranchAddress(variableName1, &variable1);
   }else {
     std::cout << "  ERROR: The branch " << variableName1
-	      << " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
+              << " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
     gSystem->Exit(1);
   }
   if(useTwoVars) {
@@ -173,7 +173,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
       MVAoutputTree->SetBranchAddress(variableName2, &variable2);
     }else {
       std::cout << "  ERROR: The branch " << variableName2
-		<< " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
+                << " does not exist in the file " << f_MVAoutput->GetName() << std::endl;
       gSystem->Exit(1);
     }
   }
@@ -292,7 +292,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   for(Long64_t ev=0; ev<nEv; ev++) {
 
     if((ev%10000)==0) std::cout << "\rProcessing entry " << ev << " of "
-				<< nEv << " (" << ev*100/nEv << "%)...";
+                                << nEv << " (" << ev*100/nEv << "%)...";
     
     TestTree->GetEvent(ev);
     MVAoutputTree->GetEvent(ev);
@@ -329,31 +329,31 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     if(IsRP==1 && IsConv==0) {
       h_S->Fill(mass, sample_weight);
       for(Int_t b=0; b<b_max; b++) {
-	h_S_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+        h_S_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
       }
     }
     if(IsRP==0 && IsConv==1) {
       h_CombiWithConvLeg->Fill(mass, sample_weight);
       for(Int_t b=0; b<b_max; b++) {
-	h_CombiWithConvLeg_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+        h_CombiWithConvLeg_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
       }
     }
     if(IsRP==0 && IsConv==0) {
       h_CombiWithoutConvLeg->Fill(mass, sample_weight);
       for(Int_t b=0; b<b_max; b++) {
-	h_CombiWithoutConvLeg_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+        h_CombiWithoutConvLeg_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
       }
     }
     if(IsRP==0 && IsHF==1) {
       h_HF->Fill(mass, sample_weight);
       for(Int_t b=0; b<b_max; b++) {
-	h_HF_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+        h_HF_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
       }
     }
     if(IsRP==1 && IsConv==1) {
       h_RPConv->Fill(mass, sample_weight);
       for(Int_t b=0; b<b_max; b++) {
-	h_RPConv_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+        h_RPConv_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
       }
     }
 
@@ -362,240 +362,240 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     if(useTags) {
       
       if(!useTwoVars) {
-	if(variable1 == wantedPrefilterTagValue1) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
+        if(variable1 == wantedPrefilterTagValue1) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
       }else { // if(useTwoVars)
-	if(variable1 == wantedPrefilterTagValue1 &&
-	   variable2 == wantedPrefilterTagValue2) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
+        if(variable1 == wantedPrefilterTagValue1 &&
+           variable2 == wantedPrefilterTagValue2) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
       }
       
     }else { // if(!useTags)
       
       if(!useTwoVars) {
-	if(signalRegion == "+" && variable1 >= MVAcut &&
-	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
-	if(signalRegion == "-" && variable1 <= MVAcut &&
-	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
+        if(signalRegion == "+" && variable1 >= MVAcut &&
+           variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
+        if(signalRegion == "-" && variable1 <= MVAcut &&
+           variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
       }else { // if(useTwoVars)
-	if(signalRegion == "+" &&
-	   variable1 >= MVAcut &&
-	   variable2 >= MVAcut &&
-	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
-	   variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
-	if(signalRegion == "-" &&
-	   variable1 <= MVAcut &&
-	   variable2 <= MVAcut &&
-	   variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
-	   variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
-	  h_SB_afterCut->Fill(mass, sample_weight);
-	  for(Int_t b=0; b<b_max; b++) {
-	    h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	  }
-	  if(IsRP==1 && IsConv==0) {
-	    h_S_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==1) {
-	    h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsConv==0) {
-	    h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==0 && IsHF==1) {
-	    h_HF_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	  if(IsRP==1 && IsConv==1) {
-	    h_RPConv_afterCut->Fill(mass, sample_weight);
-	    for(Int_t b=0; b<b_max; b++) {
-	      h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
-	    }
-	  }
-	}
+        if(signalRegion == "+" &&
+           variable1 >= MVAcut &&
+           variable2 >= MVAcut &&
+           variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
+           variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
+        if(signalRegion == "-" &&
+           variable1 <= MVAcut &&
+           variable2 <= MVAcut &&
+           variable1 >= MVAoutputRange_min && variable1 <= MVAoutputRange_max &&
+           variable2 >= MVAoutputRange_min && variable2 <= MVAoutputRange_max) {
+          h_SB_afterCut->Fill(mass, sample_weight);
+          for(Int_t b=0; b<b_max; b++) {
+            h_SB_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+          }
+          if(IsRP==1 && IsConv==0) {
+            h_S_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_S_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==1) {
+            h_CombiWithConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsConv==0) {
+            h_CombiWithoutConvLeg_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_CombiWithoutConvLeg_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==0 && IsHF==1) {
+            h_HF_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_HF_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+          if(IsRP==1 && IsConv==1) {
+            h_RPConv_afterCut->Fill(mass, sample_weight);
+            for(Int_t b=0; b<b_max; b++) {
+              h_RPConv_afterCut_subsample->Fill(mass, rand_subsample->Integer(num_subsamples), sample_weight);
+            }
+          }
+        }
       }
       
     }
@@ -827,7 +827,7 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   l_ALICE->SetNDC();
   // l_ALICE->Draw();
 
-  // TLatex *l_eff_info = new TLatex(.2,.22,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  // TLatex *l_info = new TLatex(.19,.78,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
   TLatex *l_info = new TLatex(.19,.805,"PYTHIA, p-p #sqrt{#it{s}} = 13 TeV");
   l_info->SetTextSize(.03);
   l_info->SetTextFont(42);
@@ -858,11 +858,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
   h_SB_eff->GetYaxis()->SetTitleOffset(1.3);
   h_SB_eff->GetYaxis()->SetRangeUser(0,1.1);
   h_SB_eff->Draw(drawOptions_eff);
-  h_HF_eff->Draw(drawOptions_eff_same);
   h_S_eff->Draw(drawOptions_eff_same);
   h_CombiWithConvLeg_eff->Draw(drawOptions_eff_same);
   h_CombiWithoutConvLeg_eff->Draw(drawOptions_eff_same);
   h_RPConv_eff->Draw(drawOptions_eff_same);
+  h_HF_eff->Draw(drawOptions_eff_same);
   leg_eff->Draw();
   l.DrawLatex(.1,1.125,h_text);
 
@@ -1077,11 +1077,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     // classifier significance
     if((h_signal_class->GetBinContent(i) + h_backgr_class->GetBinContent(i)) != 0) {
       h_significance_class->SetBinContent(i,
-					  h_signal_class->GetBinContent(i) /
-					  TMath::Sqrt(h_signal_class->GetBinContent(i) +
-						      h_backgr_class->GetBinContent(i)));
+                                          h_signal_class->GetBinContent(i) /
+                                          TMath::Sqrt(h_signal_class->GetBinContent(i) +
+                                                      h_backgr_class->GetBinContent(i)));
       h_significance_class->SetBinError(i, significanceError(*h_signal_class_subsample, *h_backgr_class_subsample,
-       							     i, num_subsamples));
+                                                             i, num_subsamples));
       significance_class_integral += h_significance_class->GetBinContent(i);
     }else {
       h_significance_class->SetBinContent(i, 0.);
@@ -1089,12 +1089,12 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_class->GetBinContent(i),
-						       h_backgr_class->GetBinContent(i));
+                                                       h_backgr_class->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_class->SetBinContent(i,
-						    (temp_error_uncorr -
-						     h_significance_class->GetBinError(i)) /
-						    temp_error_uncorr);
+                                                    (temp_error_uncorr -
+                                                     h_significance_class->GetBinError(i)) /
+                                                    temp_error_uncorr);
     }
     h_error_est_significance_class->SetBinContent(i, h_significance_class->GetBinError(i));
     h_error_uncorr_significance_class->SetBinContent(i, temp_error_uncorr);
@@ -1102,11 +1102,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     
     if((h_signal_class_noCuts->GetBinContent(i) + h_backgr_class_noCuts->GetBinContent(i)) != 0) {
       h_significance_class_noCuts->SetBinContent(i,
-						 h_signal_class_noCuts->GetBinContent(i) /
-						 TMath::Sqrt(h_signal_class_noCuts->GetBinContent(i) +
-							     h_backgr_class_noCuts->GetBinContent(i)));
+                                                 h_signal_class_noCuts->GetBinContent(i) /
+                                                 TMath::Sqrt(h_signal_class_noCuts->GetBinContent(i) +
+                                                             h_backgr_class_noCuts->GetBinContent(i)));
       h_significance_class_noCuts->SetBinError(i, significanceError(*h_signal_class_noCuts_subsample, *h_backgr_class_noCuts_subsample,
-								    i, num_subsamples));
+                                                                    i, num_subsamples));
       significance_class_noCuts_integral += h_significance_class_noCuts->GetBinContent(i);
     }else {
       h_significance_class_noCuts->SetBinContent(i, 0.);
@@ -1114,12 +1114,12 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_class_noCuts->GetBinContent(i),
-						       h_backgr_class_noCuts->GetBinContent(i));
+                                                       h_backgr_class_noCuts->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_class_noCuts->SetBinContent(i,
-							   (temp_error_uncorr -
-							    h_significance_class_noCuts->GetBinError(i)) /
-							   temp_error_uncorr);
+                                                           (temp_error_uncorr -
+                                                            h_significance_class_noCuts->GetBinError(i)) /
+                                                           temp_error_uncorr);
     }
     h_error_est_significance_class_noCuts->SetBinContent(i, h_significance_class_noCuts->GetBinError(i));
     h_error_uncorr_significance_class_noCuts->SetBinContent(i, temp_error_uncorr);
@@ -1127,16 +1127,16 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     h_significance_class_ideal->SetBinContent(i, TMath::Sqrt(h_signal_class_ideal->GetBinContent(i)));
     h_significance_class_ideal->SetBinError(i, significanceError(*h_signal_class_ideal_subsample, *h_backgr_class_ideal_subsample,
-								 i, num_subsamples));
+                                                                 i, num_subsamples));
     significance_class_ideal_integral += h_significance_class_ideal->GetBinContent(i);
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_class_ideal->GetBinContent(i),
-						       h_backgr_class_ideal->GetBinContent(i));
+                                                       h_backgr_class_ideal->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_class_ideal->SetBinContent(i,
-							  (temp_error_uncorr -
-							   h_significance_class_ideal->GetBinError(i)) /
-							  temp_error_uncorr);
+                                                          (temp_error_uncorr -
+                                                           h_significance_class_ideal->GetBinError(i)) /
+                                                          temp_error_uncorr);
     }
     h_error_est_significance_class_ideal->SetBinContent(i, h_significance_class_ideal->GetBinError(i));
     h_error_uncorr_significance_class_ideal->SetBinContent(i, temp_error_uncorr);
@@ -1145,11 +1145,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     // experimental significance
     if((h_signal_exp->GetBinContent(i) + h_backgr_exp->GetBinContent(i)) != 0) {
       h_significance_exp->SetBinContent(i,
-					h_signal_exp->GetBinContent(i) /
-					TMath::Sqrt(h_signal_exp->GetBinContent(i) +
-						    h_backgr_exp->GetBinContent(i)));
+                                        h_signal_exp->GetBinContent(i) /
+                                        TMath::Sqrt(h_signal_exp->GetBinContent(i) +
+                                                    h_backgr_exp->GetBinContent(i)));
       h_significance_exp->SetBinError(i, significanceError(*h_signal_exp_subsample, *h_backgr_exp_subsample,
-							   i, num_subsamples));
+                                                           i, num_subsamples));
       significance_exp_integral += h_significance_exp->GetBinContent(i);
     }else {
       h_significance_exp->SetBinContent(i, 0.);
@@ -1157,12 +1157,12 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_exp->GetBinContent(i),
-						       h_backgr_exp->GetBinContent(i));
+                                                       h_backgr_exp->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_exp->SetBinContent(i,
-						  (temp_error_uncorr -
-						   h_significance_exp->GetBinError(i)) /
-						  temp_error_uncorr);
+                                                  (temp_error_uncorr -
+                                                   h_significance_exp->GetBinError(i)) /
+                                                  temp_error_uncorr);
     }
     h_error_est_significance_exp->SetBinContent(i, h_significance_exp->GetBinError(i));
     h_error_uncorr_significance_exp->SetBinContent(i, temp_error_uncorr);
@@ -1170,11 +1170,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     if((h_signal_exp_noCuts->GetBinContent(i) + h_backgr_exp_noCuts->GetBinContent(i))!= 0) {
       h_significance_exp_noCuts->SetBinContent(i,
-					       h_signal_exp_noCuts->GetBinContent(i) /
-					       TMath::Sqrt(h_signal_exp_noCuts->GetBinContent(i) +
-							   h_backgr_exp_noCuts->GetBinContent(i)));
+                                               h_signal_exp_noCuts->GetBinContent(i) /
+                                               TMath::Sqrt(h_signal_exp_noCuts->GetBinContent(i) +
+                                                           h_backgr_exp_noCuts->GetBinContent(i)));
       h_significance_exp_noCuts->SetBinError(i, significanceError(*h_signal_exp_noCuts_subsample, *h_backgr_exp_noCuts_subsample,
-								  i, num_subsamples));
+                                                                  i, num_subsamples));
       significance_exp_noCuts_integral += h_significance_exp_noCuts->GetBinContent(i);
     }else {
       h_significance_exp_noCuts->SetBinContent(i, 0.);
@@ -1182,12 +1182,12 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_exp_noCuts->GetBinContent(i),
-						       h_backgr_exp_noCuts->GetBinContent(i));
+                                                       h_backgr_exp_noCuts->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_exp_noCuts->SetBinContent(i,
-							 (temp_error_uncorr -
-							  h_significance_exp_noCuts->GetBinError(i)) /
-							 temp_error_uncorr);
+                                                         (temp_error_uncorr -
+                                                          h_significance_exp_noCuts->GetBinError(i)) /
+                                                         temp_error_uncorr);
     }
     h_error_est_significance_exp_noCuts->SetBinContent(i, h_significance_exp_noCuts->GetBinError(i));
     h_error_uncorr_significance_exp_noCuts->SetBinContent(i, temp_error_uncorr);
@@ -1195,11 +1195,11 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     if((h_signal_exp_ideal->GetBinContent(i) + h_backgr_exp_ideal->GetBinContent(i)) != 0) {
       h_significance_exp_ideal->SetBinContent(i,
-					      h_signal_exp_ideal->GetBinContent(i) /
-					      TMath::Sqrt(h_signal_exp_ideal->GetBinContent(i) +
-							  h_backgr_exp_ideal->GetBinContent(i)));
+                                              h_signal_exp_ideal->GetBinContent(i) /
+                                              TMath::Sqrt(h_signal_exp_ideal->GetBinContent(i) +
+                                                          h_backgr_exp_ideal->GetBinContent(i)));
       h_significance_exp_ideal->SetBinError(i, significanceError(*h_signal_exp_ideal_subsample, *h_backgr_exp_ideal_subsample,
-								 i, num_subsamples));
+                                                                 i, num_subsamples));
       significance_exp_ideal_integral += h_significance_exp_ideal->GetBinContent(i);
     }else {
       h_significance_exp_ideal->SetBinContent(i, 0.);
@@ -1207,12 +1207,12 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     }
 
     temp_error_uncorr = significanceError_uncorrelated(h_signal_exp_ideal->GetBinContent(i),
-						       h_backgr_exp_ideal->GetBinContent(i));
+                                                       h_backgr_exp_ideal->GetBinContent(i));
     if(temp_error_uncorr != 0) {
       h_errorDiff_significance_exp_ideal->SetBinContent(i,
-							(temp_error_uncorr -
-							 h_significance_exp_ideal->GetBinError(i)) /
-							temp_error_uncorr);
+                                                        (temp_error_uncorr -
+                                                         h_significance_exp_ideal->GetBinError(i)) /
+                                                        temp_error_uncorr);
     }
     h_error_est_significance_exp_ideal->SetBinContent(i, h_significance_exp_ideal->GetBinError(i));
     h_error_uncorr_significance_exp_ideal->SetBinContent(i, temp_error_uncorr);
@@ -1221,10 +1221,10 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     // classifier S/B
     if(h_backgr_class->GetBinContent(i) != 0) {
       h_SoverB_class->SetBinContent(i,
-				    h_signal_class->GetBinContent(i) /
-				    h_backgr_class->GetBinContent(i));
+                                    h_signal_class->GetBinContent(i) /
+                                    h_backgr_class->GetBinContent(i));
       h_SoverB_class->SetBinError(i, SoverBError(h_signal_class->GetBinContent(i),
-						 h_backgr_class->GetBinContent(i)));
+                                                 h_backgr_class->GetBinContent(i)));
     }else {
       h_SoverB_class->SetBinContent(i, 0.);
       h_SoverB_class->SetBinError(i, 0.);
@@ -1232,10 +1232,10 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     if(h_backgr_class_noCuts->GetBinContent(i) != 0) {
       h_SoverB_class_noCuts->SetBinContent(i,
-					   h_signal_class_noCuts->GetBinContent(i) /
-					   h_backgr_class_noCuts->GetBinContent(i));
+                                           h_signal_class_noCuts->GetBinContent(i) /
+                                           h_backgr_class_noCuts->GetBinContent(i));
       h_SoverB_class_noCuts->SetBinError(i, SoverBError(h_signal_class_noCuts->GetBinContent(i),
-							h_backgr_class_noCuts->GetBinContent(i)));
+                                                        h_backgr_class_noCuts->GetBinContent(i)));
     }else {
       h_SoverB_class_noCuts->SetBinContent(i, 0.);
       h_SoverB_class_noCuts->SetBinError(i, 0.);
@@ -1248,10 +1248,10 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
     // experimental S/B
     if(h_backgr_exp->GetBinContent(i) != 0) {
       h_SoverB_exp->SetBinContent(i,
-				  h_signal_exp->GetBinContent(i) /
-				  h_backgr_exp->GetBinContent(i));
+                                  h_signal_exp->GetBinContent(i) /
+                                  h_backgr_exp->GetBinContent(i));
       h_SoverB_exp->SetBinError(i, SoverBError(h_signal_exp->GetBinContent(i),
-					       h_backgr_exp->GetBinContent(i)));
+                                               h_backgr_exp->GetBinContent(i)));
     }else {
       h_SoverB_exp->SetBinContent(i, 0.);
       h_SoverB_exp->SetBinError(i, 0.);
@@ -1259,10 +1259,10 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     if(h_backgr_exp_noCuts->GetBinContent(i) != 0) {
       h_SoverB_exp_noCuts->SetBinContent(i,
-					 h_signal_exp_noCuts->GetBinContent(i) /
-					 h_backgr_exp_noCuts->GetBinContent(i));
+                                         h_signal_exp_noCuts->GetBinContent(i) /
+                                         h_backgr_exp_noCuts->GetBinContent(i));
       h_SoverB_exp_noCuts->SetBinError(i, SoverBError(h_signal_exp_noCuts->GetBinContent(i),
-						      h_backgr_exp_noCuts->GetBinContent(i)));
+                                                      h_backgr_exp_noCuts->GetBinContent(i)));
     }else {
       h_SoverB_exp_noCuts->SetBinContent(i, 0.);
       h_SoverB_exp_noCuts->SetBinError(i, 0.);
@@ -1270,10 +1270,10 @@ void PlotMass(Int_t num_subsamples=50, Bool_t doBootstrap=kTRUE) {
 
     if(h_backgr_exp_ideal->GetBinContent(i) != 0) {
       h_SoverB_exp_ideal->SetBinContent(i,
-					h_signal_exp_ideal->GetBinContent(i) /
-					h_backgr_exp_ideal->GetBinContent(i));
+                                        h_signal_exp_ideal->GetBinContent(i) /
+                                        h_backgr_exp_ideal->GetBinContent(i));
       h_backgr_exp_ideal->SetBinError(i, SoverBError(h_signal_exp_ideal->GetBinContent(i),
-						     h_backgr_exp_ideal->GetBinContent(i)));
+                                                     h_backgr_exp_ideal->GetBinContent(i)));
     }else {
       h_SoverB_exp_ideal->SetBinContent(i, 0.);
       h_SoverB_exp_ideal->SetBinError(i, 0.);
@@ -1702,20 +1702,20 @@ Float_t getPairPIDefficiency(Float_t pt1, Float_t pt2, TH1D &h_PIDeff) {
 
 
 Float_t significanceError(TH2D &signal_subsamples, TH2D &backgr_subsamples,
-			  Int_t bin_mass, Int_t num_subsamples) {
+                          Int_t bin_mass, Int_t num_subsamples) {
 
   
   TH1D *significance_subsamples = new TH1D("significance_subsamples","",
-					   10000,
-					   0,
-					   TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, 1)*num_subsamples));
+                                           10000,
+                                           0,
+                                           TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, 1)*num_subsamples));
   
   for(Int_t i=1; i<=num_subsamples; i++) {
     if(signal_subsamples.GetBinContent(bin_mass, i) +
        backgr_subsamples.GetBinContent(bin_mass, i) != 0) {
       significance_subsamples->Fill(signal_subsamples.GetBinContent(bin_mass, i) /
-				    TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i) +
-						backgr_subsamples.GetBinContent(bin_mass, i)));
+                                    TMath::Sqrt(signal_subsamples.GetBinContent(bin_mass, i) +
+                                                backgr_subsamples.GetBinContent(bin_mass, i)));
     }
   }
 
