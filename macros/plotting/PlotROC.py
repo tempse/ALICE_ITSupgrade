@@ -9,43 +9,51 @@ import root_numpy
 from sklearn.metrics import roc_curve, auc
 
 
-filename_MCdata = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/workingData/DNNAnalysis/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root"
+filename_MCdata = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/FT2_AnalysisResults_wLooseTracks_iGeo12_pairTree-us_analysis-0.8nEvents.root"
 
 branches_MCdata = ['IsConv']
 
 
 
-filename_MCdata_singleTrackConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/singleConvTrackRejMVA/pairing/temp_output/FT2_ITSup_pairTree_us_part2_538163tightCutEvents_wSingleConvTrackMVAoutput.root"
+filename_MCdata_singleTrackConvRej = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/wMVABranches-singleConvTrackRej_FT2_AnalysisResults_wLooseTracks_iGeo12_pairTree-us_analysis-0.8nEvents.root"
 
-branches_MCdata_singleTrackConvRej = ['IsConv', 'MVAoutput_convTrack1', 'MVAoutput_convTrack2', 'PIDeff1', 'PIDeff2', 'TrackCut1', 'TrackCut2']
+branches_MCdata_singleTrackConvRej = [
+    'IsConv',
+    'MVAoutput_convTrack1',
+    'MVAoutput_convTrack2',
+    'PIDeff1',
+    'PIDeff2',
+    #'TrackCut1',
+    #'TrackCut2'
+]
 
 
 
-filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/tightTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_CombConvRej_RPConvRej = ['tpr_prefilter', 'fpr_prefilter', 'tpr_noPrefilter', 'fpr_noPrefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs_wLooseTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wLooseTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs_wLooseTracks_allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_combined = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/ROCdata/ROCdata_25steps_PIDeffs/temp_output/ROCdata_MVAplusPrefilter_combined.root"
+filename_ROCdata_combined = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/tightTracks/temp_output/ROCdata_MVAplusPrefilter_combined.root"
 
 branches_ROCdata_combined = ['tpr_combi', 'fpr_combi']
 
 
-MVAcut_opt_CombConvRejMVA = .23
-MVAcut_opt_singleConvTrackRejMVA = .44
-MVAcut_opt_RPConvRejMVA = .38
-MVAcut_opt_RPConvRejMVA_wLooseCuts = .32
-MVAcut_opt_RPConvRejMVA_wLooseCuts_wAllTracks = .33
+MVAcut_opt_CombConvRejMVA = .18
+MVAcut_opt_singleConvTrackRejMVA = .37
+MVAcut_opt_RPConvRejMVA = .47
+MVAcut_opt_RPConvRejMVA_wLooseCuts = .51
+MVAcut_opt_RPConvRejMVA_wLooseCuts_wAllTracks = .47
 
 
 color_RPConvRejClass = 'black'
@@ -71,7 +79,8 @@ data_MCdata_singleTrackConvRej = pd.DataFrame(root_numpy.root2array(filename_MCd
                                                                     branches=branches_MCdata_singleTrackConvRej,
                                                                     start=start,
                                                                     stop=stop,
-                                                                    selection='TrackCut1==2 && TrackCut2==2 && MVAoutput_convTrack1>=0 && MVAoutput_convTrack1<=1 && MVAoutput_convTrack2>=0 && MVAoutput_convTrack2<=1'
+                                                                    selection='MVAoutput_convTrack1>=0 && MVAoutput_convTrack1<=1 && MVAoutput_convTrack2>=0 && MVAoutput_convTrack2<=1'
+                                                                    #selection='TrackCut1==2 && TrackCut2==2 && MVAoutput_convTrack1>=0 && MVAoutput_convTrack1<=1 && MVAoutput_convTrack2>=0 && MVAoutput_convTrack2<=1'
 ))
 
 data_MCdata = pd.DataFrame(root_numpy.root2array(filename_MCdata,
@@ -93,10 +102,9 @@ data_ROCdata_combined = pd.DataFrame(root_numpy.root2array(filename_ROCdata_comb
 
 
 sample_weight_singleConvTrackRejMVA = np.ones(data_MCdata_singleTrackConvRej.shape[0])
-sample_weight_singleConvTrackRejMVA[np.where(data_MCdata_singleTrackConvRej['MVAoutput_convTrack1'] <
-                                             data_MCdata_singleTrackConvRej['MVAoutput_convTrack2'])] = data_MCdata_singleTrackConvRej['PIDeff1']
-sample_weight_singleConvTrackRejMVA[np.where(data_MCdata_singleTrackConvRej['MVAoutput_convTrack1'] >=
-                                             data_MCdata_singleTrackConvRej['MVAoutput_convTrack2'])] = data_MCdata_singleTrackConvRej['PIDeff2']
+mask = (data_MCdata_singleTrackConvRej['MVAoutput_convTrack1'] < data_MCdata_singleTrackConvRej['MVAoutput_convTrack2']).astype(bool).tolist()
+sample_weight_singleConvTrackRejMVA[mask] = data_MCdata_singleTrackConvRej['PIDeff1'][mask]
+sample_weight_singleConvTrackRejMVA[[not i for i in mask]] = data_MCdata_singleTrackConvRej['PIDeff2'][[not i for i in mask]]
 
 fpr_singleConvTrackRejMVA, tpr_singleConvTrackRejMVA, thresholds_singleConvTrackRejMVA = roc_curve(data_MCdata_singleTrackConvRej['IsConv'],
                                                                                                    np.minimum.reduce([data_MCdata_singleTrackConvRej['MVAoutput_convTrack1'],
@@ -190,8 +198,8 @@ print('RPConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_Co
 
 h_RPConvRejMVA_wLooseCuts = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])),
                                     pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'], pd.Series([0])),
-                                    label='MVA 3 with loose-cuts tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'], pd.Series([0])),
-                                                                                                   pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])))),
+                                    label='MVA 3, w/ loose tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['tpr_prefilter'], pd.Series([0])),
+                                                                                             pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])))),
                                     color=color_RPConvRejMVA_wLooseCuts,
                                     linestyle='-',
                                     alpha=.3)
@@ -210,9 +218,9 @@ print('RPConvRejMVA (w/ loose tracks): working point at tpr = %.4f, fpr = %.4f' 
 
 h_RPConvRejMVA_wLooseCuts_wAllTracks = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])),
                                                pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'], pd.Series([0])),
-                                                label='MVA 3 with loose-cuts and all other tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'], pd.Series([0])),
-                                                                                                                             pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])))),
-                                                color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
+                                               label='MVA 3, all tracks (AUC = %.3f)' % (-np.trapz(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['tpr_prefilter'], pd.Series([0])),
+                                                                                                   pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])))),
+                                               color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
                                                linestyle=':',
                                                alpha=.55)
 
@@ -253,21 +261,19 @@ h_RPConvRejClass_4 = ax.plot(.9367, .9860, 'o', color=color_RPConvRejClass,
 """
 
 # case: prefilter w/ PID effs
-h_RPConvRejClass_1 = ax.plot(.9424, .9585, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_1 = ax.plot(.9472, .9631, 'o', color=color_RPConvRejClass,
                              label=r'RP conv. rej. via classical cuts: $\varphi_V>\pi/2$, $m_{ee}<0.05$', markersize=8, alpha=.8)
-h_RPConvRejClass_2 = ax.plot(.9540, .9737, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_2 = ax.plot(.9572, .9761, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2$, $m_{ee}<0.04$', markersize=6, alpha=.8)
-h_RPConvRejClass_3 = ax.plot(.9691, .9909, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_3 = ax.plot(.9705, .9914, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$', markersize=4, alpha=.8)
-h_RPConvRejClass_4 = ax.plot(.9934, .9986, 'o', color=color_RPConvRejClass,
+h_RPConvRejClass_4 = ax.plot(.9933, .9984, 'o', color=color_RPConvRejClass,
                              label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$', markersize=3, alpha=.8)
 
 
 
 plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
-#plt.xlim([.90,1.01])
-#plt.ylim([.90,1.01])
 plt.xlabel('False Positive Rate', fontsize=18)
 plt.ylabel('True Positive Rate', fontsize=18)
 #plt.title('Receiver operating characteristics')
