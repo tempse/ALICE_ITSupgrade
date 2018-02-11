@@ -2,7 +2,7 @@
 
 #include <TROOT.h>
 #include <TMath.h>
-#include <TApplication.h>
+#include <TSystem.h>
 #include <TString.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -12,11 +12,14 @@
 Float_t getPairPIDefficiency(Float_t, Float_t, TH1D&);
 
 
-void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/RPConvRejClassicalCuts/prefilter/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root",
-			     TString branchname = "IsTaggedRPConv_classicalCuts_prefilter") {
+void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/FT2_AnalysisResults_wLooseTracks_iGeo12_pairTree-us_analysis-0.8nEvents.root",
+                             TString branchname = "IsTaggedRPConvClassicalCuts_loose2_prefilter_tightTracks") {
   
   // TString infileName = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/improperPrefiltering_noPIDeffs/RPConvRejClassicalCuts/prefilter/FT2_ITSup_pairTree-us_part2_538163tightCutEvents.root";
 
+  std::cout << "Processing branch " << branchname << " in file "
+            << infileName << std::endl << std::endl;
+  
   // "+"...signal-like events are near 1,
   // "-"...signal-like events are near 0
   TString signalRegion = "-";
@@ -29,7 +32,7 @@ void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data
   Bool_t containsTrackCutInfo = kTRUE;
   Int_t TrackCut1, TrackCut2;
   tree->SetBranchAddress(branchname,
-			 &isTaggedSignal);
+                         &isTaggedSignal);
   tree->SetBranchAddress("IsConv", &isSignal);
   tree->SetBranchAddress("pt1", &pt1);
   tree->SetBranchAddress("pt2", &pt2);
@@ -39,17 +42,17 @@ void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data
     tree->SetBranchAddress("TrackCut2", &TrackCut2);
   }else {
     std::cout << "  Info: No branch holding track cut information found. "
-	      << "All tracks will be processed." << std::endl;
+              << "All tracks will be processed." << std::endl;
     containsTrackCutInfo = kFALSE;
   }
 
   Float_t mass;
   tree->SetBranchAddress("mass", &mass);
 
-  const Bool_t doConsiderPIDefficiencies = kFALSE;
+  const Bool_t doConsiderPIDefficiencies = kTRUE;
 
   // File containing the pt-dependent PID efficiencies:
-  TString infile_PIDefficiencies_name = "~/analysis/data/FT2_AnalysisResults_Upgrade/inputData/ITSU_PIDefficiency_lowB.root";
+  TString infile_PIDefficiencies_name = "/home/sebastian/analysis/data/finalAnalysis_FT2/inputdata/ITSU_PIDefficiency_lowB.root";
   TFile *infile_PIDefficiencies = new TFile(infile_PIDefficiencies_name, "READ");
   TH1D *h_PIDeff = (TH1D*)infile_PIDefficiencies->Get("efficiencyLHC17d12_TPCandTOF3sigma");
   h_PIDeff->GetXaxis()->SetRangeUser(0,5);
@@ -64,10 +67,11 @@ void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data
   
   for(Long64_t i=0; i<nentries; i++) {
     if((i%5000)==0) std::cout << "\rProcessing entry " << i << " of "
-			      << nentries << " (" << i*100/((Float_t)nentries)
-			      << " %)...";
+                              << nentries << " (" << i*100/((Float_t)nentries)
+                              << " %)...";
     tree->GetEntry(i);
 
+    if(isTaggedSignal!=0 && isTaggedSignal!=1) continue;
     if(mass<.05) continue;
     if(containsTrackCutInfo && (TrackCut1!=2 || TrackCut2!=2)) continue;
 
@@ -89,25 +93,25 @@ void GenerateConfusionMatrix(TString infileName = "/home/sebastian/analysis/data
     }
   }
   std::cout << "\rProcessing entry " << nentries << " of " << nentries
-	    << " (100 %)... DONE" << std::endl;
+            << " (100 %)... DONE" << std::endl;
 
 
   std::cout << "Confusion matrix:" << std::endl;
   std::cout << "  [[TP\tFN]\n   [FP\tTN]] =\n"
-	    << "= [[" << TP << "\t" << FN << "]\n   ["
-	    << FP << "\t" << TN << "]]" << std::endl << std::endl;
+            << "= [[" << TP << "\t" << FN << "]\n   ["
+            << FP << "\t" << TN << "]]" << std::endl << std::endl;
 
   std::cout << "TPR = TP/(TP+FN) = " << TP/((Float_t)(TP+FN)) << std::endl;
   std::cout << "FPR = FP/(FP+TN) = " << FP/((Float_t)(FP+TN)) << std::endl;
-  std::cout << "significance = " << TP/TMath::Sqrt(TP+FP) <<std::endl;
+  std::cout << "significance = " << TP/TMath::Sqrt(TP+FP) << std::endl;
   std::cout << "significance gain = " << (TP/TMath::Sqrt(TP+FP)-(TP+FN)/TMath::Sqrt(TP+FN+FP+TN)) / (TMath::Sqrt(TP+FN)-(TP+FN)/TMath::Sqrt(TP+FN+FP+TN)) << std::endl;
   
   std::cout << std::endl;
   std::cout << "TP + FN = " << TP+FN << std::endl
-	    << "FP + TN = " << FP+TN << std::endl
-	    << "     sum: " << TP+FN+FP+TN << std::endl;
+            << "FP + TN = " << FP+TN << std::endl
+            << "     sum: " << TP+FN+FP+TN << std::endl;
 
-  gApplication->Terminate();
+  gSystem->Exit(0);
 }
 
 
