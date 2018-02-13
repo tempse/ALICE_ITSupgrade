@@ -308,7 +308,7 @@ void createSignificanceData(TString MCdatafilename,
           tags_RPConvRejMVA[j] = -99;
           continue;
         }else if(considerLooseCuts==1 &&
-                 (trackCut1_all==0 || trackCut2_all[j]==0)) {
+                 (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
           tags_RPConvRejMVA[j] = -99;
           continue;
         }
