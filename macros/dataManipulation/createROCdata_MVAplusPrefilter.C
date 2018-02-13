@@ -74,7 +74,7 @@ void createROCdata_MVAplusPrefilter(TString MCdatafilename,
   }
 
   if(containsTrackCutInfo && considerLooseCuts>=3) {
-    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    std::cout << "  ERROR: considerLooseCuts>=3. Exiting without changing the files..." << std::endl;
     MCdatafile->Close();
     gSystem->Exit(1);
   }
