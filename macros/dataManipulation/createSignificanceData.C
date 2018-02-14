@@ -45,7 +45,7 @@ void createSignificanceData(TString MCdatafilename,
 
   
   Float_t processDataFraction = -1.; // process only this fraction of the data (if "-1", use a fixed number)
-  Long64_t processDataEntries = 50000; // process this number of entries (if "-1", all entries are selected)
+  Long64_t processDataEntries = 500000; // process this number of entries (if "-1", all entries are selected)
 
   Float_t MVAout_RPConvRejMVA, MVAout_CombConvRejMVA;
   Float_t MVAout_singleConvTrackRejMVA_1, MVAout_singleConvTrackRejMVA_2;
@@ -87,7 +87,7 @@ void createSignificanceData(TString MCdatafilename,
   }
 
   if(containsTrackCutInfo && considerLooseCuts>=3) {
-    std::cout << "  ERROR: considerLooseCuts>=2. Exiting without changing the files..." << std::endl;
+    std::cout << "  ERROR: considerLooseCuts>=3. Exiting without changing the files..." << std::endl;
     MCdatafile->Close();
     gSystem->Exit(1);
   }
@@ -387,14 +387,7 @@ void createSignificanceData(TString MCdatafilename,
         continue;
       }
 
-      if(containsTrackCutInfo && considerLooseCuts==0 &&
-         (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
-        tags_CombConvRejMVA[j] = -99;
-        continue;
-      }
-
-      if(containsTrackCutInfo && considerLooseCuts==1 &&
-         (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+      if(containsTrackCutInfo && !(trackCut1_all[j]==2 && trackCut2_all[j]==2)) {
         tags_CombConvRejMVA[j] = -99;
         continue;
       }
@@ -421,14 +414,7 @@ void createSignificanceData(TString MCdatafilename,
         continue;
       }
 
-      if(containsTrackCutInfo && considerLooseCuts==0 &&
-         (trackCut1_all[j]!=2 || trackCut2_all[j]!=2)) {
-        tags_singleConvTrackRejMVA[j] = -99;
-        continue;
-      }
-
-      if(containsTrackCutInfo && considerLooseCuts==1 &&
-         (trackCut1_all[j]==0 || trackCut2_all[j]==0)) {
+      if(containsTrackCutInfo && !(trackCut1_all[j]==2 && trackCut2_all[j]==2)) {
         tags_singleConvTrackRejMVA[j] = -99;
         continue;
       }
@@ -457,13 +443,7 @@ void createSignificanceData(TString MCdatafilename,
           continue;
         }
 
-        if(containsTrackCutInfo && considerLooseCuts==0 &&
-           (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
-          continue;
-        }
-
-        if(containsTrackCutInfo && considerLooseCuts==1 &&
-           (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
+        if(containsTrackCutInfo && !(trackCut1_all[i]==2 && trackCut2_all[i]==2)) {
           continue;
         }
 	
@@ -471,7 +451,7 @@ void createSignificanceData(TString MCdatafilename,
 
         if(IsConv_all[i]==0) {
           num_S_ideal_temp += pairweight_temp;
-        }else {
+        }else if(IsConv_all[i]==1) {
           num_B_ideal_temp += pairweight_temp;
         }
 
@@ -511,26 +491,7 @@ void createSignificanceData(TString MCdatafilename,
     }
       
 
-    Float_t num_totalConvs = 0, num_totalNonConvs = 0;
-    for(Long64_t i=0; i<nentries; i++) {
-
-      if( mass_all[i] < massCut ) {
-        continue;
-      }
-      
-      if(containsTrackCutInfo && considerLooseCuts==0 &&
-         (trackCut1_all[i]!=2 || trackCut2_all[i]!=2)) {
-        continue;
-      }
-      
-      if(containsTrackCutInfo && considerLooseCuts==1 &&
-         (trackCut1_all[i]==0 || trackCut2_all[i]==0)) {
-        continue;
-      }
-      
-      if(IsConv_all[i]==1) num_totalConvs += getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
-      else num_totalNonConvs += getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
-    }
+    Float_t num_totalConvs = 0., num_totalNonConvs = 0.;
 
     Float_t num_S_RPConvRejMVA=0., num_B_RPConvRejMVA=0.;
     Float_t num_S_CombConvRejMVA=0., num_B_CombConvRejMVA=0.;
@@ -542,10 +503,16 @@ void createSignificanceData(TString MCdatafilename,
         continue;
       }
 
-      if(containsTrackCutInfo && !(trackCut1_all[i]==2 && trackCut2_all[i]==2))
+      if(containsTrackCutInfo && !(trackCut1_all[i]==2 && trackCut2_all[i]==2)) {
         continue;
+      }
       
       Float_t pairweight = getPairPIDefficiency(pt1_all[i], pt2_all[i], *h_PIDeffs);
+
+      if(IsConv_all[i]==1)
+        num_totalConvs += pairweight;
+      else if(IsConv_all[i]==0)
+        num_totalNonConvs += pairweight;
 
       if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==0) num_S_RPConvRejMVA += pairweight;
       if(tags_RPConvRejMVA[i]==0 && IsConv_all[i]==1) num_B_RPConvRejMVA += pairweight;
