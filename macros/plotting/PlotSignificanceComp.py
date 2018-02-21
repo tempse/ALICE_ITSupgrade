@@ -7,9 +7,9 @@ import pandas as pd
 import root_numpy
 
 
-filename = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/significanceData/significanceData_50steps_PIDeffs/temp_output/significance_data.root"
-filename_wLooseCuts = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/significanceData/significanceData_50steps_PIDeffs_wLooseTracks/temp_output/significance_data.root"
-filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/FT2_AnalysisResults_Upgrade/fullAnalysis_DNN/properPrefiltering_wPIDeffs/significanceData/significanceData_50steps_PIDeffs_wLooseTracks_wAllTracks/temp_output/significance_data.root"
+filename = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/significanceData/wPIDeffs/significance_data_tightTracks_wPIDeffs.root"
+filename_wLooseCuts = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/significanceData/wPIDeffs/significance_data_wLooseTracks_wPIDeffs.root"
+filename_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/significanceData/wPIDeffs/significance_data_allTracks_wPIDeffs.root"
 
 color_RPConvRejMVA = '#4444ff'
 color_RPConvRejMVA_wLooseCuts = 'black'
@@ -33,11 +33,11 @@ workingpoint_eff_singleConvTrackRej = .9859
 workingpoint_eff_CombConvRej = .9790
 """
 # case: prefilter w/ PID effs
-workingpoint_eff_RPConvRejMVA = .9938
-workingpoint_eff_RPConvRejMVA_wLooseTracks = .9928
-workingpoint_eff_RPConvRejMVA_wLooseTracks_wAllTracks = .9932
-workingpoint_eff_singleConvTrackRej = .9859
-workingpoint_eff_CombConvRej = .9790
+workingpoint_eff_RPConvRejMVA = .994262
+workingpoint_eff_RPConvRejMVA_wLooseTracks = .994257
+workingpoint_eff_RPConvRejMVA_wLooseTracks_wAllTracks = .994400
+workingpoint_eff_singleConvTrackRej = .985819
+workingpoint_eff_CombConvRej = .985388
 
 
 data = pd.DataFrame(root_numpy.root2array(filename))
@@ -83,7 +83,7 @@ plt.plot(workingpoint_eff_RPConvRejMVA, data.iloc[np.argmin(np.abs(data['S_eff_R
          linestyle='none')
 
 ax.plot(data_wLooseCuts['S_eff_RPConvRejMVA'], data_wLooseCuts['significance_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks',
+        label='MVA 3 (w/ loose tracks)',
         color=color_RPConvRejMVA_wLooseCuts,
         alpha=.3)
 plt.plot(workingpoint_eff_RPConvRejMVA_wLooseTracks, data_wLooseCuts.iloc[np.argmin(np.abs(data_wLooseCuts['S_eff_RPConvRejMVA']-workingpoint_eff_RPConvRejMVA_wLooseTracks))]['significance_RPConvRejMVA'],
@@ -96,7 +96,7 @@ plt.plot(workingpoint_eff_RPConvRejMVA_wLooseTracks, data_wLooseCuts.iloc[np.arg
          alpha=.45)
 
 ax.plot(data_wLooseCuts_wAllTracks['S_eff_RPConvRejMVA'], data_wLooseCuts_wAllTracks['significance_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks and all other tracks',
+        label='MVA 3 (w/ loose tracks, all other tracks)',
         color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
         alpha=.55,
         linestyle=':')
@@ -154,28 +154,28 @@ ax.plot(.9860, 317.608, #.9860, 263.7709,
 """
 
 # case: prefilter w/ PID effs
-ax.plot(.9585, 309.516,
+ax.plot(.9631, 311.46,
         label=r'RP conv. rej. (class. cuts) + prefiltering $\varphi_V>\pi/2$, $m_{ee}<0.05$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=8,
         linestyle='none',
         alpha=.8)
-ax.plot(.9737, 312.33,
+ax.plot(.9762, 313.881,
         label=r'     $\varphi_V>2$, $m_{ee}<0.04$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=6,
         linestyle='none',
         alpha=.8)
-ax.plot(.9909, 315.275,
+ax.plot(.9914, 316.506,
         label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=4,
         linestyle='none',
         alpha=.8)
-ax.plot(.9986, 314.667,
+ax.plot(.9984, 315.888,
         label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$',
         color=color_RPConvRejClass,
         marker='o',
@@ -191,6 +191,12 @@ plt.xlabel('Signal efficiency', fontsize=18)
 plt.ylabel('Significance', fontsize=18)
 plt.savefig('temp_output/significances_effS.png')
 plt.savefig('temp_output/significances_effS.pdf')
+
+plt.xlim([.9,1.02])
+plt.ylim([270,370])
+plt.legend(loc='best',fontsize=7)
+plt.savefig('temp_output/significances_effS_zoomed.png')
+plt.savefig('temp_output/significances_effS_zoomed.pdf')
 
 
 
@@ -212,12 +218,12 @@ ax.plot(data['MVAcut'], data['significance_RPConvRejMVA'],
         color=color_RPConvRejMVA)
 
 ax.plot(data_wLooseCuts['MVAcut'], data_wLooseCuts['significance_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks',
+        label='MVA 3 (w/ loose tracks)',
         color=color_RPConvRejMVA_wLooseCuts,
         alpha=.3)
 
 ax.plot(data_wLooseCuts_wAllTracks['MVAcut'], data_wLooseCuts_wAllTracks['significance_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks and all other tracks',
+        label='MVA 3 (w/ loose tracks, all other tracks)',
         color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
         linestyle=':',
         alpha=.55)
@@ -272,12 +278,12 @@ ax.plot(data['MVAcut'], data['S_eff_RPConvRejMVA'],
         color=color_RPConvRejMVA)
 
 ax.plot(data_wLooseCuts['MVAcut'], data_wLooseCuts['S_eff_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks',
+        label='MVA 3 (w/ loose tracks)',
         color=color_RPConvRejMVA_wLooseCuts,
         alpha=.3)
 
 ax.plot(data_wLooseCuts_wAllTracks['MVAcut'], data_wLooseCuts_wAllTracks['S_eff_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks and all other tracks',
+        label='MVA 3 (w/ loose tracks, all other tracks)',
         color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
         linestyle=':',
         alpha=.55)
@@ -328,12 +334,12 @@ ax.plot(data['MVAcut'], data['significance_gain_RPConvRejMVA'],
         color=color_RPConvRejMVA)
 
 ax.plot(data_wLooseCuts['MVAcut'], data_wLooseCuts['significance_gain_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks',
+        label='MVA 3 (w/ loose tracks)',
         color=color_RPConvRejMVA_wLooseCuts,
         alpha=.3)
 
 ax.plot(data_wLooseCuts_wAllTracks['MVAcut'], data_wLooseCuts_wAllTracks['significance_gain_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks and all other tracks',
+        label='MVA 3 (w/ loose tracks, all other tracks)',
         color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
         linestyle=':',
         alpha=.55)
@@ -384,7 +390,7 @@ plt.plot(workingpoint_eff_RPConvRejMVA, data.iloc[np.argmin(np.abs(data['S_eff_R
          linestyle='none')
 
 ax.plot(data_wLooseCuts['S_eff_RPConvRejMVA'], data_wLooseCuts['significance_gain_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks',
+        label='MVA 3 (w/ loose tracks)',
         color=color_RPConvRejMVA_wLooseCuts,
         alpha=.3)
 plt.plot(workingpoint_eff_RPConvRejMVA_wLooseTracks, data_wLooseCuts.iloc[np.argmin(np.abs(data_wLooseCuts['S_eff_RPConvRejMVA']-workingpoint_eff_RPConvRejMVA_wLooseTracks))]['significance_gain_RPConvRejMVA'],
@@ -397,7 +403,7 @@ plt.plot(workingpoint_eff_RPConvRejMVA_wLooseTracks, data_wLooseCuts.iloc[np.arg
          alpha=.45)
 
 ax.plot(data_wLooseCuts_wAllTracks['S_eff_RPConvRejMVA'], data_wLooseCuts_wAllTracks['significance_gain_RPConvRejMVA'],
-        label='MVA 3 with loose-cuts tracks and all other tracks',
+        label='MVA 3 (w/ loose tracks, all other tracks)',
         color=color_RPConvRejMVA_wLooseCuts_wAllTracks,
         linestyle=':',
         alpha=.55)
@@ -455,28 +461,28 @@ ax.plot(.9860, .0134, #.9860, .0137,
 """
 
 # case: prefilter w/ PID effs
-ax.plot(.9585, -.0197,
+ax.plot(.9631, -.01682,
         label=r'RP conv. rej. (class. cuts) + prefiltering $\varphi_V>\pi/2$, $m_{ee}<0.05$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=8,
         linestyle='none',
         alpha=.8)
-ax.plot(.9737, -.0082,
+ax.plot(.9762, -.00693,
         label=r'     $\varphi_V>2$, $m_{ee}<0.04$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=6,
         linestyle='none',
         alpha=.8)
-ax.plot(.9909, .0039,
+ax.plot(.9914, .00379,
         label=r'     $\varphi_V>2.4$, $m_{ee}<0.01$',
         color=color_RPConvRejClass,
         marker='o',
         markersize=4,
         linestyle='none',
         alpha=.8)
-ax.plot(.9986, .0014,
+ax.plot(.9984, .00126,
         label=r'     $\varphi_V>2.9$, $m_{ee}<0.0035$',
         color=color_RPConvRejClass,
         marker='o',
@@ -491,3 +497,9 @@ plt.xlabel('Signal efficiency', fontsize=18)
 plt.ylabel('Significance gain', fontsize=18)
 plt.savefig('temp_output/significancegain_effS.png')
 plt.savefig('temp_output/significancegain_effS.pdf')
+
+plt.xlim([0.9,1.02])
+plt.ylim([-.2,0.25])
+plt.legend(loc='best', fontsize=7)
+plt.savefig('temp_output/significancegain_effS_zoomed.png')
+plt.savefig('temp_output/significancegain_effS_zoomed.pdf')
