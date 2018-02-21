@@ -29,22 +29,22 @@ branches_MCdata_singleTrackConvRej = [
 
 
 
-filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/tightTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_CombConvRej_RPConvRej = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wPIDeffs/tightTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_CombConvRej_RPConvRej = ['tpr_prefilter', 'fpr_prefilter', 'tpr_noPrefilter', 'fpr_noPrefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wLooseTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wPIDeffs/wLooseTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
+filename_ROCdata_RPConvRej_wLooseCuts_wAllTracks = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wPIDeffs/allTracks/temp_output/ROCdata_MVAplusPrefilter.root"
 
 branches_ROCdata_RPConvRej_wLooseCuts_wAllTracks = ['tpr_prefilter', 'fpr_prefilter', 'MVAcut']
 
 
-filename_ROCdata_combined = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/tightTracks/temp_output/ROCdata_MVAplusPrefilter_combined.root"
+filename_ROCdata_combined = "/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/ROCdata/wPIDeffs/tightTracks/temp_output/ROCdata_MVAplusPrefilter_combined.root"
 
 branches_ROCdata_combined = ['tpr_combi', 'fpr_combi']
 
@@ -159,7 +159,7 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRej
         fillstyle='none',
         mew=1,
         linestyle='none')
-print('CombConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['tpr_noPrefilter'],
+print('CombConvRejMVA: working point at tpr = %.6f, fpr = %.6f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['tpr_noPrefilter'],
                                                                    data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_CombConvRejMVA]['fpr_noPrefilter']))
 
 
@@ -175,7 +175,7 @@ ax.plot(fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
         fillstyle='none',
         mew=1,
         linestyle='none')
-print('singleTrackConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (tpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
+print('singleTrackConvRejMVA: working point at tpr = %.6f, fpr = %.6f' % (tpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA],
                                                                           fpr_singleConvTrackRejMVA[pos_workingpoint_opt_singleConvTrackRejMVA]))
 
 
@@ -193,7 +193,7 @@ ax.plot(data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMV
         fillstyle='none',
         mew=1,
         linestyle='none')
-print('RPConvRejMVA: working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['tpr_prefilter'],
+print('RPConvRejMVA: working point at tpr = %.6f, fpr = %.6f' % (data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['tpr_prefilter'],
                                                                  data_ROCdata_CombConvRej_RPConvRej.iloc[pos_workingpoint_opt_RPConvRejMVA]['fpr_prefilter']))
 
 h_RPConvRejMVA_wLooseCuts = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts['fpr_prefilter'], pd.Series([0])),
@@ -213,7 +213,7 @@ ax.plot(data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA
         mew=1,
         linestyle='none',
         alpha=.45)
-print('RPConvRejMVA (w/ loose tracks): working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['tpr_prefilter'],
+print('RPConvRejMVA (w/ loose tracks): working point at tpr = %.6f, fpr = %.6f' % (data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['tpr_prefilter'],
                                                                                    data_ROCdata_RPConvRej_wLooseCuts.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts]['fpr_prefilter']))
 
 h_RPConvRejMVA_wLooseCuts_wAllTracks = ax.plot(pd.Series.append(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks['fpr_prefilter'], pd.Series([0])),
@@ -233,7 +233,7 @@ ax.plot(data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_R
         mew=1,
         linestyle='none',
         alpha=.8)
-print('RPConvRejMVA (w/ loose tracks, all other tracks): working point at tpr = %.4f, fpr = %.4f' % (data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['tpr_prefilter'],
+print('RPConvRejMVA (w/ loose tracks, all other tracks): working point at tpr = %.6f, fpr = %.6f' % (data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['tpr_prefilter'],
                                                                                                      data_ROCdata_RPConvRej_wLooseCuts_wAllTracks.iloc[pos_workingpoint_opt_RPConvRejMVA_wLooseCuts_wAllTracks]['fpr_prefilter']))
 
 # dummy point
