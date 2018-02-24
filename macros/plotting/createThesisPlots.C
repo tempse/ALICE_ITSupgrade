@@ -77,7 +77,7 @@ void PlotPhiv() {
   }
 
   h_convs->SetXTitle("#varphi_{V}");
-  h_convs->SetYTitle("Yield (arb. units)");
+  h_convs->SetYTitle("Yield / (arb. units)");
   h_convs->GetYaxis()->SetTitleOffset(1.3);
 
   h_nonconvs->SetLineColor(kGreen+2);
