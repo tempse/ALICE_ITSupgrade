@@ -1,3 +1,11 @@
+void PlotPIDeffs();
+
+
+void createThesisPlots() {
+  PlotPIDeffs();
+}
+
+
 void PlotPIDeffs() {
 
   gROOT->ForceStyle();
