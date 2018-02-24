@@ -1,14 +1,16 @@
 void PlotPIDeffs();
 void PlotPhiv();
+void PlotPhivMass();
 
 
 void createThesisPlots() {
   
   gROOT->ForceStyle();
   
-  PlotPhiv();
   PlotPIDeffs();
-
+  PlotPhiv();
+  PlotPhivMass();
+  
   gSystem->Exit(0);
   
 }
@@ -108,4 +110,59 @@ void PlotPhiv() {
   c_phiv->SaveAs("temp_output/phiv_firstMassBin.pdf");
   c_phiv->SaveAs("temp_output/phiv_firstMassBin.png");
   
+}
+
+
+void PlotPhivMass() {
+
+  SetStyle();
+
+  TFile *f = new TFile("/home/sebastian/analysis/data/finalAnalysis_FT2/workingdata/FT2_AnalysisResults_wLooseTracks_iGeo12_pairTree-us_analysis-0.8nEvents.root",
+                       "READ");
+  TTree *tree = (TTree*)f->Get("pairTree_us");
+
+  Float_t phiv, mass;
+  Int_t IsRP, IsConv, TrackCut1, TrackCut2; 
+  tree->SetBranchAddress("phiv", &phiv);
+  tree->SetBranchAddress("mass", &mass);
+  tree->SetBranchAddress("IsRP", &IsRP);
+  tree->SetBranchAddress("IsConv", &IsConv);
+  tree->SetBranchAddress("TrackCut1", &TrackCut1);
+  tree->SetBranchAddress("TrackCut2", &TrackCut2);
+
+  TH2D *h_phivmass = new TH2D("h_phivmass","",300,0,0.1,300,0,TMath::Pi());
+
+  for(Long64_t i=0; i<1e8; i++) {
+    tree->GetEntry(i);
+
+    if( IsRP==1 && IsConv==1 && TrackCut1==2 && TrackCut2==2 ) {
+      h_phivmass->Fill(mass, phiv);
+    }
+  }
+
+  std::cout << h_phivmass->GetEntries() << std::endl;
+
+  h_phivmass->SetXTitle("#it{m}_{ee} / (GeV/#it{c}^{2})");
+  h_phivmass->SetYTitle("#varphi_{V}");
+
+  TCanvas *c_phivmass = new TCanvas("c_phivmass","",1024,768);
+
+  gStyle->SetOptStat(0);
+  h_phivmass->Draw("colz");
+
+  TLatex *l_info = new TLatex(.43,.25,"HIJING, Pb-Pb #sqrt{#it{s}_{NN}} = 5.5 TeV, 0-10%");
+  l_info->SetTextSize(0.035);
+  l_info->SetTextFont(42);
+  l_info->SetNDC();
+  l_info->Draw();
+
+  c_phivmass->SetRightMargin(0.13);
+  
+  c_phivmass->Modified();
+  c_phivmass->Update();
+
+  c_phivmass->SaveAs("temp_output/phiv_mass.root");
+  c_phivmass->SaveAs("temp_output/phiv_mass.pdf");
+  c_phivmass->SaveAs("temp_output/phiv_mass.png");
+
 }
