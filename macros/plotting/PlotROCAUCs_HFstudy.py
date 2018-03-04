@@ -34,9 +34,9 @@ patch_woKinFeats = mpatches.Patch(fill=False, hatch=pattern_woKinFeats*3, label=
 
 patch_DCAvecComp = mpatches.Patch(fill=False, hatch=pattern_DCAvecComp*3, label='DCA vector components only')
 
-patch_engHFfeats = mpatches.Patch(fill=False, hatch=pattern_engHFfeats*3, label='engineered HF feats only')
+patch_engHFfeats = mpatches.Patch(fill=False, hatch=pattern_engHFfeats*3, label='engineered DCA feats only')
 
-patch_allHFfeats = mpatches.Patch(fill=False, hatch=pattern_allHFfeats*3, label='DCA vec. comp. & engineered HF feats')
+patch_allHFfeats = mpatches.Patch(fill=False, hatch=pattern_allHFfeats*3, label='DCA vec. comp. & engineered DCA feats')
 
 
 
