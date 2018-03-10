@@ -209,8 +209,8 @@ void PlotMassVsPt() {
   TString ytitle = "#it{m}_{ee} / (GeV/#it{c}^{2})";
   
   Int_t nbinsx = 300, nbinsy = 300;
-  Float_t binx_min_1 = 0., binx_max_1 = 1.5;
-  Float_t biny_min_1 = 0., biny_max_1 = 0.3;
+  Float_t binx_min_1 = 0., binx_max_1 = 1.4;
+  Float_t biny_min_1 = 0., biny_max_1 = 1.4;
   Float_t binx_min_2 = 0., binx_max_2 = 1.4;
   Float_t biny_min_2 = 0., biny_max_2 = 1.4;
   
@@ -246,7 +246,8 @@ void PlotMassVsPt() {
 
     t->GetEntry(i);
 
-    if(MVAoutput_track1_wKinFeats < 0 || MVAoutput_track2_wKinFeats > 1)
+    if(MVAoutput_track1_wKinFeats < 0 || MVAoutput_track1_wKinFeats > 1 ||
+       MVAoutput_track2_wKinFeats < 0 || MVAoutput_track2_wKinFeats > 1)
       continue;
 
     pair_pT = TMath::Sqrt((px1+px2)*(px1+px2) + (py1+py2)*(py1+py2));
@@ -274,7 +275,8 @@ void PlotMassVsPt() {
     
     t->GetEntry(i);
     
-    if(MVAoutput_track1_woKinFeats < 0 || MVAoutput_track2_woKinFeats > 1)
+    if(MVAoutput_track1_woKinFeats < 0 || MVAoutput_track1_woKinFeats > 1 ||
+       MVAoutput_track2_woKinFeats < 0 || MVAoutput_track2_woKinFeats > 1)
       continue;
     
     pair_pT = TMath::Sqrt((px1+px2)*(px1+px2) + (py1+py2)*(py1+py2));
