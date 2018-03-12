@@ -3,6 +3,7 @@ void PlotPhiv();
 void PlotPhivMass();
 void PlotMassVsPt();
 void PlotMVAcutEffVsPt();
+void PlotMVAcutEffVsMass();
 
 void createThesisPlots() {
   
@@ -13,6 +14,7 @@ void createThesisPlots() {
   PlotPhivMass();
   PlotMassVsPt();
   PlotMVAcutEffVsPt();
+  PlotMVAcutEffVsMass();
   
   gSystem->Exit(0);
   
@@ -646,5 +648,265 @@ void PlotMVAcutEffVsPt() {
   c->SaveAs("temp_output/HFstudy_pT_woKinFeats.root");
   c->SaveAs("temp_output/HFstudy_pT_woKinFeats.pdf");
   c->SaveAs("temp_output/HFstudy_pT_woKinFeats.png");
+  
+}
+
+
+void PlotMVAcutEffVsMass() {
+
+  SetStyle();
+
+  TFile *f = new TFile("/home/sebastian/analysis/data/HFstudy/workingData/CA_AnalysisResults_Upgrade_GP_pairTree-us_part2_0.8nEvents.root",
+                       "READ");
+
+  TTree *t = (TTree*)f->Get("pairTree_us");
+
+  Int_t IsRP, IsConv;
+  Float_t mass;
+  Float_t MVAoutput_track1_wKinFeats, MVAoutput_track2_wKinFeats;
+  Float_t MVAoutput_track1_woKinFeats, MVAoutput_track2_woKinFeats;
+
+  t->SetBranchAddress("IsRP", &IsRP);
+  t->SetBranchAddress("IsConv", &IsConv);
+  t->SetBranchAddress("mass", &mass);
+  t->SetBranchAddress("MVAoutput__HF_2__DNN_5__track1", &MVAoutput_track1_wKinFeats);
+  t->SetBranchAddress("MVAoutput__HF_2__DNN_5__track2", &MVAoutput_track2_wKinFeats);
+  t->SetBranchAddress("MVAoutput__HF_2__DNN_11__track1", &MVAoutput_track1_woKinFeats);
+  t->SetBranchAddress("MVAoutput__HF_2__DNN_11__track2", &MVAoutput_track2_woKinFeats);
+
+  Float_t MVAcut_wKinFeats = 0.28;
+  Float_t MVAcut_woKinFeats = 0.23;
+
+  TString xtitle_eff = "#it{m}_{ee} / (GeV/#it{c}^{2})";
+  TString ytitle_eff = "MVA cut efficiency";
+  TString xtitle = xtitle_eff;
+  TString ytitle = "Yield";
+
+  Int_t nbins = 100;
+  Float_t bins_min = 0.;
+  Float_t bins_max = 5.;
+
+  TH1D *h_S_beforeCut_wKinFeats = new TH1D("h_S_beforeCut_wKinFeats","",
+                                           nbins, bins_min, bins_max);
+  TH1D *h_S_afterCut_wKinFeats = new TH1D("h_S_afterCut_wKinFeats","",
+                                          nbins, bins_min, bins_max);
+  TH1D *h_CombNonConv_beforeCut_wKinFeats = new TH1D("h_CombNonConv_beforeCut_wKinFeats","",
+                                                     nbins, bins_min, bins_max);
+  TH1D *h_CombNonConv_afterCut_wKinFeats = new TH1D("h_CombNonConv_afterCut_wKinFeats","",
+                                                    nbins, bins_min, bins_max);
+  TH1D *h_S_beforeCut_woKinFeats = new TH1D("h_S_beforeCut_woKinFeats","",
+                                           nbins, bins_min, bins_max);
+  TH1D *h_S_afterCut_woKinFeats = new TH1D("h_S_afterCut_woKinFeats","",
+                                          nbins, bins_min, bins_max);
+  TH1D *h_CombNonConv_beforeCut_woKinFeats = new TH1D("h_CombNonConv_beforeCut_woKinFeats","",
+                                                     nbins, bins_min, bins_max);
+  TH1D *h_CombNonConv_afterCut_woKinFeats = new TH1D("h_CombNonConv_afterCut_woKinFeats","",
+                                                    nbins, bins_min, bins_max);
+
+  Long64_t nentries = t->GetEntries();
+
+  // process wKinFeats:
+  for(Long64_t i=0; i<nentries; i++) {
+
+    t->GetEntry(i);
+
+    if(MVAoutput_track1_wKinFeats < 0 || MVAoutput_track1_wKinFeats > 1 ||
+       MVAoutput_track2_wKinFeats < 0 || MVAoutput_track2_wKinFeats > 1)
+      continue;
+
+    if(IsRP==1 && IsConv==0) {
+      h_S_beforeCut_wKinFeats->Fill(mass);
+      if(MVAoutput_track1_wKinFeats >= MVAcut_wKinFeats &&
+         MVAoutput_track2_wKinFeats >= MVAcut_wKinFeats) {
+        h_S_afterCut_wKinFeats->Fill(mass);
+      }
+    }
+
+    if(IsRP==0 && IsConv==0) {
+      h_CombNonConv_beforeCut_wKinFeats->Fill(mass);
+      if(MVAoutput_track1_wKinFeats >= MVAcut_wKinFeats &&
+         MVAoutput_track2_wKinFeats >= MVAcut_wKinFeats) {
+        h_CombNonConv_afterCut_wKinFeats->Fill(mass);
+      }
+    }
+    
+  }
+
+  // process woKinFeats:
+  for(Long64_t i=0; i<nentries; i++) {
+
+    t->GetEntry(i);
+
+    if(MVAoutput_track1_woKinFeats < 0 || MVAoutput_track1_woKinFeats > 1 ||
+       MVAoutput_track2_woKinFeats < 0 || MVAoutput_track2_woKinFeats > 1)
+      continue;
+
+    if(IsRP==1 && IsConv==0) {
+      h_S_beforeCut_woKinFeats->Fill(mass);
+      if(MVAoutput_track1_woKinFeats >= MVAcut_woKinFeats &&
+         MVAoutput_track2_woKinFeats >= MVAcut_woKinFeats) {
+        h_S_afterCut_woKinFeats->Fill(mass);
+      }
+    }
+
+    if(IsRP==0 && IsConv==0) {
+      h_CombNonConv_beforeCut_woKinFeats->Fill(mass);
+      if(MVAoutput_track1_woKinFeats >= MVAcut_woKinFeats &&
+         MVAoutput_track2_woKinFeats >= MVAcut_woKinFeats) {
+        h_CombNonConv_afterCut_woKinFeats->Fill(mass);
+      }
+    }
+    
+  }
+  
+
+  TH1D *h_eff_S_wKinFeats = new TH1D("h_eff_S_wKinFeats","",
+                                     nbins, bins_min, bins_max);
+  TH1D *h_eff_CombNonConv_wKinFeats = new TH1D("h_eff_CombNonConv_wKinFeats","",
+                                               nbins, bins_min, bins_max);
+  TH1D *h_eff_S_woKinFeats = new TH1D("h_eff_S_woKinFeats","",
+                                      nbins, bins_min, bins_max);
+  TH1D *h_eff_CombNonConv_woKinFeats = new TH1D("h_eff_CombNonConv_woKinFeats","",
+                                                nbins, bins_min, bins_max);
+
+  h_S_beforeCut_wKinFeats->SetXTitle(xtitle);
+  h_S_beforeCut_wKinFeats->SetYTitle(ytitle);
+  h_S_beforeCut_woKinFeats->SetXTitle(xtitle);
+  h_S_beforeCut_woKinFeats->SetYTitle(ytitle);
+
+  h_S_beforeCut_wKinFeats->GetXaxis()->SetTitleOffset(1.3);
+  h_S_beforeCut_woKinFeats->GetXaxis()->SetTitleOffset(1.3);
+
+  h_eff_S_wKinFeats->SetXTitle(xtitle_eff);
+  h_eff_S_wKinFeats->SetYTitle(ytitle_eff);
+  h_eff_S_woKinFeats->SetXTitle(xtitle_eff);
+  h_eff_S_woKinFeats->SetYTitle(ytitle_eff);
+
+  h_eff_S_wKinFeats->SetLineColor(kGreen+2);
+  h_eff_CombNonConv_wKinFeats->SetLineColor(kBlue);
+  h_eff_S_woKinFeats->SetLineColor(kGreen+2);
+  h_eff_CombNonConv_woKinFeats->SetLineColor(kBlue);
+
+  h_eff_S_wKinFeats->GetYaxis()->SetRangeUser(0, 1.05);
+  h_eff_S_woKinFeats->GetYaxis()->SetRangeUser(0, 1.05);
+
+  TLegend *leg_eff = new TLegend(.5,.65,.85,.85);
+  leg_eff->AddEntry(h_eff_S_wKinFeats, "real-pair non-conversions", "l");
+  leg_eff->AddEntry(h_eff_CombNonConv_wKinFeats, "combinatorial non-conversions", "l");
+
+  TLegend *leg = new TLegend(.4,.55,.88,.85);
+  leg->SetFillStyle(0);
+  leg->AddEntry(h_S_beforeCut_wKinFeats, "real-pair non-conversions (before MVA cuts)", "l");
+  leg->AddEntry(h_S_afterCut_wKinFeats, "real-pair non-conversions (after MVA cuts)");
+  leg->AddEntry(h_CombNonConv_beforeCut_wKinFeats, "combinatorial non-conversions (before MVA cuts)", "l");
+  leg->AddEntry(h_CombNonConv_afterCut_wKinFeats, "combinatorial non-conversions (after MVA cuts)");
+
+
+  TEfficiency *pEff_S_wKinFeats = new TEfficiency(*h_S_afterCut_wKinFeats,
+                                                  *h_S_beforeCut_wKinFeats);
+  TEfficiency *pEff_CombNonConv_wKinFeats = new TEfficiency(*h_CombNonConv_afterCut_wKinFeats,
+                                                            *h_CombNonConv_beforeCut_wKinFeats);
+  TEfficiency *pEff_S_woKinFeats = new TEfficiency(*h_S_afterCut_woKinFeats,
+                                                   *h_S_beforeCut_woKinFeats);
+  TEfficiency *pEff_CombNonConv_woKinFeats = new TEfficiency(*h_CombNonConv_afterCut_woKinFeats,
+                                                             *h_CombNonConv_beforeCut_woKinFeats);
+
+  for(Int_t i=1; i<=nbins; i++) {
+    h_eff_S_wKinFeats->SetBinContent(i, pEff_S_wKinFeats->GetEfficiency(pEff_S_wKinFeats->GetGlobalBin(i)));
+    h_eff_CombNonConv_wKinFeats->SetBinContent(i, pEff_CombNonConv_wKinFeats->GetEfficiency(pEff_CombNonConv_wKinFeats->GetGlobalBin(i)));
+    h_eff_S_woKinFeats->SetBinContent(i, pEff_S_woKinFeats->GetEfficiency(pEff_S_woKinFeats->GetGlobalBin(i)));
+    h_eff_CombNonConv_woKinFeats->SetBinContent(i, pEff_CombNonConv_woKinFeats->GetEfficiency(pEff_CombNonConv_woKinFeats->GetGlobalBin(i)));
+
+    Float_t err_max;
+
+    if(!TMath::IsNaN(pEff_S_wKinFeats->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_S_wKinFeats->GetEfficiencyErrorUp(i))) {
+      err_max = TMath::Max(pEff_S_wKinFeats->GetEfficiencyErrorLow(i),
+                           pEff_S_wKinFeats->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_eff_S_wKinFeats->SetBinError(i, err_max);
+      else h_eff_S_wKinFeats->SetBinError(i, 0.);
+    }else h_eff_S_wKinFeats->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_CombNonConv_wKinFeats->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombNonConv_wKinFeats->GetEfficiencyErrorUp(i))) {
+      err_max = TMath::Max(pEff_CombNonConv_wKinFeats->GetEfficiencyErrorLow(i),
+                           pEff_CombNonConv_wKinFeats->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_eff_CombNonConv_wKinFeats->SetBinError(i, err_max);
+      else h_eff_CombNonConv_wKinFeats->SetBinError(i, 0.);
+    }else h_eff_CombNonConv_wKinFeats->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_S_woKinFeats->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_S_woKinFeats->GetEfficiencyErrorUp(i))) {
+      err_max = TMath::Max(pEff_S_woKinFeats->GetEfficiencyErrorLow(i),
+                           pEff_S_woKinFeats->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_eff_S_woKinFeats->SetBinError(i, err_max);
+      else h_eff_S_woKinFeats->SetBinError(i, 0.);
+    }else h_eff_S_woKinFeats->SetBinError(i, 0.);
+
+    if(!TMath::IsNaN(pEff_CombNonConv_woKinFeats->GetEfficiencyErrorLow(i)) && !TMath::IsNaN(pEff_CombNonConv_woKinFeats->GetEfficiencyErrorUp(i))) {
+      err_max = TMath::Max(pEff_CombNonConv_woKinFeats->GetEfficiencyErrorLow(i),
+                           pEff_CombNonConv_woKinFeats->GetEfficiencyErrorUp(i));
+      if(err_max > 0 && err_max < 1) h_eff_CombNonConv_woKinFeats->SetBinError(i, err_max);
+      else h_eff_CombNonConv_woKinFeats->SetBinError(i, 0.);
+    }else h_eff_CombNonConv_woKinFeats->SetBinError(i, 0.);
+
+  }
+
+  TCanvas *c = new TCanvas("c","c");
+  c->SetCanvasSize(1024,768);
+
+  h_eff_S_wKinFeats->Draw("hist e0 x0");
+  h_eff_CombNonConv_wKinFeats->Draw("hist e0 x0 same");
+  leg_eff->Draw();
+
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_wKinFeats.root");
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_wKinFeats.pdf");
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_wKinFeats.png");
+
+  h_eff_S_woKinFeats->Draw("hist e0 x0");
+  h_eff_CombNonConv_woKinFeats->Draw("hist e0 x0 same");
+  leg_eff->Draw();
+
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_woKinFeats.root");
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_woKinFeats.pdf");
+  c->SaveAs("temp_output/HFstudy_MVAcutEffsVsMass_woKinFeats.png");
+
+  h_S_beforeCut_wKinFeats->SetLineColor(kGreen+2);
+  h_S_afterCut_wKinFeats->SetLineColor(kGreen+2);
+  h_S_beforeCut_woKinFeats->SetLineColor(kGreen+2);
+  h_S_afterCut_woKinFeats->SetLineColor(kGreen+2);
+  h_CombNonConv_beforeCut_wKinFeats->SetLineColor(kBlue);
+  h_CombNonConv_afterCut_wKinFeats->SetLineColor(kBlue);
+  h_CombNonConv_beforeCut_woKinFeats->SetLineColor(kBlue);
+  h_CombNonConv_afterCut_woKinFeats->SetLineColor(kBlue);
+
+  h_S_afterCut_wKinFeats->SetLineStyle(3);
+  h_S_afterCut_woKinFeats->SetLineStyle(3);
+  h_CombNonConv_afterCut_wKinFeats->SetLineStyle(3);
+  h_CombNonConv_afterCut_woKinFeats->SetLineStyle(3);
+
+  h_S_afterCut_wKinFeats->SetLineWidth(4);
+  h_S_afterCut_woKinFeats->SetLineWidth(4);
+  h_CombNonConv_afterCut_wKinFeats->SetLineWidth(4);
+  h_CombNonConv_afterCut_woKinFeats->SetLineWidth(4);
+
+  c->SetLogy();
+  
+  h_S_beforeCut_wKinFeats->Draw("hist");
+  h_S_afterCut_wKinFeats->Draw("hist same");
+  h_CombNonConv_beforeCut_wKinFeats->Draw("hist same");
+  h_CombNonConv_afterCut_wKinFeats->Draw("hist same");
+  leg->Draw();
+
+  c->SaveAs("temp_output/HFstudy_mass_wKinFeats.root");
+  c->SaveAs("temp_output/HFstudy_mass_wKinFeats.pdf");
+  c->SaveAs("temp_output/HFstudy_mass_wKinFeats.png");
+
+  h_S_beforeCut_woKinFeats->Draw("hist");
+  h_S_afterCut_woKinFeats->Draw("hist same");
+  h_CombNonConv_beforeCut_woKinFeats->Draw("hist same");
+  h_CombNonConv_afterCut_woKinFeats->Draw("hist same");
+  leg->Draw();
+
+  c->SaveAs("temp_output/HFstudy_mass_woKinFeats.root");
+  c->SaveAs("temp_output/HFstudy_mass_woKinFeats.pdf");
+  c->SaveAs("temp_output/HFstudy_mass_woKinFeats.png");
   
 }
